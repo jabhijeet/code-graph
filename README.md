@@ -80,7 +80,9 @@ fn main() {
 }
 ```
 
-### 3. Java (Maven pom.xml)
+### 3. Java/Kotlin (Maven/Gradle)
+
+#### Maven (pom.xml)
 ```xml
 <plugin>
   <groupId>org.codehaus.mojo</groupId>
@@ -98,8 +100,63 @@ fn main() {
 </plugin>
 ```
 
-### 4. Python (Poetry/Setuptools)
-Add a pre-build script or use a Task runner like `invoke` or `make`.
+#### Gradle (Groovy DSL - build.gradle)
+```groovy
+task generateCodeGraph(type: Exec) {
+    commandLine 'node', 'index.js', 'generate'
+}
+
+compileJava.dependsOn generateCodeGraph
+```
+
+#### Gradle (Kotlin DSL - build.gradle.kts)
+```kotlin
+tasks.register<Exec>("generateCodeGraph") {
+    commandLine("node", "index.js", "generate")
+}
+
+tasks.named("compileJava") {
+    dependsOn("generateCodeGraph")
+}
+```
+
+### 4. Python Integration
+
+#### Option A: Using a `Makefile` (Recommended)
+Add this to your `Makefile` to ensure the map is updated before testing or linting:
+```makefile
+.PHONY: map
+map:
+	node index.js generate
+
+test: map
+	pytest
+```
+
+#### Option B: Using the `pre-commit` framework
+If you use the [pre-commit](https://pre-commit.com/) framework, add this to your `.pre-commit-config.yaml`:
+```yaml
+- repo: local
+  hooks:
+    - id: code-graph
+      name: code-graph
+      entry: node index.js generate
+      language: node
+      files: \.(py|js|ts|go|rs|java)$
+      pass_filenames: false
+```
+
+#### Option C: Subprocess call in a script
+If you have a `build.py` or `tasks.py`, you can trigger it directly:
+```python
+import subprocess
+
+def generate_map():
+    subprocess.run(["node", "index.js", "generate"], check=True)
+
+if __name__ == "__main__":
+    generate_map()
+```
 
 ## How it works
 The tool scans your project directory (respecting `.gitignore`), extracts classes, functions, and exports using optimized regular expressions, and compiles them into a dense, machine-readable `llm-code-graph.md` file. LLM agents should read this file first to gain instant architectural context.
