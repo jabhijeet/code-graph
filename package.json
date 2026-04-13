@@ -1,10 +1,10 @@
 {
-  "name": "gemini-llm-helper",
+  "name": "code-graph",
   "version": "1.0.0",
   "description": "Compact, LLM-optimized codebase mapper.",
   "main": "index.js",
   "bin": {
-    "gemini-helper": "./index.js"
+    "code-graph": "./index.js"
   },
   "dependencies": {
     "chokidar": "^3.6.0",

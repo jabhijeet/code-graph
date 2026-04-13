@@ -10,7 +10,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const IGNORE_FILE = '.gitignore';
-const DEFAULT_MAP_FILE = 'GEMINI.md';
+const DEFAULT_MAP_FILE = 'llm-code-graph.md';
 
 const SYMBOL_REGEXES = [
   /\b(?:class|interface|type|struct|enum)\s+([a-zA-Z_]\w*)/g,
@@ -73,13 +73,13 @@ async function generate(cwd = process.cwd()) {
     return `- ${f.path}${symStr}`;
   }).join('\n');
 
-  const header = `# GEMINI_CODE_MAP\n> LLM_ONLY: DO NOT EDIT. COMPACT PROJECT MAP.\n\n`;
+  const header = `# CODE_GRAPH_MAP\n> LLM_ONLY: DO NOT EDIT. COMPACT PROJECT MAP.\n\n`;
   fs.writeFileSync(path.join(cwd, DEFAULT_MAP_FILE), header + output);
-  console.log(`[gemini-helper] Updated ${DEFAULT_MAP_FILE}`);
+  console.log(`[Code-Graph] Updated ${DEFAULT_MAP_FILE}`);
 }
 
 function watch(cwd = process.cwd()) {
-  console.log(`[gemini-helper] Watching for changes in ${cwd}...`);
+  console.log(`[Code-Graph] Watching for changes in ${cwd}...`);
   const ig = getIgnores(cwd);
   
   const watcher = chokidar.watch(cwd, {
@@ -98,7 +98,7 @@ function watch(cwd = process.cwd()) {
   };
 
   watcher.on('all', (event, path) => {
-    console.log(`[gemini-helper] Change detected: ${event} on ${path}`);
+    console.log(`[Code-Graph] Change detected: ${event} on ${path}`);
     debouncedGenerate();
   });
 }
@@ -106,15 +106,15 @@ function watch(cwd = process.cwd()) {
 function installHook(cwd = process.cwd()) {
   const hooksDir = path.join(cwd, '.git', 'hooks');
   if (!fs.existsSync(hooksDir)) {
-    console.error('[gemini-helper] No .git directory found. Cannot install hook.');
+    console.error('[Code-Graph] No .git directory found. Cannot install hook.');
     return;
   }
 
   const hookPath = path.join(hooksDir, 'pre-commit');
-  const hookContent = `#!/bin/sh\n# gemini-helper pre-commit hook\nnode "${__filename}" generate\ngit add "${DEFAULT_MAP_FILE}"\n`;
+  const hookContent = `#!/bin/sh\n# Code-Graph pre-commit hook\nnode "${__filename}" generate\ngit add "${DEFAULT_MAP_FILE}"\n`;
 
   fs.writeFileSync(hookPath, hookContent, { mode: 0o755 });
-  console.log('[gemini-helper] Installed pre-commit hook.');
+  console.log('[Code-Graph] Installed pre-commit hook.');
 }
 
 const args = process.argv.slice(2);
@@ -127,5 +127,5 @@ if (command === 'generate') {
 } else if (command === 'install-hook') {
   installHook();
 } else {
-  console.log('Usage: gemini-helper [generate|watch|install-hook]');
+  console.log('Usage: code-graph [generate|watch|install-hook]');
 }
