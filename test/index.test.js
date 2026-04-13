@@ -4,7 +4,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'url';
 import { 
-  extractSymbols, 
+  extractSymbolsAndInheritance,
+  extractEdges,
   getIgnores, 
   SUPPORTED_EXTENSIONS,
   generate
@@ -17,7 +18,7 @@ test('extractSymbols - JS/TS Docstrings', () => {
      */
     function testFunc(a, b) {}
   `;
-  const symbols = extractSymbols(code);
+  const { symbols } = extractSymbolsAndInheritance(code);
   assert.ok(symbols.some(s => s.includes('testFunc') && s.includes('This is a test function')));
 });
 
@@ -27,8 +28,8 @@ test('extractSymbols - Signature Fallback', () => {
       return true;
     }
   `;
-  const symbols = extractSymbols(code);
-  // Matches "noDocFunc [(arg1: string, arg2: number)]"
+  const { symbols } = extractSymbolsAndInheritance(code);
+  // Matches "noDocFunc [ (arg1: string, arg2: number)]"
   assert.ok(symbols.some(s => s.includes('noDocFunc') && s.includes('arg1: string, arg2: number')));
 });
 
@@ -37,9 +38,33 @@ test('extractSymbols - Flutter/Dart Noise Reduction', () => {
     const SizedBox(height: 10);
     void realFunction() {}
   `;
-  const symbols = extractSymbols(code);
+  const { symbols } = extractSymbolsAndInheritance(code);
   assert.ok(symbols.some(s => s.includes('realFunction')));
   assert.ok(!symbols.some(s => s.includes('SizedBox')));
+});
+
+test('extractInheritance - Class relationships', () => {
+  const code = `
+    class AdminUser extends BaseUser {}
+    interface IRepository implements IBase {}
+    class MyWidget : StatelessWidget {}
+  `;
+  const { inheritance } = extractSymbolsAndInheritance(code);
+  assert.ok(inheritance.some(i => i.child === 'AdminUser' && i.parent === 'BaseUser'));
+  assert.ok(inheritance.some(i => i.child === 'IRepository' && i.parent === 'IBase'));
+  assert.ok(inheritance.some(i => i.child === 'MyWidget' && i.parent === 'StatelessWidget'));
+});
+
+test('extractEdges - Imports and includes', () => {
+  const code = `
+    import { something } from './local-file';
+    const other = require('other-module');
+    #include "header.h"
+  `;
+  const edges = extractEdges(code);
+  assert.ok(edges.includes('./local-file'));
+  assert.ok(edges.includes('other-module'));
+  assert.ok(edges.includes('header.h'));
 });
 
 test('getIgnores - Default Patterns', () => {
