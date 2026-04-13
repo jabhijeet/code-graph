@@ -1,97 +1,56 @@
 # CODE-GRAPH
 
-A language-agnostic, ultra-compact codebase mapper designed specifically for LLM agents to optimize context and token usage.
+A language-agnostic, ultra-compact codebase mapper designed specifically for LLM agents to optimize context and token usage. It doesn't just list files; it provides a high-signal "map" of your project's architecture, including descriptions and signatures.
+
+## Features
+- **Smart Context Extraction:** Captures JSDoc, Python docstrings, and preceding comments for files and symbols.
+- **Signature Fallback:** Automatically extracts function signatures (parameters/types) if documentation is missing.
+- **Compact & Dense:** Optimized for LLM token efficiency, replacing expensive recursive file scans.
+- **Language-Agnostic:** Optimized regex support for JS/TS, Python, Go, Rust, Java, C#, C/C++, Swift, PHP, Ruby, Dart, and more.
+- **Recursive Ignore Logic:** Deeply respects `.gitignore` and standard excludes (`node_modules`, `.git`).
+- **Live Sync:** Continuous background updates or Git pre-commit hooks.
 
 ## Installation
 
-### 1. Install via NPM (Recommended)
-You can install **Code-Graph** globally or as a project-specific dependency without cloning the repository.
-
-**Global Installation:**
+### 1. Install via NPM
 ```bash
+# Global installation for CLI use
 npm install -g code-graph-llm
-```
 
-**Local Project Dependency:**
-```bash
+# Local project dependency
 npm install --save-dev code-graph-llm
 ```
 
-### 2. Direct Usage
-Once installed, you can run it from any project directory:
+### 2. Basic Usage
 ```bash
-# Generate the map
+# Generate the llm-code-graph.md map
 code-graph generate
 
-# Start the live watcher
+# Start the live watcher for real-time updates
 code-graph watch
-```
 
-## Usage in Different Workflows
-
-### 1. Node.js (package.json)
-If installed as a dependency, add it to your scripts:
-```json
-"scripts": {
-  "postinstall": "code-graph generate",
-  "pretest": "code-graph generate"
-}
-```
-
-### 2. Git Integration
-Automatically update and stage `llm-code-graph.md` on every commit:
-```bash
+# Install the Git pre-commit hook
 code-graph install-hook
 ```
 
----
-
 ## LLM Usage & Token Efficiency
 
-To achieve the best performance and minimize token consumption, follow these guidelines:
+### The "Read First" Strategy
+Instruct your LLM agent to read `llm-code-graph.md` as its first step. The file uses a dense format that provides immediate architectural context:
 
-### 1. The "Read First" Rule
-Always instruct the LLM agent to read `llm-code-graph.md` as its first step. It provides an immediate, high-level map without scanning every directory.
+**Example Map Entry:**
+```markdown
+- src/auth.js | desc: Handles user authentication and JWT validation.
+  - syms: [login [ (username, password) ], validateToken [ (token: string) ]]
+```
 
 **Example System Prompt:**
-> "Before performing any tasks, read `llm-code-graph.md` to understand the project structure. Use this map to target specific files rather than scanning the entire codebase."
+> "Before acting, read `llm-code-graph.md`. It contains the project map, file descriptions, and function signatures. Use this to locate relevant logic instead of scanning the full codebase."
 
-### 2. Targeted File Reads
-The `|syms:[...]` metadata allows the LLM to identify exactly which file contains a specific function or class. It can jump directly to the relevant file.
+## Build Phase Integration
 
----
-
-## Language Examples & Build Phase Integration
-
-### 1. Rust (build.rs)
-```rust
-use std::process::Command;
-fn main() {
-    Command::new("code-graph").arg("generate").status().unwrap();
-}
-```
-
-### 2. Java/Kotlin (Maven/Gradle)
-
-#### Maven (pom.xml)
-```xml
-<plugin>
-  <groupId>org.codehaus.mojo</groupId>
-  <artifactId>exec-maven-plugin</artifactId>
-  <executions>
-    <execution>
-      <phase>compile</phase>
-      <goals><goal>exec</goal></goals>
-      <configuration>
-        <executable>code-graph</executable>
-        <arguments><argument>generate</argument></arguments>
-      </configuration>
-    </execution>
-  </executions>
-</plugin>
-```
-
-#### Gradle (Groovy DSL)
+### 1. Java/Kotlin (Maven/Gradle)
+**Gradle (Groovy):**
 ```groovy
 task generateCodeGraph(type: Exec) {
     commandLine 'code-graph', 'generate'
@@ -99,19 +58,31 @@ task generateCodeGraph(type: Exec) {
 compileJava.dependsOn generateCodeGraph
 ```
 
-### 3. Python Integration
-Add this to your `Makefile`:
+### 2. Python
+**Makefile:**
 ```makefile
 map:
 	code-graph generate
+test: map
+	pytest
 ```
 
----
+### 3. Rust (build.rs)
+```rust
+use std::process::Command;
+fn main() {
+    Command::new("code-graph").arg("generate").status().unwrap();
+}
+```
 
 ## How it works
-The tool scans your project directory (respecting `.gitignore`), extracts classes, functions, and exports using optimized regular expressions, and compiles them into a dense, machine-readable `llm-code-graph.md` file.
+1. **File Scanning:** Recursively walks the directory, ignoring patterns in `.gitignore`.
+2. **Context Extraction:** Scans for classes, functions, and variables.
+3. **Docstring Capture:** If a symbol has a preceding comment (`//`, `/**`, `#`, `"""`), it's captured as a description.
+4. **Signature Capture:** If no comment is found, it captures the declaration signature (parameters) as a fallback.
+5. **Compilation:** Writes a single, minified `llm-code-graph.md` file designed for machine consumption.
 
-## Publishing as a Package (For Developers)
-To publish this to the NPM registry:
-1. Log in: `npm login`
-2. Publish: `npm publish --access public` (Ensure the name in `package.json` is unique, e.g., `code-graph-llm`).
+## Publishing as a Package
+To share your own version:
+1. `npm login`
+2. `npm publish --access public`

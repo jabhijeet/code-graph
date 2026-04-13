@@ -13,14 +13,38 @@ const IGNORE_FILE = '.gitignore';
 const DEFAULT_MAP_FILE = 'llm-code-graph.md';
 
 const SYMBOL_REGEXES = [
-  /\b(?:class|interface|type|struct|enum)\s+([a-zA-Z_]\w*)/g,
-  /\b(?:function|def|fn|func|void|fun)\s+([a-zA-Z_]\w*)/g,
-  /\bconst\s+([a-zA-Z_]\w*)\s*=\s*(?:async\s*)?\([^)]*\)\s*=>/g, // Arrow functions
-  /\bexport\s+(?:const|let|var|function|class|type|interface|enum)\s+([a-zA-Z_]\w*)/g
+  // Types, Classes, Interfaces, and Containers (Universal)
+  /\b(?:class|interface|type|struct|enum|protocol|extension|trait|module|namespace|object)\s+([a-zA-Z_]\w*)/g,
+  
+  // Explicit Function Keywords (JS, Python, Go, Rust, Ruby, PHP, Swift, Kotlin, Dart)
+  /\b(?:function|def|fn|func|fun|method|procedure|sub|routine)\s+([a-zA-Z_]\w*)/g,
+  
+  // C-style / Java / C# / TypeScript Method Patterns
+  // Matches: ReturnType Name(...) or AccessModifier Name(...)
+  /\b(?:void|async|public|private|protected|static|virtual|override|readonly|int|float|double|char|bool|string|val|var|let|const|final)\s+([a-zA-Z_]\w*)(?=\s*\(|(?:\s*:\s*\w+)?\s*=>)/g,
+  
+  // Exported symbols (JS/TS specific but captures named exports)
+  /\bexport\s+(?:default\s+)?(?:const|let|var|function|class|type|interface|enum|async|val)\s+([a-zA-Z_]\w*)/g,
+  
+  // Ruby: def name, class Name, module Name (defs covered by Explicit Function Keywords)
+  
+  // PHP: class Name, interface Name, trait Name, function Name
+  
+  // Swift: func name, class Name, struct Name, protocol Name, extension Name
+  
+  // Dart: class Name, void name, var name (void/var covered by C-style pattern)
+];
+
+const SUPPORTED_EXTENSIONS = [
+  '.js', '.ts', '.jsx', '.tsx', 
+  '.py', '.go', '.rs', '.java', 
+  '.cpp', '.c', '.h', '.hpp', '.cc',
+  '.rb', '.php', '.swift', '.kt', 
+  '.cs', '.dart', '.scala', '.m', '.mm'
 ];
 
 function getIgnores(cwd) {
-  const ig = ignore().add(['.git', 'node_modules', DEFAULT_MAP_FILE]);
+  const ig = ignore().add(['.git', 'node_modules', DEFAULT_MAP_FILE, 'package-lock.json']);
   const ignorePath = path.join(cwd, IGNORE_FILE);
   if (fs.existsSync(ignorePath)) {
     ig.add(fs.readFileSync(ignorePath, 'utf8'));
@@ -29,14 +53,46 @@ function getIgnores(cwd) {
 }
 
 function extractSymbols(content) {
-  const symbols = new Set();
+  const symbols = [];
   for (const regex of SYMBOL_REGEXES) {
     let match;
+    regex.lastIndex = 0;
     while ((match = regex.exec(content)) !== null) {
-      if (match[1]) symbols.add(match[1]);
+      if (match[1]) {
+        const symbolName = match[1];
+        if (['if', 'for', 'while', 'switch', 'return', 'await', 'yield'].includes(symbolName)) continue;
+
+        // 1. Extract preceding comment/docstring
+        const linesBefore = content.substring(0, match.index).split('\n');
+        let comment = '';
+        for (let i = linesBefore.length - 1; i >= 0; i--) {
+          const line = linesBefore[i].trim();
+          if (line.startsWith('//') || line.startsWith('*') || line.startsWith('"""') || line.startsWith('#')) {
+            const clean = line.replace(/[\/*#"]/g, '').trim();
+            if (clean) comment = clean + (comment ? ' ' + comment : '');
+            if (comment.length > 80) break; 
+          } else if (line === '' && comment === '') {
+            continue;
+          } else {
+            break;
+          }
+        }
+
+        // 2. Backup: Extract Signature (Parameters/Type) if no comment
+        let context = comment;
+        if (!context) {
+          const remainingLine = content.substring(match.index + match[0].length).split('\n')[0];
+          const sigMatch = remainingLine.match(/^[^:{;]*/);
+          if (sigMatch && sigMatch[0].trim()) {
+            context = sigMatch[0].trim();
+          }
+        }
+        
+        symbols.push(context ? `${symbolName} [${context}]` : symbolName);
+      }
     }
   }
-  return Array.from(symbols).sort();
+  return Array.from(new Set(symbols)).sort();
 }
 
 async function generate(cwd = process.cwd()) {
@@ -47,20 +103,39 @@ async function generate(cwd = process.cwd()) {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name);
-      const relativePath = path.relative(cwd, fullPath);
+      let relativePath = path.relative(cwd, fullPath);
+      const normalizedPath = relativePath.replace(/\\/g, '/');
+      const checkPath = entry.isDirectory() ? `${normalizedPath}/` : normalizedPath;
 
-      if (ig.ignores(relativePath)) continue;
+      if (ig.ignores(checkPath)) continue;
 
       if (entry.isDirectory()) {
         walk(fullPath);
       } else if (entry.isFile()) {
         const ext = path.extname(entry.name);
-        if (['.js', '.ts', '.py', '.go', '.rs', '.java', '.cpp', '.c', '.h', '.rb', '.php', '.swift', '.kt'].includes(ext)) {
+        if (SUPPORTED_EXTENSIONS.includes(ext)) {
           const content = fs.readFileSync(fullPath, 'utf8');
+          
+          // Extract file-level description
+          const firstLines = content.split('\n').slice(0, 5);
+          let fileDesc = '';
+          for (const line of firstLines) {
+            const trimmed = line.trim();
+            if (trimmed.startsWith('//') || trimmed.startsWith('#') || trimmed.startsWith('/*')) {
+              fileDesc += trimmed.replace(/[\/*#]/g, '').trim() + ' ';
+            }
+          }
+
           const symbols = extractSymbols(content);
-          files.push({ path: relativePath, symbols });
+          
+          // Backup: If no file description, provide a summary
+          if (!fileDesc.trim() && symbols.length > 0) {
+            fileDesc = `Contains ${symbols.length} symbols.`;
+          }
+
+          files.push({ path: normalizedPath, desc: fileDesc.trim(), symbols });
         } else {
-           files.push({ path: relativePath, symbols: [] });
+           files.push({ path: normalizedPath, desc: '', symbols: [] });
         }
       }
     }
@@ -69,8 +144,9 @@ async function generate(cwd = process.cwd()) {
   walk(cwd);
 
   const output = files.map(f => {
-    const symStr = f.symbols.length > 0 ? `|syms:[${f.symbols.join(',')}]` : '';
-    return `- ${f.path}${symStr}`;
+    const descStr = f.desc ? ` | desc: ${f.desc.substring(0, 100)}` : '';
+    const symStr = f.symbols.length > 0 ? `\n  - syms: [${f.symbols.join(', ')}]` : '';
+    return `- ${f.path}${descStr}${symStr}`;
   }).join('\n');
 
   const header = `# CODE_GRAPH_MAP\n> LLM_ONLY: DO NOT EDIT. COMPACT PROJECT MAP.\n\n`;
