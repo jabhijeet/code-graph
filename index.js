@@ -35,7 +35,7 @@ const SYMBOL_REGEXES = [
   // Dart: class Name, void name, var name (void/var covered by C-style pattern)
 ];
 
-const SUPPORTED_EXTENSIONS = [
+export const SUPPORTED_EXTENSIONS = [
   '.js', '.ts', '.jsx', '.tsx', 
   '.py', '.go', '.rs', '.java', 
   '.cpp', '.c', '.h', '.hpp', '.cc',
@@ -43,8 +43,8 @@ const SUPPORTED_EXTENSIONS = [
   '.cs', '.dart', '.scala', '.m', '.mm'
 ];
 
-function getIgnores(cwd) {
-  const ig = ignore().add(['.git', 'node_modules', DEFAULT_MAP_FILE, 'package-lock.json']);
+export function getIgnores(cwd) {
+  const ig = ignore().add(['.git/', 'node_modules/', DEFAULT_MAP_FILE, 'package-lock.json', '.idea/', 'build/', 'dist/', 'bin/', 'obj/']);
   const ignorePath = path.join(cwd, IGNORE_FILE);
   if (fs.existsSync(ignorePath)) {
     ig.add(fs.readFileSync(ignorePath, 'utf8'));
@@ -52,7 +52,7 @@ function getIgnores(cwd) {
   return ig;
 }
 
-function extractSymbols(content) {
+export function extractSymbols(content) {
   const symbols = [];
   for (const regex of SYMBOL_REGEXES) {
     let match;
@@ -81,10 +81,11 @@ function extractSymbols(content) {
         // 2. Backup: Extract Signature (Parameters/Type) if no comment
         let context = comment;
         if (!context) {
-          const remainingLine = content.substring(match.index + match[0].length).split('\n')[0];
-          const sigMatch = remainingLine.match(/^[^:{;]*/);
-          if (sigMatch && sigMatch[0].trim()) {
-            context = sigMatch[0].trim();
+          const remainingLine = content.substring(match.index + match[0].length);
+          // Match until the first opening brace or colon or end of line, but include balanced parentheses
+          const sigMatch = remainingLine.match(/^\s*(\([^)]*\)|[^\n{;]*)/);
+          if (sigMatch && sigMatch[1].trim()) {
+            context = sigMatch[1].trim();
           }
         }
         
@@ -95,7 +96,7 @@ function extractSymbols(content) {
   return Array.from(new Set(symbols)).sort();
 }
 
-async function generate(cwd = process.cwd()) {
+export async function generate(cwd = process.cwd()) {
   const ig = getIgnores(cwd);
   const files = [];
 
@@ -105,11 +106,12 @@ async function generate(cwd = process.cwd()) {
       const fullPath = path.join(dir, entry.name);
       let relativePath = path.relative(cwd, fullPath);
       const normalizedPath = relativePath.replace(/\\/g, '/');
-      const checkPath = entry.isDirectory() ? `${normalizedPath}/` : normalizedPath;
+      const isDirectory = entry.isDirectory();
+      const checkPath = isDirectory ? `${normalizedPath}/` : normalizedPath;
 
       if (ig.ignores(checkPath)) continue;
 
-      if (entry.isDirectory()) {
+      if (isDirectory) {
         walk(fullPath);
       } else if (entry.isFile()) {
         const ext = path.extname(entry.name);
@@ -154,14 +156,23 @@ async function generate(cwd = process.cwd()) {
   console.log(`[Code-Graph] Updated ${DEFAULT_MAP_FILE}`);
 }
 
-function watch(cwd = process.cwd()) {
+export function watch(cwd = process.cwd()) {
   console.log(`[Code-Graph] Watching for changes in ${cwd}...`);
   const ig = getIgnores(cwd);
   
   const watcher = chokidar.watch(cwd, {
     ignored: (p) => {
-        const rel = path.relative(cwd, p);
-        return rel && ig.ignores(rel);
+        if (p === cwd) return false;
+        const rel = path.relative(cwd, p).replace(/\\/g, '/');
+        // We must check if p is a directory to append the trailing slash
+        // Since chokidar's ignore function is synchronous, we use fs.statSync
+        try {
+            const stats = fs.statSync(p);
+            const checkPath = stats.isDirectory() ? `${rel}/` : rel;
+            return ig.ignores(checkPath);
+        } catch (e) {
+            return false;
+        }
     },
     persistent: true,
     ignoreInitial: true
@@ -179,7 +190,7 @@ function watch(cwd = process.cwd()) {
   });
 }
 
-function installHook(cwd = process.cwd()) {
+export function installHook(cwd = process.cwd()) {
   const hooksDir = path.join(cwd, '.git', 'hooks');
   if (!fs.existsSync(hooksDir)) {
     console.error('[Code-Graph] No .git directory found. Cannot install hook.');
@@ -193,15 +204,17 @@ function installHook(cwd = process.cwd()) {
   console.log('[Code-Graph] Installed pre-commit hook.');
 }
 
-const args = process.argv.slice(2);
-const command = args[0] || 'generate';
+if (process.argv[1] && (process.argv[1] === fileURLToPath(import.meta.url) || process.argv[1].endsWith('index.js'))) {
+  const args = process.argv.slice(2);
+  const command = args[0] || 'generate';
 
-if (command === 'generate') {
-  generate();
-} else if (command === 'watch') {
-  watch();
-} else if (command === 'install-hook') {
-  installHook();
-} else {
-  console.log('Usage: code-graph [generate|watch|install-hook]');
+  if (command === 'generate') {
+    generate();
+  } else if (command === 'watch') {
+    watch();
+  } else if (command === 'install-hook') {
+    installHook();
+  } else {
+    console.log('Usage: code-graph [generate|watch|install-hook]');
+  }
 }
