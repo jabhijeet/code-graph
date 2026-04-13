@@ -1,10 +1,7 @@
 # CODE_GRAPH_MAP
 > LLM_ONLY: DO NOT EDIT. COMPACT PROJECT MAP.
 
-- .gitignore
 - index.js | desc: !usrbinenv node
-  - syms: [Name [Dart:], Name [PHP: class Name, interface Name, trait Name,], Name [PHP: class Name, interface Name,], Name [PHP: class Name,], Name [PHP:], Name [Ruby: def name, class Name,], Name [Ruby: def name,], Name [Swift: func name, class Name, struct Name, protocol Name,], Name [Swift: func name, class Name, struct Name,], Name [Swift: func name, class Name,], Name [Swift: func name,], SUPPORTED_EXTENSIONS [= [], extractSymbols [(content)], function [generate(cwd = process.cwd())], generate [(cwd = process.cwd()], getIgnores [(cwd)], installHook [(cwd = process.cwd()], is [We must check if p is a directory to append the trailing slash Since chokidar's ignore], name [Dart: class Name, void name,], name [Ruby:], name [Swift:], walk [(dir)], watch [(cwd = process.cwd()]]
-- package.json
-- README.md
+  - syms: [SUPPORTED_EXTENSIONS [= [], commen [t = ''], contex [t = comment], extractSymbols [(content)], fileDes [c = ''], generate [(cwd = process.cwd()], getIgnores [(cwd, additionalLines = [])], installHook [(cwd = process.cwd()], localI [Check for local .gitignore and create a new scoped ignore object if found], matc [h], name [MethodVar Declarations (C-style, Java, C, TS, Dart) Refined to require a variable], timeou [t], walk [(dir, ig)], watch [(cwd = process.cwd()]]
 - test/index.test.js | desc: Contains 5 symbols.
-  - syms: [noDocFunc [(arg1: string, arg2: number)], py_func [(x)], py_func [Note: Current regex captures '], py_func_2 [This is a python comment], testFunc [This is a test function]]
+  - syms: [ignored [()], included [()], noDocFunc [(arg1: string, arg2: number)], realFunction [()], testFunc [This is a test function]]

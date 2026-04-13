@@ -5,6 +5,8 @@ A language-agnostic, ultra-compact codebase mapper designed specifically for LLM
 ## Features
 - **Smart Context Extraction:** Captures JSDoc, Python docstrings, and preceding comments for files and symbols.
 - **Signature Fallback:** Automatically extracts function signatures (parameters/types) if documentation is missing.
+- **Recursive .gitignore Support:** Deeply respects both root and nested `.gitignore` files across the entire project structure.
+- **Smart Flutter/Dart Support:** Optimized to reduce noise by filtering out common widget instantiations while capturing real functional declarations.
 - **Compact & Dense:** Optimized for LLM token efficiency, replacing expensive recursive file scans.
 - **Language-Agnostic:** Optimized regex support for JS/TS, Python, Go, Rust, Java, C#, C/C++, Swift, PHP, Ruby, Dart, and more.
 - **Recursive Ignore Logic:** Deeply respects `.gitignore` and standard excludes (`node_modules`, `.git`).
@@ -80,9 +82,4 @@ fn main() {
 2. **Context Extraction:** Scans for classes, functions, and variables.
 3. **Docstring Capture:** If a symbol has a preceding comment (`//`, `/**`, `#`, `"""`), it's captured as a description.
 4. **Signature Capture:** If no comment is found, it captures the declaration signature (parameters) as a fallback.
-5. **Compilation:** Writes a single, minified `llm-code-graph.md` file designed for machine consumption.
-
-## Publishing as a Package
-To share your own version:
-1. `npm login`
-2. `npm publish --access public`
+5. **Compilation:** Writes a single, minified `llm-code-graph.md` file designed for machine consumption. 
