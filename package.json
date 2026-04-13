@@ -1,0 +1,14 @@
+{
+  "name": "gemini-llm-helper",
+  "version": "1.0.0",
+  "description": "Compact, LLM-optimized codebase mapper.",
+  "main": "index.js",
+  "bin": {
+    "gemini-helper": "./index.js"
+  },
+  "dependencies": {
+    "chokidar": "^3.6.0",
+    "ignore": "^5.3.1"
+  },
+  "type": "module"
+}
