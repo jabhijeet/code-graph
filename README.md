@@ -1,86 +1,77 @@
 # CODE-GRAPH
 
-A language-agnostic, ultra-compact codebase mapper designed specifically for LLM agents.
+A language-agnostic, ultra-compact codebase mapper designed specifically for LLM agents to optimize context and token usage.
 
-## Features
-- **Compact:** Minimizes tokens by extracting only structural symbols.
-- **Language-Agnostic:** Uses regex heuristics for universal compatibility.
-- **Live:** Supports three update modes: on-demand, background watch, and git hooks.
+## Installation
 
-## Usage
+### 1. Install via NPM (Recommended)
+You can install **Code-Graph** globally or as a project-specific dependency without cloning the repository.
 
-### 1. On-Demand Generation
-Regenerate `llm-code-graph.md` immediately:
+**Global Installation:**
 ```bash
-code-graph generate
+npm install -g code-graph-llm
 ```
-(If not installed globally, use `node index.js generate`)
 
-### 2. Live Watching
-Keep `llm-code-graph.md` updated in real-time while you code:
+**Local Project Dependency:**
 ```bash
+npm install --save-dev code-graph-llm
+```
+
+### 2. Direct Usage
+Once installed, you can run it from any project directory:
+```bash
+# Generate the map
+code-graph generate
+
+# Start the live watcher
 code-graph watch
 ```
 
-### 3. Git Integration
+## Usage in Different Workflows
+
+### 1. Node.js (package.json)
+If installed as a dependency, add it to your scripts:
+```json
+"scripts": {
+  "postinstall": "code-graph generate",
+  "pretest": "code-graph generate"
+}
+```
+
+### 2. Git Integration
 Automatically update and stage `llm-code-graph.md` on every commit:
 ```bash
 code-graph install-hook
 ```
 
+---
+
 ## LLM Usage & Token Efficiency
 
-To achieve the best performance and minimize token consumption, follow these guidelines when using this project with an LLM agent:
+To achieve the best performance and minimize token consumption, follow these guidelines:
 
 ### 1. The "Read First" Rule
-Always instruct the LLM agent to read `llm-code-graph.md` as its first step in any session. This provides an immediate, high-level map of the codebase without the overhead of scanning every directory.
+Always instruct the LLM agent to read `llm-code-graph.md` as its first step. It provides an immediate, high-level map without scanning every directory.
 
-**Example System Prompt / Instruction:**
-> "Before performing any tasks, read `llm-code-graph.md` to understand the project structure and locate relevant symbols. Use this map to target specific files for reading rather than scanning the entire codebase."
+**Example System Prompt:**
+> "Before performing any tasks, read `llm-code-graph.md` to understand the project structure. Use this map to target specific files rather than scanning the entire codebase."
 
 ### 2. Targeted File Reads
-The `|syms:[...]` metadata allows the LLM to identify exactly which file contains a specific function or class. Instead of the LLM saying "I'll search for the definition of X," it can see `index.js|syms:[...,X,...]` and read only that file.
+The `|syms:[...]` metadata allows the LLM to identify exactly which file contains a specific function or class. It can jump directly to the relevant file.
 
-### 3. Avoiding Context Bloat
-By using `llm-code-graph.md`, you can prevent the LLM from "hallucinating" the project structure or wasting tokens on `ls -R` commands. A single read of this compact file replaces dozens of file-listing and grep operations.
+---
 
-### 4. Continuous Context
-Because `llm-code-graph.md` is updated live (via `watch` or `pre-commit`), the LLM always has a "source of truth" for the current state of the project's architecture, even during heavy refactoring.
+## Language Examples & Build Phase Integration
 
-## Language Examples
-
-The regex-based extractor identifies structural symbols across many languages:
-
-| Language | Recognized Patterns |
-|----------|---------------------|
-| **Java/Kotlin** | `class MyClass`, `interface I`, `fun myFunc` |
-| **Python** | `def my_func():`, `class MyClass:` |
-| **Go** | `func MyFunc()`, `type MyStruct struct` |
-| **JS/TS** | `function f()`, `export const x = () =>`, `interface I` |
-| **Rust** | `fn my_func()`, `struct MyStruct`, `trait MyTrait` |
-| **Dart** | `class MyClass`, `void myFunc()` |
-
-## Build Phase Integration
-
-Integrate `code-graph` into your existing build pipelines to ensure `llm-code-graph.md` is always fresh.
-
-### 1. Node.js (package.json)
-```json
-"scripts": {
-  "prepare": "code-graph generate"
-}
-```
-
-### 2. Rust (Cargo.toml / build.rs)
-Add to your `build.rs`:
+### 1. Rust (build.rs)
 ```rust
 use std::process::Command;
 fn main() {
-    Command::new("node").args(&["index.js", "generate"]).status().unwrap();
+    Command::new("code-graph").arg("generate").status().unwrap();
 }
 ```
 
-### 3. Java/Kotlin (Maven/Gradle)
+### 2. Java/Kotlin (Maven/Gradle)
 
 #### Maven (pom.xml)
 ```xml
@@ -92,71 +83,35 @@ fn main() {
       <phase>compile</phase>
       <goals><goal>exec</goal></goals>
       <configuration>
-        <executable>node</executable>
-        <arguments><argument>index.js</argument><argument>generate</argument></arguments>
+        <executable>code-graph</executable>
+        <arguments><argument>generate</argument></arguments>
       </configuration>
     </execution>
   </executions>
 </plugin>
 ```
 
-#### Gradle (Groovy DSL - build.gradle)
+#### Gradle (Groovy DSL)
 ```groovy
 task generateCodeGraph(type: Exec) {
-    commandLine 'node', 'index.js', 'generate'
+    commandLine 'code-graph', 'generate'
 }
-
 compileJava.dependsOn generateCodeGraph
 ```
 
-#### Gradle (Kotlin DSL - build.gradle.kts)
-```kotlin
-tasks.register<Exec>("generateCodeGraph") {
-    commandLine("node", "index.js", "generate")
-}
-
-tasks.named("compileJava") {
-    dependsOn("generateCodeGraph")
-}
-```
-
-### 4. Python Integration
-
-#### Option A: Using a `Makefile` (Recommended)
-Add this to your `Makefile` to ensure the map is updated before testing or linting:
+### 3. Python Integration
+Add this to your `Makefile`:
 ```makefile
-.PHONY: map
 map:
-	node index.js generate
-
-test: map
-	pytest
+	code-graph generate
 ```
 
-#### Option B: Using the `pre-commit` framework
-If you use the [pre-commit](https://pre-commit.com/) framework, add this to your `.pre-commit-config.yaml`:
-```yaml
-- repo: local
-  hooks:
-    - id: code-graph
-      name: code-graph
-      entry: node index.js generate
-      language: node
-      files: \.(py|js|ts|go|rs|java)$
-      pass_filenames: false
-```
-
-#### Option C: Subprocess call in a script
-If you have a `build.py` or `tasks.py`, you can trigger it directly:
-```python
-import subprocess
-
-def generate_map():
-    subprocess.run(["node", "index.js", "generate"], check=True)
-
-if __name__ == "__main__":
-    generate_map()
-```
+---
 
 ## How it works
-The tool scans your project directory (respecting `.gitignore`), extracts classes, functions, and exports using optimized regular expressions, and compiles them into a dense, machine-readable `llm-code-graph.md` file. LLM agents should read this file first to gain instant architectural context.
+The tool scans your project directory (respecting `.gitignore`), extracts classes, functions, and exports using optimized regular expressions, and compiles them into a dense, machine-readable `llm-code-graph.md` file.
+
+## Publishing as a Package (For Developers)
+To publish this to the NPM registry:
+1. Log in: `npm login`
+2. Publish: `npm publish --access public` (Ensure the name in `package.json` is unique, e.g., `code-graph-llm`).
