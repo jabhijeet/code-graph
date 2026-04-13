@@ -11,21 +11,24 @@ const __dirname = path.dirname(__filename);
 
 const IGNORE_FILE = '.gitignore';
 const DEFAULT_MAP_FILE = 'llm-code-graph.md';
-
 const SYMBOL_REGEXES = [
   // Types, Classes, Interfaces (Universal) with Inheritance support
-  // Captures: class Name extends Parent, interface Name implements Base, class Name(Parent), class Name : Base
   /\b(?:class|interface|type|struct|enum|protocol|extension|trait|module|namespace|object)\s+([a-zA-Z_]\w*)(?:[^\n\S]*(?:extends|implements|:|(?:\())[^\n\S]*([a-zA-Z_]\w*(?:[^\n\S]*,\s*[a-zA-Z_]\w*)*)\)?)?/g,
-  
+
   // Explicit Function Keywords
   /\b(?:function|def|fn|func|fun|method|procedure|sub|routine)\s+([a-zA-Z_]\w*)/g,
-  
-  // Method/Var Declarations (C-style, Java, C#, TS, Dart)
-  /\b(?:void|async|public|private|protected|static|virtual|override|readonly|int|float|double|char|bool|string|val|var|let|final)\s+([a-zA-Z_]\w*)(?=\s*(?:\([^)]*\)|[a-zA-Z_]\w*)\s*(?:\{|=>|;|=))/g,
-  
+
+  // Method/Var Declarations (Java, Spring Boot, C-style)
+  // Captures: public String askAi(String question), void realFunction()
+  /\b(?:void|async|public|private|protected|static|final|native|synchronized|abstract|transient|volatile)\s+(?:[\w<>[\]]+\s+)?([a-zA-Z_]\w*)(?=\s*\([^)]*\)\s*(?:\{|=>|;|=))/g,
+
+  // Spring/Java/Dart Annotations (Captures the annotation name as a prefix)
+  /(@[a-zA-Z_]\w*(?:\([^)]*\))?)\s*(?:(?:public|private|protected|static|final|abstract|class|interface|enum|void|[\w<>[\]]+)\s+)+([a-zA-Z_]\w*)/g,
+
   // Exported symbols
   /\bexport\s+(?:default\s+)?(?:const|let|var|function|class|type|interface|enum|async|val)\s+([a-zA-Z_]\w*)/g
 ];
+
 
 const EDGE_REGEXES = [
   // Imports/Includes (JS, TS, Python, Go, Rust, C++, Java, Dart)
@@ -69,11 +72,20 @@ export function extractSymbolsAndInheritance(content) {
     regex.lastIndex = 0;
     while ((match = regex.exec(cleanContent)) !== null) {
       if (match[1]) {
-        const symbolName = match[1];
-        if (['if', 'for', 'while', 'switch', 'return', 'await', 'yield', 'const', 'new', 'let', 'var'].includes(symbolName)) continue;
+        // Handle the Annotation regex separately (it has 2 groups)
+        let symbolName = match[1];
+        let annotation = '';
+        
+        if (symbolName.startsWith('@')) {
+          annotation = symbolName;
+          symbolName = match[2] || '';
+          if (!symbolName) continue;
+        }
 
-        // Capture inheritance if present (match[2])
-        if (match[2]) {
+        if (['if', 'for', 'while', 'switch', 'return', 'await', 'yield', 'const', 'new', 'let', 'var', 'class', 'void', 'public', 'private', 'protected'].includes(symbolName)) continue;
+
+        // Capture inheritance if present (match[2] only for non-annotation regex)
+        if (!annotation && match[2]) {
           const parents = match[2].split(',').map(p => p.trim());
           parents.forEach(parent => {
             inheritance.push({ child: symbolName, parent });
@@ -96,6 +108,7 @@ export function extractSymbolsAndInheritance(content) {
             if (clean) comment = clean + (comment ? ' ' + comment : '');
             if (comment.length > 100) break; 
           } else if (line === '' && comment === '') continue;
+          else if (line.startsWith('@')) continue; // Skip annotations in comment search
           else break;
         }
 
@@ -108,7 +121,8 @@ export function extractSymbolsAndInheritance(content) {
           }
         }
         
-        symbols.push(context ? `${symbolName} [${context}]` : symbolName);
+        const displaySymbol = annotation ? `${annotation} ${symbolName}` : symbolName;
+        symbols.push(context ? `${displaySymbol} [${context}]` : displaySymbol);
       }
     }
   }

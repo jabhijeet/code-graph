@@ -67,6 +67,20 @@ test('extractEdges - Imports and includes', () => {
   assert.ok(edges.includes('header.h'));
 });
 
+test('extractSymbols - Java/Spring Annotations', () => {
+  const code = `
+    @RestController
+    public class MyController {
+        @GetMapping("/test")
+        public String hello() { return "hi"; }
+    }
+  `;
+  const { symbols } = extractSymbolsAndInheritance(code);
+  assert.ok(symbols.some(s => s.includes('@RestController MyController')));
+  // Note: Strings are stripped during extraction to avoid false positives
+  assert.ok(symbols.some(s => s.includes('@GetMapping() hello')));
+});
+
 test('getIgnores - Default Patterns', () => {
   const ig = getIgnores(process.cwd());
   assert.strictEqual(ig.ignores('.git/'), true);
