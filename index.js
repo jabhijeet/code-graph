@@ -14,8 +14,8 @@ const DEFAULT_MAP_FILE = 'llm-code-graph.md';
 
 const SYMBOL_REGEXES = [
   // Types, Classes, Interfaces (Universal) with Inheritance support
-  // Captures: class Name extends Parent, interface Name implements Base
-  /\b(?:class|interface|type|struct|enum|protocol|extension|trait|module|namespace|object)\s+([a-zA-Z_]\w*)(?:\s+(?:extends|implements|:)\s+([a-zA-Z_]\w*(?:\s*,\s*[a-zA-Z_]\w*)*))?/g,
+  // Captures: class Name extends Parent, interface Name implements Base, class Name(Parent), class Name : Base
+  /\b(?:class|interface|type|struct|enum|protocol|extension|trait|module|namespace|object)\s+([a-zA-Z_]\w*)(?:[^\n\S]*(?:extends|implements|:|(?:\())[^\n\S]*([a-zA-Z_]\w*(?:[^\n\S]*,\s*[a-zA-Z_]\w*)*)\)?)?/g,
   
   // Explicit Function Keywords
   /\b(?:function|def|fn|func|fun|method|procedure|sub|routine)\s+([a-zA-Z_]\w*)/g,
@@ -59,13 +59,15 @@ export function extractSymbolsAndInheritance(content) {
   const symbols = [];
   const inheritance = [];
   
-  // Create a version of content without comments to find symbols accurately
-  const noComments = content.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '');
+  // Create a version of content without comments AND strings to find symbols accurately
+  const cleanContent = content
+    .replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '')
+    .replace(/['"`](?:\\.|[^'"`])*['"`]/g, '');
 
   for (const regex of SYMBOL_REGEXES) {
     let match;
     regex.lastIndex = 0;
-    while ((match = regex.exec(noComments)) !== null) {
+    while ((match = regex.exec(cleanContent)) !== null) {
       if (match[1]) {
         const symbolName = match[1];
         if (['if', 'for', 'while', 'switch', 'return', 'await', 'yield', 'const', 'new', 'let', 'var'].includes(symbolName)) continue;
@@ -125,7 +127,8 @@ export function extractEdges(content) {
     while ((match = regex.exec(noComments)) !== null) {
       if (match[1]) {
         const dep = match[1];
-        if (dep.length > 1 && !['style', 'react', 'vue', 'flutter'].includes(dep.toLowerCase())) {
+        // Filter out obvious noise, common library names, or keywords
+        if (dep.length > 1 && !['style', 'react', 'vue', 'flutter', 'new', 'const', 'let', 'var', 'dependencies', 'from', 'import'].includes(dep.toLowerCase())) {
           dependencies.add(dep);
         }
       }
