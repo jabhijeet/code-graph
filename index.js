@@ -154,6 +154,7 @@ export function extractEdges(content) {
 async function generate(cwd = process.cwd()) {
   const files = [];
   const allEdges = [];
+  const incomingEdges = {}; // Map of projectPath -> count of incoming edges
 
   function walk(dir, ig) {
     let localIg = ig;
@@ -186,16 +187,26 @@ async function generate(cwd = process.cwd()) {
         if (SUPPORTED_EXTENSIONS.includes(ext)) {
           const content = fs.readFileSync(fullPath, 'utf8');
           
-          // Extract file-level description
+          // Extract file-level description and tags
           const lines = content.split('\n');
           let fileDesc = '';
-          for (let i = 0; i < Math.min(10, lines.length); i++) {
+          const tags = [];
+          for (let i = 0; i < lines.length; i++) {
             const line = lines[i].trim();
-            if (line.startsWith('#!') || line === '') continue;
-            if (line.startsWith('//') || line.startsWith('#') || line.startsWith('/*')) {
-              fileDesc += line.replace(/[\/*#]/g, '').trim() + ' ';
-            } else {
-              break; 
+            // Surface actionable tags
+            const tagMatch = line.match(/\b(TODO|FIXME|BUG|DEPRECATED):?\s*(.*)/i);
+            if (tagMatch) {
+              tags.push(`${tagMatch[1]}: ${tagMatch[2].substring(0, 50).trim()}`);
+            }
+            
+            if (i < 10) {
+              if (line.startsWith('#!') || line === '') continue;
+              if (line.startsWith('//') || line.startsWith('#') || line.startsWith('/*')) {
+                fileDesc += line.replace(/[\/*#]/g, '').trim() + ' ';
+              } else if (fileDesc) {
+                // Stop if we hit non-comment code
+                break;
+              }
             }
           }
 
@@ -204,11 +215,38 @@ async function generate(cwd = process.cwd()) {
           
           if (!fileDesc.trim() && symbols.length > 0) fileDesc = `Contains ${symbols.length} symbols.`;
           
-          files.push({ path: normalizedPath, desc: fileDesc.trim(), symbols });
+          // Identify core entry points
+          const isCore = /^(index|main|app|server|cli)\.(js|ts|py|go|rs|java|cpp)$/i.test(entry.name);
           
-          // Collect Edges
+          const fileObj = { 
+            path: normalizedPath, 
+            desc: fileDesc.trim(), 
+            symbols, 
+            tags: Array.from(new Set(tags)),
+            isCore,
+            outCount: dependencies.length
+          };
+          files.push(fileObj);
+          
+          // Collect Edges and track incoming
           dependencies.forEach(dep => {
-            allEdges.push(`[${normalizedPath}] -> [imports] -> [${dep}]`);
+            let target = dep;
+            if (dep.startsWith('.')) {
+              // Resolve relative path to project-relative
+              const resolved = path.normalize(path.join(path.dirname(normalizedPath), dep));
+              target = resolved.replace(/\\/g, '/');
+              // Basic extension guesser
+              if (!path.extname(target)) {
+                for (const ex of SUPPORTED_EXTENSIONS) {
+                  if (fs.existsSync(path.join(cwd, target + ex))) {
+                    target += ex;
+                    break;
+                  }
+                }
+              }
+            }
+            allEdges.push(`[${normalizedPath}] -> [imports] -> [${target}]`);
+            incomingEdges[target] = (incomingEdges[target] || 0) + 1;
           });
           inheritance.forEach(inh => {
             allEdges.push(`[${inh.child}] -> [inherits] -> [${inh.parent}]`);
@@ -220,17 +258,30 @@ async function generate(cwd = process.cwd()) {
 
   walk(cwd, getIgnores(cwd));
 
+  // Sort: Core files first, then by incoming edges (importance)
+  files.sort((a, b) => {
+    if (a.isCore && !b.isCore) return -1;
+    if (!a.isCore && b.isCore) return 1;
+    const inA = incomingEdges[a.path] || 0;
+    const inB = incomingEdges[b.path] || 0;
+    return inB - inA;
+  });
+
   const nodesOutput = files.map(f => {
+    const inCount = incomingEdges[f.path] || 0;
+    const coreMark = f.isCore ? '[CORE] ' : '';
+    const stats = `(↑${f.outCount} ↓${inCount})`;
+    const tagStr = f.tags.length > 0 ? ` [${f.tags.join(', ')}]` : '';
     const descStr = f.desc ? ` | desc: ${f.desc.substring(0, 100)}` : '';
     const symStr = f.symbols.length > 0 ? `\n  - syms: [${f.symbols.join(', ')}]` : '';
-    return `- ${f.path}${descStr}${symStr}`;
+    return `- ${coreMark}${f.path} ${stats}${tagStr}${descStr}${symStr}`;
   }).join('\n');
 
   const edgesOutput = allEdges.length > 0 
     ? `\n\n## GRAPH EDGES\n${Array.from(new Set(allEdges)).sort().join('\n')}` 
     : '';
 
-  const header = `# CODE_GRAPH_MAP\n> LLM_ONLY: DO NOT EDIT. COMPACT PROJECT MAP.\n\n`;
+  const header = `# CODE_GRAPH_MAP\n> LLM_ONLY: DO NOT EDIT. COMPACT PROJECT MAP.\n> Legend: [CORE] Entry Point, (↑N) Outgoing Deps, (↓M) Incoming Dependents\n> Notation: syms: [Name [Signature/Context]], desc: File Summary, [TAG: Context] Actionable items\n\n`;
   fs.writeFileSync(path.join(cwd, DEFAULT_MAP_FILE), header + nodesOutput + edgesOutput);
   console.log(`[Code-Graph] Updated ${DEFAULT_MAP_FILE}`);
 }
