@@ -1,6 +1,6 @@
 {
   "name": "code-graph-llm",
-  "version": "1.4.3",
+  "version": "1.5.0",
   "description": "Compact, language-agnostic codebase mapper for LLM token efficiency.",
   "main": "index.js",
   "bin": {
@@ -18,7 +18,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/youruser/code-graph.git"
+    "url": "https://github.com/jabhijeet/code-graph.git"
   },
   "dependencies": {
     "chokidar": "^3.6.0",
