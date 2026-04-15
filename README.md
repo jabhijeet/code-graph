@@ -1,4 +1,4 @@
-# CODE-GRAPH (v2.1.2)
+# CODE-GRAPH (v2.1.3)
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** designed specifically for LLM agents. It optimizes context and token usage while enabling agents to learn from their own mistakes across sessions.
 
@@ -79,38 +79,39 @@ Before starting any task:
 1. Read `llm-code-graph.md` for project structure.
 2. Read `AGENT_RULES.md` for operational protocol.
 3. Read `PROJECT_REFLECTIONS.md` for past lessons.
+4. **MANDATORY:** After any fix or learning event, you MUST update `PROJECT_REFLECTIONS.md` using `code-graph reflect`.
 ```
 
 ### Cursor / Windsurf
 Add to `.cursorrules` or `.windsurfrules`:
 ```text
-Always reference `llm-code-graph.md` to understand the codebase architecture before performing edits. Strictly follow the "Reflection Cycle" in `AGENT_RULES.md`.
+Always reference `llm-code-graph.md` before editing. You are REQUIRED to follow the "Reflection Cycle" in `AGENT_RULES.md`. If a task involves a non-obvious fix or an environment quirk, you MUST record it in `PROJECT_REFLECTIONS.md` immediately.
 ```
 
 ### GitHub Copilot
 Add to `.github/copilot-instructions.md`:
 ```markdown
-When answering questions about this codebase, prioritize the mapping data in `llm-code-graph.md`. If a task fails or a mistake is corrected, suggest a reflection entry for `PROJECT_REFLECTIONS.md`.
+When answering questions about this codebase, prioritize the mapping data in `llm-code-graph.md`. You MUST suggest or perform a reflection entry for `PROJECT_REFLECTIONS.md` after every bug fix or identified pitfall.
 ```
 
 ### Gemini CLI
 Create a `GEMINI.md` file (if not already using `AGENT_RULES.md`):
 ```markdown
 - Always read `llm-code-graph.md` as the primary source of truth.
-- Use the `run_shell_command` tool to execute `code-graph reflect` after fixing non-obvious bugs.
+- **CRITICAL:** Use `run_shell_command` to execute `code-graph reflect` after any bug fix or discovered quirk. Memory persistence is a mandatory part of every task completion.
 ```
 
 ### OpenCode / OpenDevin / Aider
 In your project instructions or session startup:
-> "Read `llm-code-graph.md` for a high-level overview. If you discover a project-specific quirk, record it using `code-graph reflect <CAT> <LESSON>`."
+> "Read `llm-code-graph.md` for a high-level overview. You are FORCED to record any project-specific quirk or non-obvious lesson using `code-graph reflect <CAT> <LESSON>` before finishing a task."
 
 ### Codex / GPT-Engineer / AutoGPT
 Add to your project prompt or `prompts.md`:
-> "Use `llm-code-graph.md` to navigate the file structure. Strictly adhere to the reflection cycle in `AGENT_RULES.md` to ensure project memory is maintained across iterations."
+> "Use `llm-code-graph.md` to navigate. Strictly adhere to the reflection cycle in `AGENT_RULES.md`. You MUST persist project memory by updating `PROJECT_REFLECTIONS.md` on every failure or learned moment."
 
 ### Generic Agent (System Prompt)
 For any other agent, add this to your system instructions:
-> "This project uses `code-graph-llm` for context management. Always consult `llm-code-graph.md` before exploring files. If you learn something new about the environment (e.g., shell quirks, library oddities), persist that knowledge using the `code-graph reflect` tool."
+> "This project uses `code-graph-llm` for context management. Always consult `llm-code-graph.md`. You ARE REQUIRED to persist new knowledge about the environment or logic using the `code-graph reflect` tool. Failure to update memory is a failure of the task."
 
 ## How it works
 1. **File Scanning:** Recursively walks the directory, ignoring patterns in `.gitignore`.

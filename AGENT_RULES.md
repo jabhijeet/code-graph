@@ -1,7 +1,7 @@
 # AGENT OPERATIONAL PROTOCOL (STRICT)
 > This protocol is MANDATORY for all LLM agents. Failure to update memory is a failure of the task.
 ## 🧠 THE REFLECTION CYCLE
-Every execution SHOULD follow this cycle:
+Every execution MUST follow this cycle:
 1. **PRE-TASK:** Read \`PROJECT_REFLECTIONS.md\` to identify existing pitfalls.
 2. **EXECUTION:** Monitor for "Learned Moments" (failures, unexpected behaviors, or non-obvious fixes).
 3. **POST-TASK:** If a significant lesson was learned, run \`code-graph reflect <CAT> <LESSON>\`. 
