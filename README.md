@@ -1,12 +1,12 @@
-# CODE-GRAPH (v2.0.0)
+# CODE-GRAPH (v2.1.1)
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** designed specifically for LLM agents. It optimizes context and token usage while enabling agents to learn from their own mistakes across sessions.
 
-## 🚀 New in v2.0: Self-Learning Memory
-- **Reflection System:** Agents can now persist "Lessons Learned" via `code-graph reflect`.
-- **Operational Protocol:** Standardized `AGENT_RULES.md` ensures agents follow strict "Reflect-Act-Verify" cycles.
-- **Architectural Weight:** Project maps now include dependency counts (↑N ↓M) and CORE entry-point markers.
-- **Production Refactor:** Class-based service architecture with full `fs/promises` async support.
+## 🚀 New in v2.1: Intelligent Reflection & Hard-Soft Enforcement
+- **Project Initializer:** Automated bootstrapping with `code-graph init`.
+- **Intelligent Reflection:** Deduplication and categorization in `PROJECT_REFLECTIONS.md`.
+- **Commit Advisories:** Soft-nudge git hooks to remind agents of missing reflections.
+- **Production-Ready Core:** Refactored Service-based architecture with full async support.
 
 ## Features
 - **Structural Knowledge Graph:** Captures `imports`, `requires`, `extends`, and `implements`.
