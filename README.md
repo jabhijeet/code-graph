@@ -27,6 +27,9 @@ npm install --save-dev code-graph-llm
 
 ### 2. Core Commands
 ```bash
+# Initialize Agent Rules and Reflection files (Scaffolding)
+code-graph init
+
 # Generate the llm-code-graph.md map
 code-graph generate
 

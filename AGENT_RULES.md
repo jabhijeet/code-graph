@@ -1,16 +1,12 @@
 # AGENT OPERATIONAL PROTOCOL (STRICT)
 > This protocol is MANDATORY for all LLM agents. Failure to update memory is a failure of the task.
-
 ## 🧠 THE REFLECTION CYCLE
-Every execution MUST follow this cycle:
-1. **PRE-TASK:** Read `PROJECT_REFLECTIONS.md` to identify existing pitfalls (OS, Deps, Logic).
-2. **EXECUTION:** Monitor for any "Learned Moments":
-   - **Task Failures:** Identify the root cause (e.g., "Win32 shell restrictions").
-   - **Sub-optimal Logic:** Identify better abstractions (e.g., "Prefer fsp over fs").
-   - **Environment Issues:** Identify missing dependencies or OS incompatibilities.
-3. **POST-TASK:** Immediately run `code-graph reflect <CAT> <LESSON>` for any discovery. 
-   - **DO NOT** wait for the user to ask. 
-   - **DO NOT** commit until `llm-code-graph.md` is regenerated.
+Every execution SHOULD follow this cycle:
+1. **PRE-TASK:** Read \`PROJECT_REFLECTIONS.md\` to identify existing pitfalls.
+2. **EXECUTION:** Monitor for "Learned Moments" (failures, unexpected behaviors, or non-obvious fixes).
+3. **POST-TASK:** If a significant lesson was learned, run \`code-graph reflect <CAT> <LESSON>\`. 
+   - **NOTE:** Routine, expected changes do not require reflections. Focus on high-signal context.
+
 
 ## ⚠️ CRITICAL MANDATES
 - **OS [win32]:** Always prefix npm commands with `cmd /c`. 

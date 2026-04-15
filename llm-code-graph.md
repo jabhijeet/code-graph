@@ -4,8 +4,8 @@
 > Legend: [CORE] Entry Point, (↑N) Outgoing Deps, (↓M) Incoming Dependents
 > Notation: syms: [Name [Signature/Context]], desc: File Summary, [TAG: Context]
 
-- [CORE] index.js (↑6 ↓1) [TODO: |FIXME|BUG|DEPRECATED):?\s*(.*)/i,, bug: ."\nfi`;] | desc: !usrbinenv node
-  - syms: [CONFIG [=], CodeParser [--- Core Services --- Handles extraction of symbols, edges, and metadata from source code.], ProjectMapper [Manages the project mapping and file generation.], ReflectionManager [Manages project reflections and lessons learned.], SUPPORTED_EXTENSIONS [: [], add [(context ? `${display} [${context}]` : display)], extract [(content)], installGitHook [(cwd)], main [|app|server|cli)\./i.test(path.basename(relPath))], processFile [(fullPath, relPath)], startWatcher [(cwd)], walk [(dir, ig)]]
+- [CORE] index.js (↑6 ↓1) [TODO: |FIXME|BUG|DEPRECATED):?\s*(.*)/i,, bug: s or complex regex pitfalls., bug: s or version deprecations., bug: ,"] | desc: !usrbinenv node
+  - syms: [CONFIG [=], CodeParser [--- Core Services --- Handles extraction of symbols, edges, and metadata from source code.], ProjectInitializer [Scaffolds the initial agent-agnostic rule and reflection files.], ProjectMapper [Manages the project mapping and file generation.], ReflectionManager [Manages project reflections and lessons learned.], SUPPORTED_EXTENSIONS [: [], add [(context ? `${display} [${context}]` : display)], extract [(content)], init [(cwd)], installGitHook [(cwd)], main [|app|server|cli)\./i.test(path.basename(relPath))], processFile [(fullPath, relPath)], walk [(dir, ig)]]
 - [CORE] test/index.test.js (↑10 ↓0) | desc: 
   - syms: []
 

@@ -273,6 +273,46 @@ class ReflectionManager {
   }
 }
 
+/**
+ * Scaffolds the initial agent-agnostic rule and reflection files.
+ */
+class ProjectInitializer {
+  static async init(cwd) {
+    const rulesPath = path.join(cwd, CONFIG.RULES_FILE);
+    const reflectPath = path.join(cwd, CONFIG.REFLECTIONS_FILE);
+
+    const rulesContent = `# AGENT OPERATIONAL PROTOCOL (STRICT)
+> This protocol is MANDATORY for all LLM agents. Failure to update memory is a failure of the task.
+
+## 🧠 THE REFLECTION CYCLE
+1. **PRE-TASK:** Read \`${CONFIG.REFLECTIONS_FILE}\` to identify existing pitfalls.
+2. **EXECUTION:** Monitor for "Learned Moments" (failures, corrections, or discoveries).
+3. **POST-TASK:** Immediately run \`code-graph reflect <CAT> <LESSON>\` for any discovery. 
+
+## 📝 REFLECTION CATEGORIES
+- \`LOGIC\`: Code bugs or complex regex pitfalls.
+- \`ENV\`: OS compatibility or shell behaviors.
+- \`DEP\`: Library bugs or version deprecations.
+- \`STYLE\`: Project-specific architectural rules.
+`;
+
+    const reflectContent = `# PROJECT_REFLECTIONS & LESSONS LEARNED\n> LLM AGENT MEMORY: READ BEFORE STARTING TASKS. UPDATE ON FAILURES.\n`;
+
+    try {
+      if (!fs.existsSync(rulesPath)) {
+        await fsp.writeFile(rulesPath, rulesContent);
+        console.log(`[Code-Graph] Initialized ${CONFIG.RULES_FILE}`);
+      }
+      if (!fs.existsSync(reflectPath)) {
+        await fsp.writeFile(reflectPath, reflectContent);
+        console.log(`[Code-Graph] Initialized ${CONFIG.REFLECTIONS_FILE}`);
+      }
+    } catch (err) {
+      console.error(`[Code-Graph] Initialization failed: ${err.message}`);
+    }
+  }
+}
+
 // --- CLI Entry Point ---
 
 async function main() {
@@ -284,17 +324,21 @@ async function main() {
       case 'generate':
         await new ProjectMapper(cwd).generate();
         break;
+      case 'init':
+        await ProjectInitializer.init(cwd);
+        break;
       case 'reflect':
         await ReflectionManager.add(args[0], args.slice(1).join(' '));
         break;
       case 'install-hook':
+        await ProjectInitializer.init(cwd);
         await installGitHook(cwd);
         break;
       case 'watch':
         startWatcher(cwd);
         break;
       default:
-        console.log('Usage: code-graph [generate|reflect|install-hook|watch]');
+        console.log('Usage: code-graph [generate|init|reflect|install-hook|watch]');
     }
   } catch (err) {
     console.error(`[Code-Graph] Critical Error: ${err.message}`);
@@ -306,9 +350,30 @@ async function installGitHook(cwd) {
   const hookPath = path.join(cwd, '.git', 'hooks', 'pre-commit');
   if (!fs.existsSync(path.dirname(hookPath))) return console.error('[Code-Graph] No .git directory found.');
 
-  const content = `#!/bin/sh\n# Code-Graph Sync\necho "[Code-Graph] Validating..."\nnode "${__filename}" generate\ngit add "${CONFIG.MAP_FILE}"\nif [ ! -z "$(git diff --cached --shortstat)" ]; then\n  echo "[Code-Graph] Reminder: Run 'code-graph reflect' if this fix resolves a non-obvious bug."\nfi`;
+  const content = `#!/bin/sh
+# Code-Graph Advisory: Map Sync & Reflection Reminder
+echo "[Code-Graph] Validating commit..."
+
+# 1. Regenerate Map
+node "${__filename}" generate
+git add "${CONFIG.MAP_FILE}"
+
+# 2. Reflection Advisory
+# Notify if code changed but reflections didn't (Soft Nudge)
+CODE_CHANGES=$(git diff --cached --name-only | grep -E "\\.(${CONFIG.SUPPORTED_EXTENSIONS.map(e => e.slice(1)).join('|')})$")
+REFLECT_CHANGES=$(git diff --cached --name-only | grep "${CONFIG.REFLECTIONS_FILE}")
+
+if [ ! -z "$CODE_CHANGES" ] && [ -z "$REFLECT_CHANGES" ]; then
+  echo "--------------------------------------------------------"
+  echo "ℹ️  [Code-Graph] ADVISORY: Reflection Check"
+  echo "Significant code changes detected without a reflection."
+  echo "If you learned something new or fixed a non-obvious bug,"
+  echo "run 'code-graph reflect LOGIC <lesson>' before committing."
+  echo "--------------------------------------------------------"
+fi
+`;
   await fsp.writeFile(hookPath, content, { mode: 0o755 });
-  console.log('[Code-Graph] Pre-commit hook installed.');
+  console.log('[Code-Graph] Pre-commit Advisory installed (Soft Enforcement).');
 }
 
 function startWatcher(cwd) {
