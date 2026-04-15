@@ -1,4 +1,4 @@
-# CODE-GRAPH (v2.1.1)
+# CODE-GRAPH (v2.1.2)
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** designed specifically for LLM agents. It optimizes context and token usage while enabling agents to learn from their own mistakes across sessions.
 
@@ -67,6 +67,50 @@ The `llm-code-graph.md` file provides a high-level map and structural graph for 
 
 ### 3. Example System Prompt
 > "Before acting, read `llm-code-graph.md`. Follow the protocol in `AGENT_RULES.md`. If you encounter a bug or an environment quirk, use the `code-graph reflect` tool to record the lesson in `PROJECT_REFLECTIONS.md`."
+
+## 🤖 Agent-Specific Integration
+
+Maximize efficiency by pointing your agent directly to the `llm-code-graph.md` and `AGENT_RULES.md` files.
+
+### Roo Code (Cline)
+Add this to your `.clinerules` file:
+```markdown
+Before starting any task:
+1. Read `llm-code-graph.md` for project structure.
+2. Read `AGENT_RULES.md` for operational protocol.
+3. Read `PROJECT_REFLECTIONS.md` for past lessons.
+```
+
+### Cursor / Windsurf
+Add to `.cursorrules` or `.windsurfrules`:
+```text
+Always reference `llm-code-graph.md` to understand the codebase architecture before performing edits. Strictly follow the "Reflection Cycle" in `AGENT_RULES.md`.
+```
+
+### GitHub Copilot
+Add to `.github/copilot-instructions.md`:
+```markdown
+When answering questions about this codebase, prioritize the mapping data in `llm-code-graph.md`. If a task fails or a mistake is corrected, suggest a reflection entry for `PROJECT_REFLECTIONS.md`.
+```
+
+### Gemini CLI
+Create a `GEMINI.md` file (if not already using `AGENT_RULES.md`):
+```markdown
+- Always read `llm-code-graph.md` as the primary source of truth.
+- Use the `run_shell_command` tool to execute `code-graph reflect` after fixing non-obvious bugs.
+```
+
+### OpenCode / OpenDevin / Aider
+In your project instructions or session startup:
+> "Read `llm-code-graph.md` for a high-level overview. If you discover a project-specific quirk, record it using `code-graph reflect <CAT> <LESSON>`."
+
+### Codex / GPT-Engineer / AutoGPT
+Add to your project prompt or `prompts.md`:
+> "Use `llm-code-graph.md` to navigate the file structure. Strictly adhere to the reflection cycle in `AGENT_RULES.md` to ensure project memory is maintained across iterations."
+
+### Generic Agent (System Prompt)
+For any other agent, add this to your system instructions:
+> "This project uses `code-graph-llm` for context management. Always consult `llm-code-graph.md` before exploring files. If you learn something new about the environment (e.g., shell quirks, library oddities), persist that knowledge using the `code-graph reflect` tool."
 
 ## How it works
 1. **File Scanning:** Recursively walks the directory, ignoring patterns in `.gitignore`.
