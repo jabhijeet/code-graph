@@ -1,11 +1,15 @@
-# CODE-GRAPH
+# CODE-GRAPH (v2.0.0)
 
-A language-agnostic, ultra-compact codebase mapper designed specifically for LLM agents to optimize context and token usage. It doesn't just list files; it provides a high-signal "map" of your project's architecture, including descriptions and signatures.
+A language-agnostic, ultra-compact codebase mapper and **agent memory system** designed specifically for LLM agents. It optimizes context and token usage while enabling agents to learn from their own mistakes across sessions.
+
+## 🚀 New in v2.0: Self-Learning Memory
+- **Reflection System:** Agents can now persist "Lessons Learned" via `code-graph reflect`.
+- **Operational Protocol:** Standardized `AGENT_RULES.md` ensures agents follow strict "Reflect-Act-Verify" cycles.
+- **Architectural Weight:** Project maps now include dependency counts (↑N ↓M) and CORE entry-point markers.
+- **Production Refactor:** Class-based service architecture with full `fs/promises` async support.
 
 ## Features
-- **Structural Knowledge Graph:** Captures relationships between files and classes:
-  - **Dependencies:** Tracks `imports`, `requires`, and `includes` across files.
-  - **Inheritance:** Maps `extends`, `implements`, and class hierarchies.
+- **Structural Knowledge Graph:** Captures `imports`, `requires`, `extends`, and `implements`.
 - **Smart Context Extraction:** Captures JSDoc, Python docstrings, and preceding comments.
 - **Signature Fallback:** Extracts function signatures (parameters/types) if documentation is missing.
 - **Recursive .gitignore Support:** Deeply respects both root and nested `.gitignore` files.
@@ -16,33 +20,41 @@ A language-agnostic, ultra-compact codebase mapper designed specifically for LLM
 
 ### 1. Install via NPM
 ```bash
-# Global installation for CLI use
 npm install -g code-graph-llm
-
-# Local project dependency
+# OR
 npm install --save-dev code-graph-llm
 ```
 
-### 2. Basic Usage
+### 2. Core Commands
 ```bash
 # Generate the llm-code-graph.md map
 code-graph generate
 
+# Record a project reflection (Memory)
+code-graph reflect <CATEGORY> "Lesson learned"
+# Example: code-graph reflect ENV "Always use 'cmd /c npm' on Windows."
+
 # Start the live watcher for real-time updates
 code-graph watch
 
-# Install the Git pre-commit hook
+# Install the Git pre-commit hook (Enforces Map & Memory sync)
 code-graph install-hook
 ```
 
-## LLM Usage & Token Efficiency
+## 🧠 LLM Agent Strategy
 
-### The "Read First" Strategy
-Instruct your LLM agent to read `llm-code-graph.md` as its first step. The file provides a high-level map and a structural graph for relational reasoning:
+### 1. The Mandatory Protocol
+Instruct your agent to follow the **STRICT AGENT PROTOCOL** in `AGENT_RULES.md`. This ensures the agent:
+1. Reads `PROJECT_REFLECTIONS.md` before starting any task.
+2. Updates reflections after any failure or "learned moment."
+3. Regenerates the project map (`llm-code-graph.md`) after structural changes.
+
+### 2. The "Read First" Strategy
+The `llm-code-graph.md` file provides a high-level map and structural graph for relational reasoning:
 
 **Example Map Entry:**
 ```markdown
-- src/auth.js | desc: Handles user authentication.
+- [CORE] src/auth.js (↑3 ↓5) [TODO: Add JWT rotation] | desc: Handles user authentication.
   - syms: [login [ (username, password) ], validateToken [ (token: string) ]]
 
 ## GRAPH EDGES
@@ -50,41 +62,12 @@ Instruct your LLM agent to read `llm-code-graph.md` as its first step. The file 
 [AdminUser] -> [inherits] -> [BaseUser]
 ```
 
-**Example System Prompt:**
-> "Before acting, read `llm-code-graph.md`. It contains the project map, file descriptions, and function signatures. Use this to locate relevant logic instead of scanning the full codebase."
-
-## Build Phase Integration
-
-### 1. Java/Kotlin (Maven/Gradle)
-**Gradle (Groovy):**
-```groovy
-task generateCodeGraph(type: Exec) {
-    commandLine 'code-graph', 'generate'
-}
-compileJava.dependsOn generateCodeGraph
-```
-
-### 2. Python
-**Makefile:**
-```makefile
-map:
-	code-graph generate
-test: map
-	pytest
-```
-
-### 3. Rust (build.rs)
-```rust
-use std::process::Command;
-fn main() {
-    Command::new("code-graph").arg("generate").status().unwrap();
-}
-```
+### 3. Example System Prompt
+> "Before acting, read `llm-code-graph.md`. Follow the protocol in `AGENT_RULES.md`. If you encounter a bug or an environment quirk, use the `code-graph reflect` tool to record the lesson in `PROJECT_REFLECTIONS.md`."
 
 ## How it works
-1. **File Scanning:** Recursively walks the directory, ignoring patterns in `.gitignore` (recursive).
+1. **File Scanning:** Recursively walks the directory, ignoring patterns in `.gitignore`.
 2. **Context Extraction:** Scans for classes, functions, and variables while ignoring matches in comments.
-3. **Graph Extraction:** Identifies `imports`, `requires`, `extends`, and `implements` to build a structural skeleton.
-4. **Docstring Capture:** Captures preceding comments as descriptions.
-5. **Signature Capture:** Fallback to declaration signatures (parameters) if docs are missing.
-6. **Compilation:** Writes a single, minified `llm-code-graph.md` file with a dedicated `## GRAPH EDGES` section.
+3. **Graph Extraction:** Identifies `imports`, `requires`, `extends`, and `implements`.
+4. **Reflection Management:** Deduplicates and persists agent learning into a standardized Markdown format.
+5. **Compilation:** Writes a single, minified `llm-code-graph.md` file with a dedicated `## GRAPH EDGES` section.

@@ -1,334 +1,328 @@
 #!/usr/bin/env node
 
+/**
+ * @file index.js
+ * @description Compact, language-agnostic codebase mapper for LLM token efficiency.
+ * Features: Symbol extraction, dependency mapping, reflection logging, and git hooks.
+ */
+
 import fs from 'fs';
+import { promises as fsp } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import chokidar from 'chokidar';
 import ignore from 'ignore';
 
+// --- Constants & Configuration ---
+
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+export const CONFIG = {
+  IGNORE_FILE: '.gitignore',
+  MAP_FILE: 'llm-code-graph.md',
+  REFLECTIONS_FILE: 'PROJECT_REFLECTIONS.md',
+  RULES_FILE: 'AGENT_RULES.md',
+  SUPPORTED_EXTENSIONS: [
+    '.js', '.ts', '.jsx', '.tsx', '.py', '.go', '.rs', '.java', 
+    '.cpp', '.c', '.h', '.hpp', '.cc', '.rb', '.php', '.swift', 
+    '.kt', '.cs', '.dart', '.scala', '.m', '.mm'
+  ],
+  DEFAULT_IGNORES: [
+    '.git/', 'node_modules/', 'package-lock.json', '.idea/', 
+    'build/', 'dist/', 'bin/', 'obj/', '.dart_tool/', '.pub-cache/', '.pub/'
+  ]
+};
 
-const IGNORE_FILE = '.gitignore';
-const DEFAULT_MAP_FILE = 'llm-code-graph.md';
-const SYMBOL_REGEXES = [
-  // Types, Classes, Interfaces (Universal) with Inheritance support
-  /\b(?:class|interface|type|struct|enum|protocol|extension|trait|module|namespace|object)\s+([a-zA-Z_]\w*)(?:[^\n\S]*(?:extends|implements|:|(?:\())[^\n\S]*([a-zA-Z_]\w*(?:[^\n\S]*,\s*[a-zA-Z_]\w*)*)\)?)?/g,
+export const SUPPORTED_EXTENSIONS = CONFIG.SUPPORTED_EXTENSIONS;
 
-  // Explicit Function Keywords
-  /\b(?:function|def|fn|func|fun|method|procedure|sub|routine)\s+([a-zA-Z_]\w*)/g,
+const REGEX = {
+  SYMBOLS: [
+    // Types, Classes, Interfaces with Inheritance
+    /\b(?:class|interface|type|struct|enum|protocol|extension|trait|module|namespace|object)\s+([a-zA-Z_]\w*)(?:[^\n\S]*(?:extends|implements|:|(?:\())[^\n\S]*([a-zA-Z_]\w*(?:[^\n\S]*,\s*[a-zA-Z_]\w*)*)\)?)?/g,
+    // Functions
+    /\b(?:function|def|fn|func|fun|method|procedure|sub|routine)\s+([a-zA-Z_]\w*)/g,
+    // Method/Var Declarations (C-style, Java)
+    /\b(?:void|async|public|private|protected|static|final|native|synchronized|abstract|transient|volatile)\s+(?:[\w<>[\]]+\s+)?([a-zA-Z_]\w*)(?=\s*\([^)]*\)\s*(?:\{|=>|;|=))/g,
+    // Annotations
+    /(@[a-zA-Z_]\w*(?:\([^)]*\))?)\s*(?:(?:public|private|protected|static|final|abstract|class|interface|enum|void|[\w<>[\]]+)\s+)+([a-zA-Z_]\w*)/g,
+    // Exports
+    /\bexport\s+(?:default\s+)?(?:const|let|var|function|class|type|interface|enum|async|val)\s+([a-zA-Z_]\w*)/g
+  ],
+  EDGES: [
+    /\b(?:import|from|include|require|using)\s*(?:[\(\s])\s*['"]?([@\w\.\/\-]+)['"]?/g,
+    /#include\s+[<"]([\w\.\/\-]+)[>"]/g
+  ],
+  TAGS: /\b(TODO|FIXME|BUG|DEPRECATED):?\s*(.*)/i,
+  KEYWORDS: new Set(['if', 'for', 'while', 'switch', 'return', 'await', 'yield', 'const', 'new', 'let', 'var', 'class', 'void', 'public', 'private', 'protected'])
+};
 
-  // Method/Var Declarations (Java, Spring Boot, C-style)
-  // Captures: public String askAi(String question), void realFunction()
-  /\b(?:void|async|public|private|protected|static|final|native|synchronized|abstract|transient|volatile)\s+(?:[\w<>[\]]+\s+)?([a-zA-Z_]\w*)(?=\s*\([^)]*\)\s*(?:\{|=>|;|=))/g,
+// --- Core Services ---
 
-  // Spring/Java/Dart Annotations (Captures the annotation name as a prefix)
-  /(@[a-zA-Z_]\w*(?:\([^)]*\))?)\s*(?:(?:public|private|protected|static|final|abstract|class|interface|enum|void|[\w<>[\]]+)\s+)+([a-zA-Z_]\w*)/g,
+/**
+ * Handles extraction of symbols, edges, and metadata from source code.
+ */
+class CodeParser {
+  static extract(content) {
+    const noComments = content.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '');
+    const cleanContent = noComments.replace(/['"`](?:\\.|[^'"`])*['"`]/g, ''); // Remove strings for symbol extraction
 
-  // Exported symbols
-  /\bexport\s+(?:default\s+)?(?:const|let|var|function|class|type|interface|enum|async|val)\s+([a-zA-Z_]\w*)/g
-];
+    const { symbols, inheritance } = this.extractSymbols(content, cleanContent);
+    const edges = this.extractEdges(noComments); // Edges need strings (import paths)
+    const tags = this.extractTags(content);
 
-
-const EDGE_REGEXES = [
-  // Imports/Includes (JS, TS, Python, Go, Rust, C++, Java, Dart)
-  /\b(?:import|from|include|require|using)\s*(?:[\(\s])\s*['"]?([@\w\.\/\-]+)['"]?/g,
-  // C-style includes
-  /#include\s+[<"]([\w\.\/\-]+)[>"]/g
-];
-
-export const SUPPORTED_EXTENSIONS = [
-  '.js', '.ts', '.jsx', '.tsx', '.py', '.go', '.rs', '.java', 
-  '.cpp', '.c', '.h', '.hpp', '.cc', '.rb', '.php', '.swift', 
-  '.kt', '.cs', '.dart', '.scala', '.m', '.mm'
-];
-
-export function getIgnores(cwd, additionalLines = []) {
-  const ig = ignore().add([
-    '.git/', 'node_modules/', DEFAULT_MAP_FILE, 'package-lock.json', 
-    '.idea/', 'build/', 'dist/', 'bin/', 'obj/', '.dart_tool/', '.pub-cache/', '.pub/'
-  ]);
-  const ignorePath = path.join(cwd, IGNORE_FILE);
-  if (fs.existsSync(ignorePath)) {
-    ig.add(fs.readFileSync(ignorePath, 'utf8'));
+    return { symbols, inheritance, edges, tags };
   }
-  if (additionalLines.length > 0) {
-    ig.add(additionalLines);
-  }
-  return ig;
-}
 
-export function extractSymbolsAndInheritance(content) {
-  const symbols = [];
-  const inheritance = [];
-  
-  // Create a version of content without comments AND strings to find symbols accurately
-  const cleanContent = content
-    .replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '')
-    .replace(/['"`](?:\\.|[^'"`])*['"`]/g, '');
+  static extractSymbols(original, clean) {
+    const symbols = new Set();
+    const inheritance = [];
 
-  for (const regex of SYMBOL_REGEXES) {
-    let match;
-    regex.lastIndex = 0;
-    while ((match = regex.exec(cleanContent)) !== null) {
-      if (match[1]) {
-        // Handle the Annotation regex separately (it has 2 groups)
-        let symbolName = match[1];
-        let annotation = '';
+    for (const regex of REGEX.SYMBOLS) {
+      let match;
+      regex.lastIndex = 0;
+      while ((match = regex.exec(clean)) !== null) {
+        let name = match[1];
+        let annotation = name.startsWith('@') ? name : '';
+        if (annotation) name = match[2] || '';
         
-        if (symbolName.startsWith('@')) {
-          annotation = symbolName;
-          symbolName = match[2] || '';
-          if (!symbolName) continue;
-        }
+        if (!name || REGEX.KEYWORDS.has(name)) continue;
 
-        if (['if', 'for', 'while', 'switch', 'return', 'await', 'yield', 'const', 'new', 'let', 'var', 'class', 'void', 'public', 'private', 'protected'].includes(symbolName)) continue;
-
-        // Capture inheritance if present (match[2] only for non-annotation regex)
         if (!annotation && match[2]) {
-          const parents = match[2].split(',').map(p => p.trim());
-          parents.forEach(parent => {
-            inheritance.push({ child: symbolName, parent });
-          });
+          match[2].split(',').forEach(p => inheritance.push({ child: name, parent: p.trim() }));
         }
 
-        // To find the comment, we need to find the position in the ORIGINAL content
-        const escapedName = symbolName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const posRegex = new RegExp(`\\b${escapedName}\\b`, 'g');
-        let posMatch = posRegex.exec(content);
-        if (!posMatch) continue;
-
-        const linesBefore = content.substring(0, posMatch.index).split('\n');
-        let comment = '';
-        // Skip the current line where the symbol is defined
-        for (let i = linesBefore.length - 2; i >= 0; i--) {
-          const line = linesBefore[i].trim();
-          if (line.startsWith('//') || line.startsWith('*') || line.startsWith('"""') || line.startsWith('#') || line.startsWith('/*')) {
-            const clean = line.replace(/[\/*#"]/g, '').trim();
-            if (clean) comment = clean + (comment ? ' ' + comment : '');
-            if (comment.length > 100) break; 
-          } else if (line === '' && comment === '') continue;
-          else if (line.startsWith('@')) continue; // Skip annotations in comment search
-          else break;
-        }
-
-        let context = comment;
-        if (!context) {
-          const remainingLine = content.substring(posMatch.index + symbolName.length);
-          const sigMatch = remainingLine.match(/^\s*(\([^)]*\)|[^\n{;]*)/);
-          if (sigMatch && sigMatch[1].trim()) {
-            context = sigMatch[1].trim();
-          }
-        }
-        
-        const displaySymbol = annotation ? `${annotation} ${symbolName}` : symbolName;
-        symbols.push(context ? `${displaySymbol} [${context}]` : displaySymbol);
+        const context = this.findSymbolContext(original, name);
+        const display = annotation ? `${annotation} ${name}` : name;
+        symbols.add(context ? `${display} [${context}]` : display);
       }
     }
+    return { symbols: Array.from(symbols).sort(), inheritance };
   }
-  return { 
-    symbols: Array.from(new Set(symbols)).sort(),
-    inheritance: Array.from(new Set(inheritance.map(JSON.stringify))).map(JSON.parse)
-  };
-}
 
-export function extractEdges(content) {
-  const dependencies = new Set();
-  const noComments = content.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '');
-  for (const regex of EDGE_REGEXES) {
-    let match;
-    regex.lastIndex = 0;
-    while ((match = regex.exec(noComments)) !== null) {
-      if (match[1]) {
-        const dep = match[1];
-        // Filter out obvious noise, common library names, or keywords
-        if (dep.length > 1 && !['style', 'react', 'vue', 'flutter', 'new', 'const', 'let', 'var', 'dependencies', 'from', 'import'].includes(dep.toLowerCase())) {
-          dependencies.add(dep);
-        }
+  static findSymbolContext(content, name) {
+    const pos = content.search(new RegExp(`\\b${name}\\b`));
+    if (pos === -1) return '';
+
+    const linesBefore = content.substring(0, pos).split('\n');
+    let comment = '';
+    for (let i = linesBefore.length - 2; i >= 0; i--) {
+      const line = linesBefore[i].trim();
+      if (/^(\/\/|\*|"""|#|\/\*)/.test(line)) {
+        const clean = line.replace(/[\/*#"]/g, '').trim();
+        if (clean) comment = clean + (comment ? ' ' + comment : '');
+        if (comment.length > 100) break;
+      } else if (line !== '' && !line.startsWith('@')) break;
+    }
+
+    if (!comment) {
+      const remaining = content.substring(pos + name.length);
+      const sigMatch = remaining.match(/^\s*(\([^)]*\)|[^\n{;]*)/);
+      return sigMatch?.[1].trim() || '';
+    }
+    return comment;
+  }
+
+  static extractEdges(clean) {
+    const deps = new Set();
+    for (const regex of REGEX.EDGES) {
+      let match;
+      regex.lastIndex = 0;
+      while ((match = regex.exec(clean)) !== null) {
+        if (match[1] && match[1].length > 1) deps.add(match[1]);
       }
     }
+    return Array.from(deps).sort();
   }
-  return Array.from(dependencies).sort();
+
+  static extractTags(content) {
+    const tags = new Set();
+    content.split('\n').forEach(line => {
+      const match = line.match(REGEX.TAGS);
+      if (match) tags.add(`${match[1]}: ${match[2].substring(0, 50).trim()}`);
+    });
+    return Array.from(tags);
+  }
 }
 
-async function generate(cwd = process.cwd()) {
-  const files = [];
-  const allEdges = [];
-  const incomingEdges = {}; // Map of projectPath -> count of incoming edges
+/**
+ * Manages the project mapping and file generation.
+ */
+class ProjectMapper {
+  constructor(cwd) {
+    this.cwd = cwd;
+    this.files = [];
+    this.allEdges = [];
+    this.incomingEdges = {};
+  }
 
-  function walk(dir, ig) {
-    let localIg = ig;
-    const localIgnorePath = path.join(dir, IGNORE_FILE);
-    if (fs.existsSync(localIgnorePath) && dir !== cwd) {
-      const content = fs.readFileSync(localIgnorePath, 'utf8');
-      const lines = content.split('\n').map(line => {
-          line = line.trim();
-          if (!line || line.startsWith('#')) return null;
-          const relDir = path.relative(cwd, dir).replace(/\\/g, '/');
-          return relDir ? `${relDir}/${line}` : line;
-      }).filter(Boolean);
-      localIg = ignore().add(ig).add(lines);
+  getIgnores(dir, baseIg) {
+    const ig = ignore().add(baseIg);
+    const ignorePath = path.join(dir, CONFIG.IGNORE_FILE);
+    if (fs.existsSync(ignorePath)) {
+      ig.add(fs.readFileSync(ignorePath, 'utf8'));
     }
+    return ig;
+  }
 
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
+  async walk(dir, ig) {
+    const entries = await fsp.readdir(dir, { withFileTypes: true });
+    
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name);
-      const relativePath = path.relative(cwd, fullPath);
-      const normalizedPath = relativePath.replace(/\\/g, '/');
-      const isDirectory = entry.isDirectory();
-      const checkPath = isDirectory ? `${normalizedPath}/` : normalizedPath;
+      const relPath = path.relative(this.cwd, fullPath).replace(/\\/g, '/');
+      const checkPath = entry.isDirectory() ? `${relPath}/` : relPath;
 
-      if (localIg.ignores(checkPath)) continue;
+      if (ig.ignores(checkPath)) continue;
 
-      if (isDirectory) {
-        walk(fullPath, localIg);
-      } else if (entry.isFile()) {
-        const ext = path.extname(entry.name);
-        if (SUPPORTED_EXTENSIONS.includes(ext)) {
-          const content = fs.readFileSync(fullPath, 'utf8');
-          
-          // Extract file-level description and tags
-          const lines = content.split('\n');
-          let fileDesc = '';
-          const tags = [];
-          for (let i = 0; i < lines.length; i++) {
-            const line = lines[i].trim();
-            // Surface actionable tags
-            const tagMatch = line.match(/\b(TODO|FIXME|BUG|DEPRECATED):?\s*(.*)/i);
-            if (tagMatch) {
-              tags.push(`${tagMatch[1]}: ${tagMatch[2].substring(0, 50).trim()}`);
-            }
-            
-            if (i < 10) {
-              if (line.startsWith('#!') || line === '') continue;
-              if (line.startsWith('//') || line.startsWith('#') || line.startsWith('/*')) {
-                fileDesc += line.replace(/[\/*#]/g, '').trim() + ' ';
-              } else if (fileDesc) {
-                // Stop if we hit non-comment code
-                break;
-              }
-            }
-          }
-
-          const { symbols, inheritance } = extractSymbolsAndInheritance(content);
-          const dependencies = extractEdges(content);
-          
-          if (!fileDesc.trim() && symbols.length > 0) fileDesc = `Contains ${symbols.length} symbols.`;
-          
-          // Identify core entry points
-          const isCore = /^(index|main|app|server|cli)\.(js|ts|py|go|rs|java|cpp)$/i.test(entry.name);
-          
-          const fileObj = { 
-            path: normalizedPath, 
-            desc: fileDesc.trim(), 
-            symbols, 
-            tags: Array.from(new Set(tags)),
-            isCore,
-            outCount: dependencies.length
-          };
-          files.push(fileObj);
-          
-          // Collect Edges and track incoming
-          dependencies.forEach(dep => {
-            let target = dep;
-            if (dep.startsWith('.')) {
-              // Resolve relative path to project-relative
-              const resolved = path.normalize(path.join(path.dirname(normalizedPath), dep));
-              target = resolved.replace(/\\/g, '/');
-              // Basic extension guesser
-              if (!path.extname(target)) {
-                for (const ex of SUPPORTED_EXTENSIONS) {
-                  if (fs.existsSync(path.join(cwd, target + ex))) {
-                    target += ex;
-                    break;
-                  }
-                }
-              }
-            }
-            allEdges.push(`[${normalizedPath}] -> [imports] -> [${target}]`);
-            incomingEdges[target] = (incomingEdges[target] || 0) + 1;
-          });
-          inheritance.forEach(inh => {
-            allEdges.push(`[${inh.child}] -> [inherits] -> [${inh.parent}]`);
-          });
-        }
+      if (entry.isDirectory()) {
+        await this.walk(fullPath, this.getIgnores(fullPath, ig));
+      } else if (CONFIG.SUPPORTED_EXTENSIONS.includes(path.extname(entry.name))) {
+        await this.processFile(fullPath, relPath);
       }
     }
   }
 
-  walk(cwd, getIgnores(cwd));
+  async processFile(fullPath, relPath) {
+    const content = await fsp.readFile(fullPath, 'utf8');
+    const { symbols, inheritance, edges, tags } = CodeParser.extract(content);
 
-  // Sort: Core files first, then by incoming edges (importance)
-  files.sort((a, b) => {
-    if (a.isCore && !b.isCore) return -1;
-    if (!a.isCore && b.isCore) return 1;
-    const inA = incomingEdges[a.path] || 0;
-    const inB = incomingEdges[b.path] || 0;
-    return inB - inA;
-  });
-
-  const nodesOutput = files.map(f => {
-    const inCount = incomingEdges[f.path] || 0;
-    const coreMark = f.isCore ? '[CORE] ' : '';
-    const stats = `(↑${f.outCount} ↓${inCount})`;
-    const tagStr = f.tags.length > 0 ? ` [${f.tags.join(', ')}]` : '';
-    const descStr = f.desc ? ` | desc: ${f.desc.substring(0, 100)}` : '';
-    const symStr = f.symbols.length > 0 ? `\n  - syms: [${f.symbols.join(', ')}]` : '';
-    return `- ${coreMark}${f.path} ${stats}${tagStr}${descStr}${symStr}`;
-  }).join('\n');
-
-  const edgesOutput = allEdges.length > 0 
-    ? `\n\n## GRAPH EDGES\n${Array.from(new Set(allEdges)).sort().join('\n')}` 
-    : '';
-
-  const header = `# CODE_GRAPH_MAP\n> LLM_ONLY: DO NOT EDIT. COMPACT PROJECT MAP.\n> Legend: [CORE] Entry Point, (↑N) Outgoing Deps, (↓M) Incoming Dependents\n> Notation: syms: [Name [Signature/Context]], desc: File Summary, [TAG: Context] Actionable items\n\n`;
-  fs.writeFileSync(path.join(cwd, DEFAULT_MAP_FILE), header + nodesOutput + edgesOutput);
-  console.log(`[Code-Graph] Updated ${DEFAULT_MAP_FILE}`);
-}
-
-export { generate };
-
-export function watch(cwd = process.cwd()) {
-  console.log(`[Code-Graph] Watching for changes in ${cwd}...`);
-  let timeout;
-  const debouncedGenerate = () => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => generate(cwd), 500);
-  };
-
-  const watcher = chokidar.watch(cwd, {
-    ignored: (p) => {
-        if (p === cwd) return false;
-        // Watcher ignore is harder for recursive .gitignore without complexity
-        // We rely on the generate() call to skip them during walk
-        return false; 
-    },
-    persistent: true,
-    ignoreInitial: true
-  });
-
-  watcher.on('all', (event, path) => {
-    debouncedGenerate();
-  });
-}
-
-export function installHook(cwd = process.cwd()) {
-  const hooksDir = path.join(cwd, '.git', 'hooks');
-  if (!fs.existsSync(hooksDir)) {
-    console.error('[Code-Graph] No .git directory found. Cannot install hook.');
-    return;
+    const isCore = /^(index|main|app|server|cli)\./i.test(path.basename(relPath));
+    const fileObj = { path: relPath, symbols, tags, isCore, outCount: edges.length, desc: this.extractFileDesc(content, symbols.length) };
+    
+    this.files.push(fileObj);
+    this.processEdges(relPath, edges, inheritance);
   }
-  const hookPath = path.join(hooksDir, 'pre-commit');
-  const hookContent = `#!/bin/sh\n# Code-Graph pre-commit hook\nnode "${__filename}" generate\ngit add "${DEFAULT_MAP_FILE}"\n`;
-  fs.writeFileSync(hookPath, hookContent, { mode: 0o755 });
-  console.log('[Code-Graph] Installed pre-commit hook.');
+
+  extractFileDesc(content, symCount) {
+    const lines = content.split('\n').slice(0, 10);
+    let desc = '';
+    for (const line of lines) {
+      if (/^(\/\/|#|\/\*)/.test(line.trim())) desc += line.replace(/[\/*#]/g, '').trim() + ' ';
+      else if (desc) break;
+    }
+    return desc.trim() || (symCount > 0 ? `Contains ${symCount} symbols.` : '');
+  }
+
+  processEdges(relPath, edges, inheritance) {
+    edges.forEach(dep => {
+      let target = dep;
+      if (dep.startsWith('.')) {
+        const resolved = path.normalize(path.join(path.dirname(relPath), dep)).replace(/\\/g, '/');
+        target = this.resolveExtension(resolved);
+      }
+      this.allEdges.push(`[${relPath}] -> [imports] -> [${target}]`);
+      this.incomingEdges[target] = (this.incomingEdges[target] || 0) + 1;
+    });
+    inheritance.forEach(inh => this.allEdges.push(`[${inh.child}] -> [inherits] -> [${inh.parent}]`));
+  }
+
+  resolveExtension(target) {
+    if (path.extname(target)) return target;
+    for (const ext of CONFIG.SUPPORTED_EXTENSIONS) {
+      if (fs.existsSync(path.join(this.cwd, target + ext))) return target + ext;
+    }
+    return target;
+  }
+
+  async generate() {
+    console.log(`[Code-Graph] Mapping ${this.cwd}...`);
+    await this.walk(this.cwd, this.getIgnores(this.cwd, CONFIG.DEFAULT_IGNORES));
+
+    this.files.sort((a, b) => (b.isCore - a.isCore) || ((this.incomingEdges[b.path] || 0) - (this.incomingEdges[a.path] || 0)));
+
+    const output = this.formatOutput();
+    await fsp.writeFile(path.join(this.cwd, CONFIG.MAP_FILE), output);
+    console.log(`[Code-Graph] Updated ${CONFIG.MAP_FILE}`);
+  }
+
+  formatOutput() {
+    const header = `# CODE_GRAPH_MAP\n> MISSION: COMPACT PROJECT MAP FOR LLM AGENTS.\n> PROTOCOL: Follow AGENT_RULES.md | MEMORY: See PROJECT_REFLECTIONS.md\n> Legend: [CORE] Entry Point, (↑N) Outgoing Deps, (↓M) Incoming Dependents\n> Notation: syms: [Name [Signature/Context]], desc: File Summary, [TAG: Context]\n\n`;
+    const nodes = this.files.map(f => {
+      const inCount = this.incomingEdges[f.path] || 0;
+      const tags = f.tags.length ? ` [${f.tags.join(', ')}]` : '';
+      return `- ${f.isCore ? '[CORE] ' : ''}${f.path} (↑${f.outCount} ↓${inCount})${tags} | desc: ${f.desc.substring(0, 100)}\n  - syms: [${f.symbols.join(', ')}]`;
+    }).join('\n');
+    const edges = this.allEdges.length ? `\n\n## GRAPH EDGES\n${Array.from(new Set(this.allEdges)).sort().join('\n')}` : '';
+    return header + nodes + edges;
+  }
 }
 
-if (process.argv[1] && (process.argv[1] === fileURLToPath(import.meta.url) || process.argv[1].endsWith('index.js'))) {
-  const args = process.argv.slice(2);
-  const command = args[0] || 'generate';
-  if (command === 'generate') generate();
-  else if (command === 'watch') watch();
-  else if (command === 'install-hook') installHook();
-  else console.log('Usage: code-graph [generate|watch|install-hook]');
+/**
+ * Manages project reflections and lessons learned.
+ */
+class ReflectionManager {
+  static async add(category, lesson) {
+    if (!lesson) return console.error('[Code-Graph] Usage: reflect <cat> <lesson>');
+    
+    const filePath = path.join(process.cwd(), CONFIG.REFLECTIONS_FILE);
+    const header = `# PROJECT_REFLECTIONS & LESSONS LEARNED\n> LLM AGENT MEMORY: READ BEFORE STARTING TASKS. UPDATE ON FAILURES.\n`;
+    const entry = `- [${category.toUpperCase()}: ${new Date().toISOString().split('T')[0]}] ${lesson}`;
+
+    try {
+      let content = fs.existsSync(filePath) ? await fsp.readFile(filePath, 'utf8') : header;
+      if (!fs.existsSync(filePath)) await fsp.writeFile(filePath, header);
+
+      if (content.toLowerCase().includes(lesson.toLowerCase().trim())) {
+        return console.log('[Code-Graph] Reflection already exists.');
+      }
+
+      await fsp.appendFile(filePath, `\n${entry}`);
+      console.log(`[Code-Graph] Recorded reflection: ${lesson}`);
+    } catch (err) {
+      console.error(`[Code-Graph] Reflection failed: ${err.message}`);
+    }
+  }
 }
+
+// --- CLI Entry Point ---
+
+async function main() {
+  const [command, ...args] = process.argv.slice(2);
+  const cwd = process.cwd();
+
+  try {
+    switch (command || 'generate') {
+      case 'generate':
+        await new ProjectMapper(cwd).generate();
+        break;
+      case 'reflect':
+        await ReflectionManager.add(args[0], args.slice(1).join(' '));
+        break;
+      case 'install-hook':
+        await installGitHook(cwd);
+        break;
+      case 'watch':
+        startWatcher(cwd);
+        break;
+      default:
+        console.log('Usage: code-graph [generate|reflect|install-hook|watch]');
+    }
+  } catch (err) {
+    console.error(`[Code-Graph] Critical Error: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+async function installGitHook(cwd) {
+  const hookPath = path.join(cwd, '.git', 'hooks', 'pre-commit');
+  if (!fs.existsSync(path.dirname(hookPath))) return console.error('[Code-Graph] No .git directory found.');
+
+  const content = `#!/bin/sh\n# Code-Graph Sync\necho "[Code-Graph] Validating..."\nnode "${__filename}" generate\ngit add "${CONFIG.MAP_FILE}"\nif [ ! -z "$(git diff --cached --shortstat)" ]; then\n  echo "[Code-Graph] Reminder: Run 'code-graph reflect' if this fix resolves a non-obvious bug."\nfi`;
+  await fsp.writeFile(hookPath, content, { mode: 0o755 });
+  console.log('[Code-Graph] Pre-commit hook installed.');
+}
+
+function startWatcher(cwd) {
+  console.log(`[Code-Graph] Watching ${cwd}...`);
+  let timer;
+  chokidar.watch(cwd, { ignoreInitial: true, ignored: [/node_modules/, /\.git/, new RegExp(CONFIG.MAP_FILE)] })
+    .on('all', () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => new ProjectMapper(cwd).generate(), 1000);
+    });
+}
+
+if (process.argv[1] && (process.argv[1] === __filename || process.argv[1].endsWith('index.js'))) {
+  main();
+}
+
+export { CodeParser, ProjectMapper, ReflectionManager };

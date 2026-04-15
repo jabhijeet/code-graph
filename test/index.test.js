@@ -4,11 +4,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'url';
 import { 
-  extractSymbolsAndInheritance,
-  extractEdges,
-  getIgnores, 
+  CodeParser,
+  ProjectMapper,
+  ReflectionManager,
   SUPPORTED_EXTENSIONS,
-  generate
+  CONFIG
 } from '../index.js';
 
 test('extractSymbols - JS/TS Docstrings', () => {
@@ -18,7 +18,7 @@ test('extractSymbols - JS/TS Docstrings', () => {
      */
     function testFunc(a, b) {}
   `;
-  const { symbols } = extractSymbolsAndInheritance(code);
+  const { symbols } = CodeParser.extract(code);
   assert.ok(symbols.some(s => s.includes('testFunc') && s.includes('This is a test function')));
 });
 
@@ -28,8 +28,7 @@ test('extractSymbols - Signature Fallback', () => {
       return true;
     }
   `;
-  const { symbols } = extractSymbolsAndInheritance(code);
-  // Matches "noDocFunc [ (arg1: string, arg2: number)]"
+  const { symbols } = CodeParser.extract(code);
   assert.ok(symbols.some(s => s.includes('noDocFunc') && s.includes('arg1: string, arg2: number')));
 });
 
@@ -38,7 +37,7 @@ test('extractSymbols - Flutter/Dart Noise Reduction', () => {
     const SizedBox(height: 10);
     void realFunction() {}
   `;
-  const { symbols } = extractSymbolsAndInheritance(code);
+  const { symbols } = CodeParser.extract(code);
   assert.ok(symbols.some(s => s.includes('realFunction')));
   assert.ok(!symbols.some(s => s.includes('SizedBox')));
 });
@@ -49,7 +48,7 @@ test('extractInheritance - Class relationships', () => {
     interface IRepository implements IBase {}
     class MyWidget : StatelessWidget {}
   `;
-  const { inheritance } = extractSymbolsAndInheritance(code);
+  const { inheritance } = CodeParser.extract(code);
   assert.ok(inheritance.some(i => i.child === 'AdminUser' && i.parent === 'BaseUser'));
   assert.ok(inheritance.some(i => i.child === 'IRepository' && i.parent === 'IBase'));
   assert.ok(inheritance.some(i => i.child === 'MyWidget' && i.parent === 'StatelessWidget'));
@@ -61,7 +60,7 @@ test('extractEdges - Imports and includes', () => {
     const other = require('other-module');
     #include "header.h"
   `;
-  const edges = extractEdges(code);
+  const { edges } = CodeParser.extract(code);
   assert.ok(edges.includes('./local-file'));
   assert.ok(edges.includes('other-module'));
   assert.ok(edges.includes('header.h'));
@@ -75,18 +74,55 @@ test('extractSymbols - Java/Spring Annotations', () => {
         public String hello() { return "hi"; }
     }
   `;
-  const { symbols } = extractSymbolsAndInheritance(code);
+  const { symbols } = CodeParser.extract(code);
   assert.ok(symbols.some(s => s.includes('@RestController MyController')));
-  // Note: Strings are stripped during extraction to avoid false positives
   assert.ok(symbols.some(s => s.includes('@GetMapping() hello')));
 });
 
 test('getIgnores - Default Patterns', () => {
-  const ig = getIgnores(process.cwd());
+  const mapper = new ProjectMapper(process.cwd());
+  const ig = mapper.getIgnores(process.cwd(), CONFIG.DEFAULT_IGNORES);
   assert.strictEqual(ig.ignores('.git/'), true);
   assert.strictEqual(ig.ignores('node_modules/'), true);
   assert.strictEqual(ig.ignores('.idea/'), true);
   assert.strictEqual(ig.ignores('.dart_tool/'), true);
+});
+
+test('ReflectionManager - Add and Deduplicate', async () => {
+  const tempReflectFile = path.join(process.cwd(), CONFIG.REFLECTIONS_FILE);
+  const backupExists = fs.existsSync(tempReflectFile);
+  let backupContent = '';
+  if (backupExists) backupContent = fs.readFileSync(tempReflectFile, 'utf8');
+
+  // Test Initial Add
+  const lesson = "Unique test lesson for reflection";
+  await ReflectionManager.add('TEST', lesson);
+  const content = fs.readFileSync(tempReflectFile, 'utf8');
+  assert.ok(content.includes(lesson));
+
+  // Test Deduplication
+  const logSpy = [];
+  const originalLog = console.log;
+  console.log = (msg) => logSpy.push(msg);
+  
+  await ReflectionManager.add('TEST', lesson);
+  
+  console.log = originalLog;
+  assert.ok(logSpy.includes('[Code-Graph] Reflection already exists.'));
+
+  // Restore
+  if (backupExists) fs.writeFileSync(tempReflectFile, backupContent);
+  else fs.unlinkSync(tempReflectFile);
+});
+
+test('ProjectMapper - Format Output Header', () => {
+  const mapper = new ProjectMapper(process.cwd());
+  mapper.files = [{ path: 'test.js', symbols: [], tags: [], isCore: true, outCount: 0, desc: 'test' }];
+  const output = mapper.formatOutput();
+  
+  assert.ok(output.includes('MISSION: COMPACT PROJECT MAP FOR LLM AGENTS.'));
+  assert.ok(output.includes('PROTOCOL: Follow AGENT_RULES.md'));
+  assert.ok(output.includes('MEMORY: See PROJECT_REFLECTIONS.md'));
 });
 
 test('Recursive Ignore Simulation (Logic Check)', async () => {
@@ -97,14 +133,13 @@ test('Recursive Ignore Simulation (Logic Check)', async () => {
   const subDir = path.join(tempDir, 'subdir');
   fs.mkdirSync(subDir);
   
-  // Create a file that should be ignored by subdir/.gitignore
   fs.writeFileSync(path.join(subDir, 'ignored.js'), 'function ignored() {}');
   fs.writeFileSync(path.join(subDir, 'included.js'), 'function included() {}');
   fs.writeFileSync(path.join(subDir, '.gitignore'), 'ignored.js');
   
-  await generate(tempDir);
+  await new ProjectMapper(tempDir).generate();
   
-  const mapPath = path.join(tempDir, 'llm-code-graph.md');
+  const mapPath = path.join(tempDir, CONFIG.MAP_FILE);
   const mapContent = fs.readFileSync(mapPath, 'utf8');
   
   assert.ok(mapContent.includes('included.js'));

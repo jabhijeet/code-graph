@@ -1,17 +1,20 @@
 # CODE_GRAPH_MAP
-> LLM_ONLY: DO NOT EDIT. COMPACT PROJECT MAP.
+> MISSION: COMPACT PROJECT MAP FOR LLM AGENTS.
+> PROTOCOL: Follow AGENT_RULES.md | MEMORY: See PROJECT_REFLECTIONS.md
 > Legend: [CORE] Entry Point, (↑N) Outgoing Deps, (↓M) Incoming Dependents
-> Notation: syms: [Name [Signature/Context]], desc: File Summary, [TAG: Context] Actionable items
+> Notation: syms: [Name [Signature/Context]], desc: File Summary, [TAG: Context]
 
-- [CORE] index.js (↑5 ↓1) [TODO: |FIXME|BUG|DEPRECATED):?\s*(.*)/i);] | desc: Contains 5 symbols.
-  - syms: [SUPPORTED_EXTENSIONS [= [], extractSymbolsAndInheritance [(content)], generate [(cwd = process.cwd()], getIgnores [(cwd, additionalLines = [])], walk [(dir, ig)]]
-- test/index.test.js (↑10 ↓0)
+- [CORE] index.js (↑6 ↓1) [TODO: |FIXME|BUG|DEPRECATED):?\s*(.*)/i,, bug: ."\nfi`;] | desc: !usrbinenv node
+  - syms: [CONFIG [=], CodeParser [--- Core Services --- Handles extraction of symbols, edges, and metadata from source code.], ProjectMapper [Manages the project mapping and file generation.], ReflectionManager [Manages project reflections and lessons learned.], SUPPORTED_EXTENSIONS [: [], add [(context ? `${display} [${context}]` : display)], extract [(content)], installGitHook [(cwd)], main [|app|server|cli)\./i.test(path.basename(relPath))], processFile [(fullPath, relPath)], startWatcher [(cwd)], walk [(dir, ig)]]
+- [CORE] test/index.test.js (↑10 ↓0) | desc: 
+  - syms: []
 
 ## GRAPH EDGES
 [index.js] -> [imports] -> [chokidar]
 [index.js] -> [imports] -> [fs]
 [index.js] -> [imports] -> [ignore]
 [index.js] -> [imports] -> [path]
+[index.js] -> [imports] -> [symbols]
 [index.js] -> [imports] -> [url]
 [test/index.test.js] -> [imports] -> [assert]
 [test/index.test.js] -> [imports] -> [fs]
