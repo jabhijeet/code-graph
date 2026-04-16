@@ -14,3 +14,4 @@
 - [TOOLING: 2026-04-15] Added reflect command to simplify LLM memory updates.
 - [TOOLING: 2026-04-16] Upgraded to v3.0.0: Unified agent renaming (llm-agent-*) and added `install-skills` for automated platform integration (Claude, Cursor, Gemini, etc.).
 - [TOOLING: 2026-04-16] Upgraded to v3.1.0: Segregated skills into `projectmap` and `reflections`, enabling selective installation and standardizing on `install-skills` command.
+- [TOOLING: 2026-04-16] Upgraded to v3.2.0: "Universal Agent OS" release. Restored full surgical integration for Antigravity, Kiro, Codex, and OpenCode. Implemented segregated skill hooks for platforms that support them.

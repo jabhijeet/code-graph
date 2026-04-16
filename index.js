@@ -362,6 +362,26 @@ class SkillManager {
         await this.appendToFile('GEMINI.md', section);
         await this.writeJson('.gemini/settings.json', { hooks: { beforeTool: [{ tools: ['read_file'], message: `Skill(ProjectMap): Read ${CONFIG.MAP_FILE} for structural context.` }] } });
         break;
+      case 'codex':
+        await this.appendToFile('AGENTS.md', section);
+        await this.writeJson('.codex/hooks.json', { hooks: { preToolUse: [{ tools: ['bash'], message: `Skill(ProjectMap): Read ${CONFIG.MAP_FILE} for architectural context.` }] } });
+        break;
+      case 'opencode':
+        await this.appendToFile('AGENTS.md', section);
+        await this.writeFile('.opencode/plugins/projectmap.js', `export default { name: 'projectmap', beforeExecute: (t) => { if (t.name === 'bash') return "Read ${CONFIG.MAP_FILE} for god nodes."; } };`);
+        await this.writeJson('opencode.json', { plugins: ['./.opencode/plugins/projectmap.js'] });
+        break;
+      case 'antigravity':
+        await this.writeFile('.agent/rules/projectmap.md', `# ProjectMap\nAlways read \`${CONFIG.MAP_FILE}\`.\n`);
+        await this.writeFile('.agent/workflows/projectmap.md', `# ProjectMap Workflow\nRegisters /projectmap to refresh graph.\n`);
+        break;
+      case 'kiro':
+        await this.installGlobalSkill('kiro', 'projectmap', skillContent);
+        await this.writeFile('.kiro/steering/projectmap.md', `inclusion: always\n# ProjectMap\nRead \`${CONFIG.MAP_FILE}\`.\n`);
+        break;
+      case 'intellij':
+        await this.appendToFile('AGENTS.md', section);
+        break;
       case 'copilot':
         await this.installGlobalSkill('copilot', 'projectmap', skillContent);
         break;
@@ -393,6 +413,12 @@ class SkillManager {
         await this.installGlobalSkill('gemini', 'reflections', skillContent);
         await this.appendToFile('GEMINI.md', section);
         await this.writeJson('.gemini/settings.json', { hooks: { beforeTool: [{ tools: ['run_shell_command'], message: `Skill(Reflections): Remember to run 'code-graph reflect' after identifying a fix or quirk.` }] } });
+        break;
+      case 'antigravity':
+        await this.writeFile('.agent/rules/reflections.md', `# Reflections\nFollow the reflection cycle in \`${CONFIG.RULES_FILE}\`.\n`);
+        break;
+      case 'kiro':
+        await this.installGlobalSkill('kiro', 'reflections', skillContent);
         break;
       case 'copilot':
         await this.installGlobalSkill('copilot', 'reflections', skillContent);
@@ -426,17 +452,21 @@ class SkillManager {
     try {
       if (s === 'all' || s === 'projectmap') {
         await this.removeFile('.cursor/rules/projectmap.mdc');
+        await this.removeFile('.agent/rules/projectmap.md');
+        await this.removeFile('.agent/workflows/projectmap.md');
+        await this.removeFile('.kiro/steering/projectmap.md');
         await fsp.rm(path.join(this.home, `.${p}`, 'skills', 'projectmap'), { recursive: true, force: true });
       }
       if (s === 'all' || s === 'reflections') {
         await this.removeFile('.cursor/rules/reflections.mdc');
+        await this.removeFile('.agent/rules/reflections.md');
         await fsp.rm(path.join(this.home, `.${p}`, 'skills', 'reflections'), { recursive: true, force: true });
       }
 
       if (s === 'all') {
         const filesToRemove = [
           'CLAUDE.md', 'GEMINI.md', 'AGENTS.md', '.clinerules', '.roomodes',
-          '.github/copilot-instructions.md'
+          '.github/copilot-instructions.md', 'opencode.json', '.codex/hooks.json'
         ];
         for (const f of filesToRemove) await this.removeFile(f);
       }

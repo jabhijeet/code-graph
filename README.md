@@ -1,11 +1,11 @@
-# CODE-GRAPH (v3.1.0)
+# CODE-GRAPH (v3.2.0)
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** designed specifically for LLM agents. It optimizes context and token usage while enabling agents to learn from their own mistakes across sessions.
 
-## 🚀 New in v3.1: Selective Skill Architecture
-- **Segregated Skills:** Choose between `projectmap`, `reflections`, or both.
-- **Enhanced Platform Support:** Standardized `install-skills` for 15+ platforms.
-- **Granular Controls:** Selective installation/uninstallation supported.
+## 🚀 New in v3.2: Universal Agent OS
+- **Enhanced Platform Matrix:** Full surgical integration for Antigravity, Kiro, and Roo Code.
+- **Segregated Skill Hooks:** Isolated `preToolUse` and `beforeTool` hooks for Mapping vs. Reflections.
+- **Deep Steering:** Standardized `AGENTS.md` and `.cursor/rules/` for non-hookable platforms.
 - **Production-Ready Core:** Refactored Service-based architecture with full async support.
 
 ## 🛠️ The Code-Graph Skills
@@ -62,18 +62,18 @@ code-graph uninstall-skills claude reflections
 
 | Platform | Action Taken | Directory / Files |
 | :--- | :--- | :--- |
-| **Claude Code** | Adds instructions to `CLAUDE.md` and installs `preToolUse` hooks for `glob` and `grep`. | `.claude/settings.json` |
-| **Cursor** | Writes global rules with `alwaysApply: true`. | `.cursor/rules/projectmap.mdc`, `.cursor/rules/reflections.mdc` |
-| **Gemini CLI** | Copies skills globally and adds `beforeTool` hooks for `read_file` and `run_shell_command`. | `~/.gemini/skills/projectmap/SKILL.md`, `~/.gemini/skills/reflections/SKILL.md`, `GEMINI.md` |
-| **Codex** | Updates `AGENTS.md` and installs a `preToolUse` hook for `bash`. | `.codex/hooks.json` |
-| **OpenCode** | Registers a plugin that fires before `bash` tool calls. | `.opencode/plugins/code-graph.js`, `opencode.json`, `AGENTS.md` |
-| **GitHub Copilot CLI** | Copies skills globally for persistence. | `~/.copilot/skills/projectmap/SKILL.md`, `~/.copilot/skills/reflections/SKILL.md` |
-| **VS Code Copilot** | Writes session-persistent instructions. | `.github/copilot-instructions.md` |
+| **Claude Code** | Injects instructions and installs `preToolUse` hooks for `glob` and `grep`. | `CLAUDE.md`, `.claude/settings.json` |
+| **Cursor** | Writes global rule files with `alwaysApply: true`. | `.cursor/rules/projectmap.mdc`, `.cursor/rules/reflections.mdc` |
+| **Gemini CLI** | Copies skills globally and adds `beforeTool` hooks for `read_file` and `run_shell_command`. | `~/.gemini/skills/`, `GEMINI.md`, `.gemini/settings.json` |
+| **Antigravity** | Writes always-on rules and registers slash command workflows. | `.agent/rules/`, `.agent/workflows/` |
+| **Kiro IDE/CLI** | Writes global skills and steering files. | `~/.kiro/skills/`, `.kiro/steering/` |
+| **Codex** | Updates `AGENTS.md` and installs a `preToolUse` hook for `bash`. | `AGENTS.md`, `.codex/hooks.json` |
+| **OpenCode** | Registers a plugin that fires before `bash` tool calls. | `AGENTS.md`, `.opencode/plugins/`, `opencode.json` |
 | **Roo Code** | Injects instructions into project rule files. | `.clinerules`, `.roomodes` |
 | **IntelliJ / JetBrains** | Adds architectural context to a discoverable file. | `AGENTS.md` |
-| **Aider / Trae / etc.** | Updates `AGENTS.md` and copies skills globally. | `~/.<platform>/skills/projectmap/SKILL.md`, `~/.<platform>/skills/reflections/SKILL.md`, `AGENTS.md` |
-| **Kiro IDE/CLI** | Writes global skills and steering files. | `.kiro/skills/projectmap/SKILL.md`, `.kiro/skills/reflections/SKILL.md`, `.kiro/steering/code-graph.md` |
-| **Antigravity** | Writes always-on rules and registers workflow commands. | `.agent/rules/projectmap.md`, `.agent/rules/reflections.md`, `.agent/workflows/code-graph.md` |
+| **GitHub Copilot CLI** | Copies skills globally for persistence. | `~/.copilot/skills/` |
+| **VS Code Copilot** | Writes session-persistent instructions. | `.github/copilot-instructions.md` |
+| **Aider / Trae / etc.** | Updates `AGENTS.md` and copies skills globally. | `~/.<platform>/skills/`, `AGENTS.md` |
 
 ### How agents use it:
 1.  **Direct Instructions:** Most platforms are configured to read project-level files (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, etc.) automatically. These files tell the agent: "Before searching files, read `llm-code-graph.md`."
