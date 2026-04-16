@@ -1,8 +1,13 @@
-# CODE-GRAPH (v3.5.0)
+# CODE-GRAPH (v3.5.1)
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** designed specifically for LLM agents. It optimizes context and token usage while enabling agents to learn from their own mistakes across sessions.
 
-## 🚀 New in v3.5: Structural Data Integrity
+## 🚀 New in v3.5.1: Orchestrator Synchronization
+- **Fix (Gemini CLI):** Corrected global agent/skill paths and added mandatory YAML frontmatter.
+- **Stability:** Deep-merge support for tool hooks to prevent configuration collisions.
+- **Documentation:** Precise integration details for Gemini CLI and Roo Code.
+
+## 🚀 New in v3.5.0: Structural Data Integrity
 - **Release Documentation:** Segregated historical version tracking into a dedicated `RELEASE_NOTES.md`.
 - **Learnings focus:** Refocused `llm-agent-project-learnings.md` exclusively on architectural pitfalls and best practices.
 - **Improved minification:** Final refined notation for better LLM reasoning with fewer tokens.
@@ -132,7 +137,7 @@ code-graph uninstall-skills claude reflections
 | :--- | :--- | :--- |
 | **Claude Code** | Injects instructions and installs `preToolUse` hooks for `glob` and `grep`. | `CLAUDE.md`, `.claude/settings.json` |
 | **Cursor** | Writes global rule files with `alwaysApply: true`. | `.cursor/rules/projectmap.mdc`, `.cursor/rules/reflections.mdc` |
-| **Gemini CLI** | Copies skills globally and adds `beforeTool` hooks for `read_file` and `run_shell_command`. | `~/.gemini/skills/`, `GEMINI.md`, `.gemini/settings.json` |
+| **Gemini CLI** | Global skills with YAML frontmatter and `GEMINI.md` Memory Imports. | `~/.gemini/skills/`, `GEMINI.md` |
 | **Antigravity** | Writes always-on rules and registers slash command workflows. | `.agent/rules/`, `.agent/workflows/` |
 | **Kiro IDE/CLI** | Writes global skills and steering files. | `~/.kiro/skills/`, `.kiro/steering/` |
 | **Codex** | Updates `AGENTS.md` and installs a `preToolUse` hook for `bash`. | `AGENTS.md`, `.codex/hooks.json` |

@@ -236,7 +236,7 @@ class ProjectMapper {
   }
 
   formatOutput() {
-    const header = `# CODE_GRAPH\n> Protocol: llm-agent-rules.md | Lessons: llm-agent-project-learnings.md\n> Legend: * core, (↑out ↓in deps), s: symbols, d: desc\n\n`;
+    const header = `# CODE_GRAPH\nMISSION: COMPACT PROJECT MAP FOR LLM AGENTS.\nPROTOCOL: Follow llm-agent-rules.md\nMEMORY: See llm-agent-project-learnings.md\n\n> Legend: * core, (↑out ↓in deps), s: symbols, d: desc\n\n`;
     const nodes = this.files.map(f => {
       const inCount = this.incomingEdges[f.path] || 0;
       const tags = f.tags.length ? ` [${f.tags.join(',')}]` : '';
@@ -373,9 +373,9 @@ class SkillManager {
         await this.writeFile('.cursor/rules/projectmap.mdc', `---\ndescription: Use knowledge graph for navigation.\nalwaysApply: true\n---\n# ProjectMap\nRead \`${CONFIG.MAP_FILE}\` to locate core logic and dependencies.\n`);
         break;
       case 'gemini':
-        await this.installGlobalSkill('gemini', 'projectmap', skillContent);
-        await this.appendToFile('GEMINI.md', section);
-        await this.writeJson('.gemini/settings.json', { hooks: { beforeTool: [{ tools: ['read_file'], message: `Skill(ProjectMap): Read ${CONFIG.MAP_FILE} for structural context.` }] } });
+        const geminiSkill = `---\nname: projectmap\ndescription: Use knowledge graph for navigation.\n---\n${skillContent}`;
+        await this.installGlobalSkill('gemini', 'projectmap', geminiSkill);
+        await this.appendToFile('GEMINI.md', `\n# Code-Graph ProjectMap\n@./${CONFIG.MAP_FILE}\n${section}`);
         break;
       case 'codex':
         await this.appendToFile('AGENTS.md', section);
@@ -425,9 +425,9 @@ class SkillManager {
         await this.writeFile('.cursor/rules/reflections.mdc', `---\ndescription: Mandatory reflection cycle.\nalwaysApply: true\n---\n# Reflections\nFollow \`${CONFIG.RULES_FILE}\`. Update \`${CONFIG.REFLECTIONS_FILE}\` after every fix.\n`);
         break;
       case 'gemini':
-        await this.installGlobalSkill('gemini', 'reflections', skillContent);
+        const geminiReflect = `---\nname: reflections\ndescription: Mandatory reflection cycle.\n---\n${skillContent}`;
+        await this.installGlobalSkill('gemini', 'reflections', geminiReflect);
         await this.appendToFile('GEMINI.md', section);
-        await this.writeJson('.gemini/settings.json', { hooks: { beforeTool: [{ tools: ['run_shell_command'], message: `Skill(Reflections): Remember to run 'code-graph reflect' after identifying a fix or quirk.` }] } });
         break;
       case 'antigravity':
         await this.writeFile('.agent/rules/reflections.md', `# Reflections\nFollow the reflection cycle in \`${CONFIG.RULES_FILE}\`.\n`);
@@ -527,7 +527,15 @@ class SkillManager {
     if (fs.existsSync(fullPath)) {
       try { existing = JSON.parse(await fsp.readFile(fullPath, 'utf8')); } catch (e) {}
     }
-    const merged = { ...existing, ...data };
+    
+    const merged = { ...existing };
+    for (const key in data) {
+      if (key === 'hooks' && typeof data[key] === 'object' && typeof existing[key] === 'object') {
+        merged[key] = { ...existing[key], ...data[key] };
+      } else {
+        merged[key] = data[key];
+      }
+    }
     await this.writeFile(filename, JSON.stringify(merged, null, 2));
   }
 
@@ -580,7 +588,10 @@ class AgentManager {
     console.log(`[Code-Graph] Removing sub-agent for ${p}...`);
     try {
       switch (p) {
-        case 'gemini': await fsp.rm(path.join(this.home, '.gemini', 'subagents', 'code-graph'), { recursive: true, force: true }); break;
+        case 'gemini': 
+          await fsp.rm(path.join(this.home, '.gemini', 'subagents', 'code-graph'), { recursive: true, force: true }); 
+          await fsp.rm(path.join(this.home, '.gemini', 'agents', 'code-graph.md'), { force: true });
+          break;
         case 'claude':
         case 'cursor': await this.removeFile('mcp-server-code-graph.json'); break;
         case 'kiro': await fsp.rm(path.join(this.home, '.kiro', 'agents', 'code-graph'), { recursive: true, force: true }); break;
@@ -610,10 +621,10 @@ class AgentManager {
   }
 
   async installGeminiAgent() {
-    const agentDir = path.join(this.home, '.gemini', 'subagents', 'code-graph');
-    await fsp.mkdir(agentDir, { recursive: true });
-    const content = `# Code-Graph Agent\nRole: Specialized analyst for codebase mapping and memory persistence.\nCapabilities: Can run \`code-graph generate\` to refresh the project map and \`code-graph reflect\` to save lessons.\nUsage: Delegate architectural or environmental analysis to this agent.\n`;
-    await fsp.writeFile(path.join(agentDir, 'AGENT.md'), content);
+    const agentFile = path.join(this.home, '.gemini', 'agents', 'code-graph.md');
+    await fsp.mkdir(path.dirname(agentFile), { recursive: true });
+    const content = `---\nname: code-graph\ndescription: Specialized analyst for codebase mapping and memory persistence.\n---\n# Code-Graph Agent\nRole: Specialized analyst for codebase mapping and memory persistence.\nCapabilities: Can run \`code-graph generate\` to refresh the project map and \`code-graph reflect\` to save lessons.\nUsage: Delegate architectural or environmental analysis to this agent.\n`;
+    await fsp.writeFile(agentFile, content);
   }
 
   async installMCPServer() {

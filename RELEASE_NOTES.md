@@ -1,5 +1,12 @@
 # RELEASE NOTES
 
+### v3.5.1 (2026-04-16)
+- **Fix (Gemini CLI):** Modernized integration with YAML frontmatter for global skills and agents.
+- **Fix (Gemini CLI):** Transitioned from unsupported tool hooks to standard `GEMINI.md` Memory Import syntax (`@import`).
+- **Fix (Roo Code):** Restored missing `.roomodes` synchronization for mode-agnostic rules.
+- **Stability:** Improved `writeJson` to perform deep-merging of `hooks`, preventing configuration overwrites.
+- **Tests:** Aligned `ProjectMapper` header with test suite expectations.
+
 ### v3.4.1 (2026-04-16)
 - **Docs:** Synchronized NPM installation documentation.
 - **Docs:** Reconciled platform integration tables for consistency across all 15+ supported platforms.
