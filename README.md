@@ -1,4 +1,4 @@
-# CODE-GRAPH (v3.2.0)
+# CODE-GRAPH (v3.2.1)
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** designed specifically for LLM agents. It optimizes context and token usage while enabling agents to learn from their own mistakes across sessions.
 
@@ -33,11 +33,15 @@ Configure your agent to use these skills by running the `install-skills` command
 | **Claude Code** | `code-graph install-skills claude` |
 | **Cursor** | `code-graph install-skills cursor` |
 | **Gemini CLI** | `code-graph install-skills gemini` |
+| **Antigravity** | `code-graph install-skills antigravity` |
+| **Kiro IDE/CLI** | `code-graph install-skills kiro` |
+| **Roo Code (Cline)** | `code-graph install-skills roocode` |
+| **IntelliJ / JetBrains** | `code-graph install-skills intellij` |
 | **Codex** | `code-graph install-skills codex` |
 | **OpenCode** | `code-graph install-skills opencode` |
 | **GitHub Copilot CLI** | `code-graph install-skills copilot` |
 | **VS Code Copilot Chat** | `code-graph install-skills vscode` |
-| **Aider / Trae / etc.** | `code-graph install-skills <platform>` |
+| **Aider / Trae / Hermes** | `code-graph install-skills aider` |
 
 ### Selective Installation
 You can choose to install or uninstall specific skills:
