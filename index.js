@@ -10,6 +10,7 @@ import fs from 'fs';
 import { promises as fsp } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import os from 'os';
 import chokidar from 'chokidar';
 import ignore from 'ignore';
 
@@ -19,8 +20,8 @@ const __filename = fileURLToPath(import.meta.url);
 export const CONFIG = {
   IGNORE_FILE: '.gitignore',
   MAP_FILE: 'llm-code-graph.md',
-  REFLECTIONS_FILE: 'PROJECT_REFLECTIONS.md',
-  RULES_FILE: 'AGENT_RULES.md',
+  REFLECTIONS_FILE: 'llm-agent-project-learnings.md',
+  RULES_FILE: 'llm-agent-rules.md',
   SUPPORTED_EXTENSIONS: [
     '.js', '.ts', '.jsx', '.tsx', '.py', '.go', '.rs', '.java', 
     '.cpp', '.c', '.h', '.hpp', '.cc', '.rb', '.php', '.swift', 
@@ -235,7 +236,7 @@ class ProjectMapper {
   }
 
   formatOutput() {
-    const header = `# CODE_GRAPH_MAP\n> MISSION: COMPACT PROJECT MAP FOR LLM AGENTS.\n> PROTOCOL: Follow AGENT_RULES.md | MEMORY: See PROJECT_REFLECTIONS.md\n> Legend: [CORE] Entry Point, (↑N) Outgoing Deps, (↓M) Incoming Dependents\n> Notation: syms: [Name [Signature/Context]], desc: File Summary, [TAG: Context]\n\n`;
+    const header = `# CODE_GRAPH_MAP\n> MISSION: COMPACT PROJECT MAP FOR LLM AGENTS.\n> PROTOCOL: Follow llm-agent-rules.md | MEMORY: See llm-agent-project-learnings.md\n> Legend: [CORE] Entry Point, (↑N) Outgoing Deps, (↓M) Incoming Dependents\n> Notation: syms: [Name [Signature/Context]], desc: File Summary, [TAG: Context]\n\n`;
     const nodes = this.files.map(f => {
       const inCount = this.incomingEdges[f.path] || 0;
       const tags = f.tags.length ? ` [${f.tags.join(', ')}]` : '';
@@ -254,7 +255,7 @@ class ReflectionManager {
     if (!lesson) return console.error('[Code-Graph] Usage: reflect <cat> <lesson>');
     
     const filePath = path.join(process.cwd(), CONFIG.REFLECTIONS_FILE);
-    const header = `# PROJECT_REFLECTIONS & LESSONS LEARNED\n> LLM AGENT MEMORY: READ BEFORE STARTING TASKS. UPDATE ON FAILURES.\n`;
+    const header = `# LLM_AGENT_PROJECT_LEARNINGS\n> LLM AGENT MEMORY: READ BEFORE STARTING TASKS. UPDATE ON FAILURES.\n`;
     const entry = `- [${category.toUpperCase()}: ${new Date().toISOString().split('T')[0]}] ${lesson}`;
 
     try {
@@ -281,7 +282,7 @@ class ProjectInitializer {
     const rulesPath = path.join(cwd, CONFIG.RULES_FILE);
     const reflectPath = path.join(cwd, CONFIG.REFLECTIONS_FILE);
 
-    const rulesContent = `# AGENT OPERATIONAL PROTOCOL (STRICT)
+    const rulesContent = `# LLM_AGENT_RULES (STRICT PROTOCOL)
 > This protocol is MANDATORY for all LLM agents. Failure to update memory is a failure of the task.
 
 ## 🧠 THE REFLECTION CYCLE
@@ -296,7 +297,7 @@ class ProjectInitializer {
 - \`STYLE\`: Project-specific architectural rules.
 `;
 
-    const reflectContent = `# PROJECT_REFLECTIONS & LESSONS LEARNED\n> LLM AGENT MEMORY: READ BEFORE STARTING TASKS. UPDATE ON FAILURES.\n`;
+    const reflectContent = `# LLM_AGENT_PROJECT_LEARNINGS\n> LLM AGENT MEMORY: READ BEFORE STARTING TASKS. UPDATE ON FAILURES.\n`;
 
     try {
       if (!fs.existsSync(rulesPath)) {
@@ -313,6 +314,174 @@ class ProjectInitializer {
   }
 }
 
+/**
+ * Manages platform-specific skills and agent integrations.
+ */
+class SkillManager {
+  constructor(cwd) {
+    this.cwd = cwd;
+    this.home = os.homedir();
+  }
+
+  async execute(platform, action) {
+    if (!platform) return console.error('[Code-Graph] Platform required. Usage: code-graph <platform> [install|uninstall]');
+    const p = platform.toLowerCase();
+    const act = (action || 'install').toLowerCase();
+
+    if (act === 'install') await this.install(p);
+    else if (act === 'uninstall') await this.uninstall(p);
+    else console.error(`[Code-Graph] Unknown action: ${act}`);
+  }
+
+  async install(p) {
+    console.log(`[Code-Graph] Installing skill for ${p}...`);
+    try {
+      switch (p) {
+        case 'claude': await this.installClaude(); break;
+        case 'codex': await this.installCodex(); break;
+        case 'opencode': await this.installOpenCode(); break;
+        case 'cursor': await this.installCursor(); break;
+        case 'gemini': await this.installGemini(); break;
+        case 'aider':
+        case 'openclaw':
+        case 'droid':
+        case 'trae':
+        case 'trae-cn':
+        case 'hermes':
+          await this.installGenericAgent(p);
+          break;
+        case 'kiro': await this.installKiro(); break;
+        case 'antigravity': await this.installAntigravity(); break;
+        case 'copilot': await this.installCopilot(); break;
+        case 'vscode': await this.installVSCode(); break;
+        default: return console.error(`[Code-Graph] Unsupported platform: ${p}`);
+      }
+      console.log(`[Code-Graph] Successfully installed ${p} skill.`);
+    } catch (err) {
+      console.error(`[Code-Graph] Installation failed for ${p}: ${err.message}`);
+    }
+  }
+
+  async uninstall(p) {
+    console.log(`[Code-Graph] Uninstalling skill for ${p}...`);
+    // Simplification: just remove the primary files
+    try {
+      switch (p) {
+        case 'claude': await this.removeFile('CLAUDE.md'); break;
+        case 'codex': await this.removeFile('AGENTS.md'); break;
+        case 'opencode': await this.removeFile('AGENTS.md'); break;
+        case 'cursor': await this.removeFile('.cursor/rules/code-graph.mdc'); break;
+        case 'gemini': await this.removeFile('GEMINI.md'); break;
+        case 'aider':
+        case 'openclaw':
+        case 'droid':
+        case 'trae':
+        case 'trae-cn':
+        case 'hermes':
+          await this.removeFile('AGENTS.md');
+          break;
+        case 'kiro': await this.removeFile('.kiro/steering/code-graph.md'); break;
+        case 'antigravity': await this.removeFile('.agent/rules/code-graph.md'); break;
+        case 'copilot': await fsp.rm(path.join(this.home, '.copilot', 'skills', 'code-graph'), { recursive: true, force: true }); break;
+        case 'vscode': await this.removeFile('.github/copilot-instructions.md'); break;
+      }
+      console.log(`[Code-Graph] Successfully uninstalled ${p} skill.`);
+    } catch (err) {
+      console.error(`[Code-Graph] Uninstallation failed: ${err.message}`);
+    }
+  }
+
+  async installClaude() {
+    const section = `\n## 🗺️ Code-Graph Integration\nBefore answering architecture questions, read \`${CONFIG.MAP_FILE}\` for god nodes and community structure. This ensures high-level context before searching raw files.\n`;
+    await this.appendToFile('CLAUDE.md', section);
+    await this.writeJson('.claude/settings.json', { hooks: { preToolUse: [{ tools: ['glob', 'grep'], message: `code-graph: Knowledge graph exists. Read ${CONFIG.MAP_FILE} before searching raw files.` }] } });
+  }
+
+  async installCodex() {
+    const section = `\n## 🗺️ Code-Graph Navigation\nAlways check for \`${CONFIG.MAP_FILE}\` to understand project structure before using bash tools.\n`;
+    await this.appendToFile('AGENTS.md', section);
+    await this.writeJson('.codex/hooks.json', { hooks: { preToolUse: [{ tools: ['bash'], message: `code-graph: Knowledge graph exists. Read ${CONFIG.MAP_FILE} for architectural context.` }] } });
+  }
+
+  async installOpenCode() {
+    await this.appendToFile('AGENTS.md', `\n## 🗺️ Code-Graph\nRead \`${CONFIG.MAP_FILE}\` for high-level mapping.\n`);
+    const plugin = `export default { name: 'code-graph', beforeExecute: (tool) => { if (tool.name === 'bash') return "code-graph: Read ${CONFIG.MAP_FILE} for god nodes."; } };`;
+    await this.writeFile('.opencode/plugins/code-graph.js', plugin);
+    await this.writeJson('opencode.json', { plugins: ['./.opencode/plugins/code-graph.js'] });
+  }
+
+  async installCursor() {
+    const content = `---\ndescription: Always use knowledge graph for navigation.\nalwaysApply: true\n---\n# Code-Graph\n- Read \`${CONFIG.MAP_FILE}\` before searching.\n- Prioritize god nodes for architecture.\n- Adhere to \`${CONFIG.RULES_FILE}\`.\n`;
+    await this.writeFile('.cursor/rules/code-graph.mdc', content);
+  }
+
+  async installGemini() {
+    const skillPath = path.join(this.home, '.gemini', 'skills', 'code-graph', 'SKILL.md');
+    await fsp.mkdir(path.dirname(skillPath), { recursive: true });
+    await fsp.writeFile(skillPath, `# Code-Graph Skill\nUse \`${CONFIG.MAP_FILE}\` for navigation.\n`);
+    await this.appendToFile('GEMINI.md', `\n## 🗺️ Code-Graph\nRead \`${CONFIG.MAP_FILE}\` before file-read tools.\n`);
+    await this.writeJson('.gemini/settings.json', { hooks: { beforeTool: [{ tools: ['read_file'], message: `code-graph: Knowledge graph exists. Read ${CONFIG.MAP_FILE}.` }] } });
+  }
+
+  async installGenericAgent(p) {
+    await this.appendToFile('AGENTS.md', `\n## 🗺️ Code-Graph\nRead \`${CONFIG.MAP_FILE}\` for structural context.\n`);
+    const globalPath = path.join(this.home, `.${p}`, 'skills', 'code-graph', 'SKILL.md');
+    await fsp.mkdir(path.dirname(globalPath), { recursive: true });
+    await fsp.writeFile(globalPath, `# Code-Graph Skill for ${p}\n`);
+  }
+
+  async installKiro() {
+    await this.writeFile('.kiro/skills/code-graph/SKILL.md', `# Code-Graph Skill\n`);
+    await this.writeFile('.kiro/steering/code-graph.md', `inclusion: always\n# Code-Graph\nRead \`${CONFIG.MAP_FILE}\`.\n`);
+  }
+
+  async installAntigravity() {
+    await this.writeFile('.agent/rules/code-graph.md', `# Code-Graph Rules\nAlways read \`${CONFIG.MAP_FILE}\`.\n`);
+    await this.writeFile('.agent/workflows/code-graph.md', `# Code-Graph Workflow\nRegisters /code-graph\n`);
+  }
+
+  async installCopilot() {
+    const skillPath = path.join(this.home, '.copilot', 'skills', 'code-graph', 'SKILL.md');
+    await fsp.mkdir(path.dirname(skillPath), { recursive: true });
+    await fsp.writeFile(skillPath, `# Code-Graph Skill\nUse \`${CONFIG.MAP_FILE}\`.\n`);
+  }
+
+  async installVSCode() {
+    await this.appendToFile('.github/copilot-instructions.md', `\n## 🗺️ Code-Graph\nAlways read \`${CONFIG.MAP_FILE}\` for architectural context.\n`);
+  }
+
+  async appendToFile(filename, content) {
+    const fullPath = path.join(this.cwd, filename);
+    if (fs.existsSync(fullPath)) {
+      const existing = await fsp.readFile(fullPath, 'utf8');
+      if (!existing.includes(content.trim())) await fsp.appendFile(fullPath, content);
+    } else {
+      await fsp.writeFile(fullPath, content);
+    }
+  }
+
+  async writeFile(filename, content) {
+    const fullPath = path.join(this.cwd, filename);
+    await fsp.mkdir(path.dirname(fullPath), { recursive: true });
+    await fsp.writeFile(fullPath, content);
+  }
+
+  async writeJson(filename, data) {
+    const fullPath = path.join(this.cwd, filename);
+    let existing = {};
+    if (fs.existsSync(fullPath)) {
+      try { existing = JSON.parse(await fsp.readFile(fullPath, 'utf8')); } catch (e) {}
+    }
+    const merged = { ...existing, ...data };
+    await this.writeFile(filename, JSON.stringify(merged, null, 2));
+  }
+
+  async removeFile(filename) {
+    const fullPath = path.join(this.cwd, filename);
+    if (fs.existsSync(fullPath)) await fsp.unlink(fullPath);
+  }
+}
+
 // --- CLI Entry Point ---
 
 async function main() {
@@ -320,6 +489,8 @@ async function main() {
   const cwd = process.cwd();
 
   try {
+    const platforms = ['claude', 'codex', 'opencode', 'cursor', 'gemini', 'aider', 'openclaw', 'droid', 'trae', 'trae-cn', 'hermes', 'kiro', 'antigravity', 'copilot', 'vscode'];
+    
     switch (command || 'generate') {
       case 'generate':
         await new ProjectMapper(cwd).generate();
@@ -334,11 +505,18 @@ async function main() {
         await ProjectInitializer.init(cwd);
         await installGitHook(cwd);
         break;
+      case 'install-skills':
+        await new SkillManager(cwd).execute(args[0], args[1]);
+        break;
       case 'watch':
         startWatcher(cwd);
         break;
       default:
-        console.log('Usage: code-graph [generate|init|reflect|install-hook|watch]');
+        if (platforms.includes(command?.toLowerCase())) {
+          await new SkillManager(cwd).execute(command, args[0]);
+        } else {
+          console.log('Usage: code-graph [generate|init|reflect|install-hook|watch|install-skills <platform>]');
+        }
     }
   } catch (err) {
     console.error(`[Code-Graph] Critical Error: ${err.message}`);

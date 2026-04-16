@@ -121,8 +121,8 @@ test('ProjectMapper - Format Output Header', () => {
   const output = mapper.formatOutput();
   
   assert.ok(output.includes('MISSION: COMPACT PROJECT MAP FOR LLM AGENTS.'));
-  assert.ok(output.includes('PROTOCOL: Follow AGENT_RULES.md'));
-  assert.ok(output.includes('MEMORY: See PROJECT_REFLECTIONS.md'));
+  assert.ok(output.includes('PROTOCOL: Follow llm-agent-rules.md'));
+  assert.ok(output.includes('MEMORY: See llm-agent-project-learnings.md'));
 });
 
 test('Recursive Ignore Simulation (Logic Check)', async () => {

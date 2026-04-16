@@ -1,4 +1,4 @@
-# PROJECT_REFLECTIONS & LESSONS LEARNED
+# LLM_AGENT_PROJECT_LEARNINGS
 > LLM AGENT MEMORY: READ BEFORE STARTING TASKS. UPDATE ON FAILURES.
 
 ## ⚠️ CRITICAL PITFALLS
@@ -12,3 +12,4 @@
 - [STYLE] Always include dependency counts (↑N ↓M) in `llm-code-graph.md` to help prioritize architectural understanding.
 
 - [TOOLING: 2026-04-15] Added reflect command to simplify LLM memory updates.
+- [TOOLING: 2026-04-16] Upgraded to v3.0.0: Unified agent renaming (llm-agent-*) and added `install-skills` for automated platform integration (Claude, Cursor, Gemini, etc.).
