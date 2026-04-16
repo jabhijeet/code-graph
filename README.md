@@ -1,4 +1,4 @@
-# CODE-GRAPH (v3.0.0)
+# CODE-GRAPH (v3.0.1)
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** designed specifically for LLM agents. It optimizes context and token usage while enabling agents to learn from their own mistakes across sessions.
 
