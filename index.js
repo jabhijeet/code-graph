@@ -323,131 +323,128 @@ class SkillManager {
     this.home = os.homedir();
   }
 
-  async execute(platform, action) {
-    if (!platform) return console.error('[Code-Graph] Platform required. Usage: code-graph <platform> [install|uninstall]');
+  async execute(platform, action, skill) {
+    if (!platform) return console.error('[Code-Graph] Platform required. Usage: code-graph install-skills <platform> [projectmap|reflections]');
     const p = platform.toLowerCase();
-    const act = (action || 'install').toLowerCase();
+    const act = (action || 'install-skills').toLowerCase();
+    const s = (skill || 'all').toLowerCase();
 
-    if (act === 'install') await this.install(p);
-    else if (act === 'uninstall') await this.uninstall(p);
-    else console.error(`[Code-Graph] Unknown action: ${act}`);
+    if (act === 'install-skills') await this.install(p, s);
+    else if (act === 'uninstall-skills') await this.uninstall(p, s);
+    else console.error(`[Code-Graph] Unknown action: ${act}. Use install-skills or uninstall-skills.`);
   }
 
-  async install(p) {
-    console.log(`[Code-Graph] Installing skill for ${p}...`);
+  async install(p, s) {
+    console.log(`[Code-Graph] Running install-skills (${s}) for ${p}...`);
     try {
-      switch (p) {
-        case 'claude': await this.installClaude(); break;
-        case 'codex': await this.installCodex(); break;
-        case 'opencode': await this.installOpenCode(); break;
-        case 'cursor': await this.installCursor(); break;
-        case 'gemini': await this.installGemini(); break;
-        case 'aider':
-        case 'openclaw':
-        case 'droid':
-        case 'trae':
-        case 'trae-cn':
-        case 'hermes':
-          await this.installGenericAgent(p);
-          break;
-        case 'kiro': await this.installKiro(); break;
-        case 'antigravity': await this.installAntigravity(); break;
-        case 'copilot': await this.installCopilot(); break;
-        case 'vscode': await this.installVSCode(); break;
-        default: return console.error(`[Code-Graph] Unsupported platform: ${p}`);
-      }
-      console.log(`[Code-Graph] Successfully installed ${p} skill.`);
+      if (s === 'all' || s === 'projectmap') await this.installProjectMap(p);
+      if (s === 'all' || s === 'reflections') await this.installReflections(p);
+      console.log(`[Code-Graph] Successfully completed install-skills for ${p}.`);
     } catch (err) {
-      console.error(`[Code-Graph] Installation failed for ${p}: ${err.message}`);
+      console.error(`[Code-Graph] install-skills failed for ${p}: ${err.message}`);
     }
   }
 
-  async uninstall(p) {
-    console.log(`[Code-Graph] Uninstalling skill for ${p}...`);
-    // Simplification: just remove the primary files
-    try {
-      switch (p) {
-        case 'claude': await this.removeFile('CLAUDE.md'); break;
-        case 'codex': await this.removeFile('AGENTS.md'); break;
-        case 'opencode': await this.removeFile('AGENTS.md'); break;
-        case 'cursor': await this.removeFile('.cursor/rules/code-graph.mdc'); break;
-        case 'gemini': await this.removeFile('GEMINI.md'); break;
-        case 'aider':
-        case 'openclaw':
-        case 'droid':
-        case 'trae':
-        case 'trae-cn':
-        case 'hermes':
-          await this.removeFile('AGENTS.md');
-          break;
-        case 'kiro': await this.removeFile('.kiro/steering/code-graph.md'); break;
-        case 'antigravity': await this.removeFile('.agent/rules/code-graph.md'); break;
-        case 'copilot': await fsp.rm(path.join(this.home, '.copilot', 'skills', 'code-graph'), { recursive: true, force: true }); break;
-        case 'vscode': await this.removeFile('.github/copilot-instructions.md'); break;
-      }
-      console.log(`[Code-Graph] Successfully uninstalled ${p} skill.`);
-    } catch (err) {
-      console.error(`[Code-Graph] Uninstallation failed: ${err.message}`);
+  async installProjectMap(p) {
+    const section = `\n## 🗺️ Skill: ProjectMap\nBefore answering architecture questions, read \`${CONFIG.MAP_FILE}\` for god nodes and structural context. This ensures high-level awareness before searching raw files.\n`;
+    const skillContent = `# ProjectMap Skill\nUse \`${CONFIG.MAP_FILE}\` for project navigation and architectural awareness.\n`;
+
+    switch (p) {
+      case 'claude':
+        await this.appendToFile('CLAUDE.md', section);
+        await this.writeJson('.claude/settings.json', { hooks: { preToolUse: [{ tools: ['glob', 'grep'], message: `Skill(ProjectMap): Knowledge graph exists. Read ${CONFIG.MAP_FILE} before searching raw files.` }] } });
+        break;
+      case 'cursor':
+        await this.writeFile('.cursor/rules/projectmap.mdc', `---\ndescription: Use knowledge graph for navigation.\nalwaysApply: true\n---\n# ProjectMap\nRead \`${CONFIG.MAP_FILE}\` to locate core logic and dependencies.\n`);
+        break;
+      case 'gemini':
+        await this.installGlobalSkill('gemini', 'projectmap', skillContent);
+        await this.appendToFile('GEMINI.md', section);
+        await this.writeJson('.gemini/settings.json', { hooks: { beforeTool: [{ tools: ['read_file'], message: `Skill(ProjectMap): Read ${CONFIG.MAP_FILE} for structural context.` }] } });
+        break;
+      case 'copilot':
+        await this.installGlobalSkill('copilot', 'projectmap', skillContent);
+        break;
+      case 'vscode':
+        await this.appendToFile('.github/copilot-instructions.md', section);
+        break;
+      case 'roocode':
+        await this.appendToFile('.clinerules', section);
+        await this.appendToFile('.roomodes', section);
+        break;
+      default:
+        await this.appendToFile('AGENTS.md', section);
+        await this.installGlobalSkill(p, 'projectmap', skillContent);
     }
   }
 
-  async installClaude() {
-    const section = `\n## 🗺️ Code-Graph Integration\nBefore answering architecture questions, read \`${CONFIG.MAP_FILE}\` for god nodes and community structure. This ensures high-level context before searching raw files.\n`;
-    await this.appendToFile('CLAUDE.md', section);
-    await this.writeJson('.claude/settings.json', { hooks: { preToolUse: [{ tools: ['glob', 'grep'], message: `code-graph: Knowledge graph exists. Read ${CONFIG.MAP_FILE} before searching raw files.` }] } });
+  async installReflections(p) {
+    const section = `\n## 🧠 Skill: Reflections\nFollow the reflection cycle: Read \`${CONFIG.REFLECTIONS_FILE}\` for past lessons and run \`code-graph reflect\` after any bug fix or failure.\n`;
+    const skillContent = `# Reflections Skill\nUse \`${CONFIG.REFLECTIONS_FILE}\` to persist and retrieve project-specific lessons and environment quirks.\n`;
+
+    switch (p) {
+      case 'claude':
+        await this.appendToFile('CLAUDE.md', section);
+        break;
+      case 'cursor':
+        await this.writeFile('.cursor/rules/reflections.mdc', `---\ndescription: Mandatory reflection cycle.\nalwaysApply: true\n---\n# Reflections\nFollow \`${CONFIG.RULES_FILE}\`. Update \`${CONFIG.REFLECTIONS_FILE}\` after every fix.\n`);
+        break;
+      case 'gemini':
+        await this.installGlobalSkill('gemini', 'reflections', skillContent);
+        await this.appendToFile('GEMINI.md', section);
+        await this.writeJson('.gemini/settings.json', { hooks: { beforeTool: [{ tools: ['run_shell_command'], message: `Skill(Reflections): Remember to run 'code-graph reflect' after identifying a fix or quirk.` }] } });
+        break;
+      case 'copilot':
+        await this.installGlobalSkill('copilot', 'reflections', skillContent);
+        break;
+      case 'vscode':
+        await this.appendToFile('.github/copilot-instructions.md', section);
+        break;
+      case 'roocode':
+        const rules = `\n# Reflections Protocol\nStrictly follow the reflection cycle in \`${CONFIG.RULES_FILE}\`. Persist lessons to \`${CONFIG.REFLECTIONS_FILE}\`.\n`;
+        await this.appendToFile('.clinerules', rules);
+        await this.appendToFile('.roomodes', rules);
+        break;
+      default:
+        await this.appendToFile('AGENTS.md', section);
+        await this.installGlobalSkill(p, 'reflections', skillContent);
+    }
   }
 
-  async installCodex() {
-    const section = `\n## 🗺️ Code-Graph Navigation\nAlways check for \`${CONFIG.MAP_FILE}\` to understand project structure before using bash tools.\n`;
-    await this.appendToFile('AGENTS.md', section);
-    await this.writeJson('.codex/hooks.json', { hooks: { preToolUse: [{ tools: ['bash'], message: `code-graph: Knowledge graph exists. Read ${CONFIG.MAP_FILE} for architectural context.` }] } });
+  async installGlobalSkill(platform, skillName, content) {
+    const skillPath = path.join(this.home, `.${platform}`, 'skills', skillName, 'SKILL.md');
+    try {
+      await fsp.mkdir(path.dirname(skillPath), { recursive: true });
+      await fsp.writeFile(skillPath, content);
+    } catch (e) {
+      // Ignore errors for platforms that don't support global skills
+    }
   }
 
-  async installOpenCode() {
-    await this.appendToFile('AGENTS.md', `\n## 🗺️ Code-Graph\nRead \`${CONFIG.MAP_FILE}\` for high-level mapping.\n`);
-    const plugin = `export default { name: 'code-graph', beforeExecute: (tool) => { if (tool.name === 'bash') return "code-graph: Read ${CONFIG.MAP_FILE} for god nodes."; } };`;
-    await this.writeFile('.opencode/plugins/code-graph.js', plugin);
-    await this.writeJson('opencode.json', { plugins: ['./.opencode/plugins/code-graph.js'] });
-  }
+  async uninstall(p, s) {
+    console.log(`[Code-Graph] Running uninstall-skills (${s}) for ${p}...`);
+    try {
+      if (s === 'all' || s === 'projectmap') {
+        await this.removeFile('.cursor/rules/projectmap.mdc');
+        await fsp.rm(path.join(this.home, `.${p}`, 'skills', 'projectmap'), { recursive: true, force: true });
+      }
+      if (s === 'all' || s === 'reflections') {
+        await this.removeFile('.cursor/rules/reflections.mdc');
+        await fsp.rm(path.join(this.home, `.${p}`, 'skills', 'reflections'), { recursive: true, force: true });
+      }
 
-  async installCursor() {
-    const content = `---\ndescription: Always use knowledge graph for navigation.\nalwaysApply: true\n---\n# Code-Graph\n- Read \`${CONFIG.MAP_FILE}\` before searching.\n- Prioritize god nodes for architecture.\n- Adhere to \`${CONFIG.RULES_FILE}\`.\n`;
-    await this.writeFile('.cursor/rules/code-graph.mdc', content);
-  }
-
-  async installGemini() {
-    const skillPath = path.join(this.home, '.gemini', 'skills', 'code-graph', 'SKILL.md');
-    await fsp.mkdir(path.dirname(skillPath), { recursive: true });
-    await fsp.writeFile(skillPath, `# Code-Graph Skill\nUse \`${CONFIG.MAP_FILE}\` for navigation.\n`);
-    await this.appendToFile('GEMINI.md', `\n## 🗺️ Code-Graph\nRead \`${CONFIG.MAP_FILE}\` before file-read tools.\n`);
-    await this.writeJson('.gemini/settings.json', { hooks: { beforeTool: [{ tools: ['read_file'], message: `code-graph: Knowledge graph exists. Read ${CONFIG.MAP_FILE}.` }] } });
-  }
-
-  async installGenericAgent(p) {
-    await this.appendToFile('AGENTS.md', `\n## 🗺️ Code-Graph\nRead \`${CONFIG.MAP_FILE}\` for structural context.\n`);
-    const globalPath = path.join(this.home, `.${p}`, 'skills', 'code-graph', 'SKILL.md');
-    await fsp.mkdir(path.dirname(globalPath), { recursive: true });
-    await fsp.writeFile(globalPath, `# Code-Graph Skill for ${p}\n`);
-  }
-
-  async installKiro() {
-    await this.writeFile('.kiro/skills/code-graph/SKILL.md', `# Code-Graph Skill\n`);
-    await this.writeFile('.kiro/steering/code-graph.md', `inclusion: always\n# Code-Graph\nRead \`${CONFIG.MAP_FILE}\`.\n`);
-  }
-
-  async installAntigravity() {
-    await this.writeFile('.agent/rules/code-graph.md', `# Code-Graph Rules\nAlways read \`${CONFIG.MAP_FILE}\`.\n`);
-    await this.writeFile('.agent/workflows/code-graph.md', `# Code-Graph Workflow\nRegisters /code-graph\n`);
-  }
-
-  async installCopilot() {
-    const skillPath = path.join(this.home, '.copilot', 'skills', 'code-graph', 'SKILL.md');
-    await fsp.mkdir(path.dirname(skillPath), { recursive: true });
-    await fsp.writeFile(skillPath, `# Code-Graph Skill\nUse \`${CONFIG.MAP_FILE}\`.\n`);
-  }
-
-  async installVSCode() {
-    await this.appendToFile('.github/copilot-instructions.md', `\n## 🗺️ Code-Graph\nAlways read \`${CONFIG.MAP_FILE}\` for architectural context.\n`);
+      if (s === 'all') {
+        const filesToRemove = [
+          'CLAUDE.md', 'GEMINI.md', 'AGENTS.md', '.clinerules', '.roomodes',
+          '.github/copilot-instructions.md'
+        ];
+        for (const f of filesToRemove) await this.removeFile(f);
+      }
+      
+      console.log(`[Code-Graph] Successfully completed uninstall-skills for ${p}.`);
+    } catch (err) {
+      console.error(`[Code-Graph] uninstall-skills failed for ${p}: ${err.message}`);
+    }
   }
 
   async appendToFile(filename, content) {
@@ -489,7 +486,7 @@ async function main() {
   const cwd = process.cwd();
 
   try {
-    const platforms = ['claude', 'codex', 'opencode', 'cursor', 'gemini', 'aider', 'openclaw', 'droid', 'trae', 'trae-cn', 'hermes', 'kiro', 'antigravity', 'copilot', 'vscode'];
+    const platforms = ['claude', 'codex', 'opencode', 'cursor', 'gemini', 'aider', 'openclaw', 'droid', 'trae', 'trae-cn', 'hermes', 'kiro', 'antigravity', 'copilot', 'vscode', 'roocode', 'intellij'];
     
     switch (command || 'generate') {
       case 'generate':
@@ -506,16 +503,16 @@ async function main() {
         await installGitHook(cwd);
         break;
       case 'install-skills':
-        await new SkillManager(cwd).execute(args[0], args[1]);
+        await new SkillManager(cwd).execute(args[0], args[1], args[2]);
         break;
       case 'watch':
         startWatcher(cwd);
         break;
       default:
         if (platforms.includes(command?.toLowerCase())) {
-          await new SkillManager(cwd).execute(command, args[0]);
+          await new SkillManager(cwd).execute(command, args[0], args[1]);
         } else {
-          console.log('Usage: code-graph [generate|init|reflect|install-hook|watch|install-skills <platform>]');
+          console.log('Usage: code-graph [generate|init|reflect|install-hook|watch|install-skills <platform> [install|uninstall] [projectmap|reflections]]');
         }
     }
   } catch (err) {

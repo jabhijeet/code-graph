@@ -1,97 +1,79 @@
-# CODE-GRAPH (v3.0.1)
+# CODE-GRAPH (v3.1.0)
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** designed specifically for LLM agents. It optimizes context and token usage while enabling agents to learn from their own mistakes across sessions.
 
-## 🚀 New in v3.0: Major Version Upgrade
-- **Project Initializer:** Automated bootstrapping with `code-graph init`.
-- **Intelligent Reflection:** Deduplication and categorization in `llm-agent-project-learnings.md`.
-- **Commit Advisories:** Soft-nudge git hooks to remind agents of missing reflections.
+## 🚀 New in v3.1: Selective Skill Architecture
+- **Segregated Skills:** Choose between `projectmap`, `reflections`, or both.
+- **Enhanced Platform Support:** Standardized `install-skills` for 15+ platforms.
+- **Granular Controls:** Selective installation/uninstallation supported.
 - **Production-Ready Core:** Refactored Service-based architecture with full async support.
 
-## 🛠️ The Code-Graph Skillset
+## 🛠️ The Code-Graph Skills
 
-Code-Graph transforms your codebase into an agent-friendly environment using five core skills:
+Code-Graph provides two primary skills that can be installed independently or together (default).
 
-### 1. **Structural Mapping (`generate`)**
+### 1. **Structural Mapping (`projectmap`)**
 *   **What it does:** Scans your project for symbols (classes, functions, interfaces) and builds a dense dependency graph (`imports`, `requires`, `inheritance`).
-*   **How to use:** Run `code-graph generate`. This creates `llm-code-graph.md`, which agents use as their "Source of Truth" for navigation.
-*   **Agent Benefit:** Prevents "hallucinating" file paths and reduces token usage by giving the agent a compact map instead of raw file content.
+*   **Skill Goal:** High-level architectural awareness and navigation.
+*   **Agent Benefit:** Prevents "hallucinating" file paths and reduces token usage by giving the agent a compact map (`llm-code-graph.md`) instead of raw file content.
 
-### 2. **Memory Persistence (`reflect`)**
+### 2. **Memory Persistence (`reflections`)**
 *   **What it does:** Logs non-obvious fixes, environment quirks, and architectural lessons into `llm-agent-project-learnings.md`.
-*   **How to use:** `code-graph reflect <CATEGORY> "The lesson learned"`.
-*   **Agent Benefit:** Enables "Cross-Session Memory." If an agent fixes a Windows-specific bug in one session, the next agent reads the reflection and avoids the same pitfall.
-
-### 3. **Automated Integration (`install-skills`)**
-*   **What it does:** Bridges the gap between the graph and your LLM platform (Claude, Cursor, Gemini, etc.).
-*   **How to use:** `code-graph <platform> install`.
-*   **Agent Benefit:** Installs **Tool Hooks** and **Always-On Rules** that force the agent to consult the graph before using search tools. It effectively "bakes" the graph into the agent's internal loop.
-
-### 4. **Self-Healing Sync (`install-hook`)**
-*   **What it does:** Installs a Git pre-commit hook to keep the map and memory in sync with code changes.
-*   **How to use:** `code-graph install-hook`.
-*   **Agent Benefit:** Ensures the agent is never working with an outdated map. It also nudges the agent to record a reflection if significant code changed but no lesson was logged.
-
-### 5. **Real-Time Context (`watch`)**
-*   **What it does:** Monitors your filesystem and rebuilds the graph instantly as you or the agent edits code.
-*   **How to use:** `code-graph watch`.
-*   **Agent Benefit:** Vital for long-running agent sessions where the project structure is rapidly evolving.
-
----
-
-## 🧠 Workflow: The Reflection Cycle
-
-To get the most out of Code-Graph, force your agent to follow this **Strict Protocol** (defined in `llm-agent-rules.md`):
-
-1.  **PRE-TASK (Read):** The agent MUST read `llm-agent-project-learnings.md` to check for existing pitfalls and `llm-code-graph.md` to locate the relevant "God Nodes" (core logic).
-2.  **EXECUTION (Monitor):** During the task, the agent monitors for "Learned Moments"—failures, unexpected OS behaviors, or complex regex fixes.
-3.  **POST-TASK (Reflect):** If a lesson was learned, the agent MUST run `code-graph reflect`.
-4.  **COMMIT (Sync):** Upon commit, the Git hook automatically runs `code-graph generate` to update the map for the next agent.
+*   **Skill Goal:** Persistent project memory across sessions.
+*   **Agent Benefit:** Enables "Cross-Session Memory." If an agent fixes a bug in one session, the next agent reads the reflection and avoids the same pitfall.
 
 ---
 
 ## 🚀 Automated Agent Integration
 
-After generating a graph, you can automatically configure your favorite LLM agent to use it by running the matching install command.
+Configure your agent to use these skills by running the `install-skills` command. **Both skills are installed by default.**
 
 | Platform | Command |
 | :--- | :--- |
-| **Claude Code** | `code-graph claude install` |
-| **Cursor** | `code-graph cursor install` |
-| **Gemini CLI** | `code-graph gemini install` |
-| **Codex** | `code-graph codex install` |
-| **OpenCode** | `code-graph opencode install` |
-| **GitHub Copilot CLI** | `code-graph copilot install` |
-| **VS Code Copilot Chat** | `code-graph vscode install` |
-| **Aider** | `code-graph aider install` |
-| **OpenClaw** | `code-graph openclaw install` |
-| **Factory Droid** | `code-graph droid install` |
-| **Trae** | `code-graph trae install` |
-| **Hermes** | `code-graph hermes install` |
-| **Kiro IDE/CLI** | `code-graph kiro install` |
-| **Google Antigravity** | `code-graph antigravity install` |
+| **Claude Code** | `code-graph install-skills claude` |
+| **Cursor** | `code-graph install-skills cursor` |
+| **Gemini CLI** | `code-graph install-skills gemini` |
+| **Codex** | `code-graph install-skills codex` |
+| **OpenCode** | `code-graph install-skills opencode` |
+| **GitHub Copilot CLI** | `code-graph install-skills copilot` |
+| **VS Code Copilot Chat** | `code-graph install-skills vscode` |
+| **Aider / Trae / etc.** | `code-graph install-skills <platform>` |
 
-### What this does:
-- **Always-on Rules:** Writes project-level rule files (e.g., `CLAUDE.md`, `.cursor/rules/`, `AGENTS.md`) telling the agent to read `llm-code-graph.md` before answering architecture questions.
-- **Pre-Tool Hooks:** For platforms that support it (Claude, Codex, Gemini, OpenCode), it installs hooks that fire before every file-search or bash call, injecting a reminder to check the graph first. This prevents the agent from grepping every file when a high-level map already exists.
-- **Global Skills:** Copies the Code-Graph skill to the platform's global skill directory for persistence across projects.
+### Selective Installation
+You can choose to install or uninstall specific skills:
 
-**Uninstall** by replacing `install` with `uninstall` (e.g., `code-graph claude uninstall`).
+```bash
+# Install only the project map
+code-graph install-skills gemini projectmap
+
+# Install only reflections
+code-graph install-skills cursor reflections
+
+# Uninstall only reflections
+code-graph uninstall-skills claude reflections
+```
+
+**Uninstall all skills** by using `uninstall-skills <platform>`.
+
+
+## 🧠 Workflow: The Reflection Cycle
 
 ### Skill Installation Details
 
 | Platform | Action Taken | Directory / Files |
 | :--- | :--- | :--- |
-| **Claude Code** | Adds instructions to `CLAUDE.md` and installs a `preToolUse` hook for `glob` and `grep`. | `.claude/settings.json` |
-| **Cursor** | Writes a global rule with `alwaysApply: true`. | `.cursor/rules/code-graph.mdc` |
-| **Gemini CLI** | Copies skill globally and adds a `beforeTool` hook for `read_file`. | `~/.gemini/skills/code-graph/SKILL.md`, `.gemini/settings.json`, `GEMINI.md` |
+| **Claude Code** | Adds instructions to `CLAUDE.md` and installs `preToolUse` hooks for `glob` and `grep`. | `.claude/settings.json` |
+| **Cursor** | Writes global rules with `alwaysApply: true`. | `.cursor/rules/projectmap.mdc`, `.cursor/rules/reflections.mdc` |
+| **Gemini CLI** | Copies skills globally and adds `beforeTool` hooks for `read_file` and `run_shell_command`. | `~/.gemini/skills/projectmap/SKILL.md`, `~/.gemini/skills/reflections/SKILL.md`, `GEMINI.md` |
 | **Codex** | Updates `AGENTS.md` and installs a `preToolUse` hook for `bash`. | `.codex/hooks.json` |
 | **OpenCode** | Registers a plugin that fires before `bash` tool calls. | `.opencode/plugins/code-graph.js`, `opencode.json`, `AGENTS.md` |
-| **GitHub Copilot CLI** | Copies the Code-Graph skill to the global skill directory. | `~/.copilot/skills/code-graph/SKILL.md` |
+| **GitHub Copilot CLI** | Copies skills globally for persistence. | `~/.copilot/skills/projectmap/SKILL.md`, `~/.copilot/skills/reflections/SKILL.md` |
 | **VS Code Copilot** | Writes session-persistent instructions. | `.github/copilot-instructions.md` |
-| **Aider / Trae / etc.** | Updates `AGENTS.md` and copies skill to global platform directory. | `~/.<platform>/skills/code-graph/SKILL.md`, `AGENTS.md` |
-| **Kiro IDE/CLI** | Writes global skill and steering file for automatic inclusion. | `.kiro/skills/code-graph/SKILL.md`, `.kiro/steering/code-graph.md` |
-| **Antigravity** | Writes always-on rules and registers a slash command workflow. | `.agent/rules/code-graph.md`, `.agent/workflows/code-graph.md` |
+| **Roo Code** | Injects instructions into project rule files. | `.clinerules`, `.roomodes` |
+| **IntelliJ / JetBrains** | Adds architectural context to a discoverable file. | `AGENTS.md` |
+| **Aider / Trae / etc.** | Updates `AGENTS.md` and copies skills globally. | `~/.<platform>/skills/projectmap/SKILL.md`, `~/.<platform>/skills/reflections/SKILL.md`, `AGENTS.md` |
+| **Kiro IDE/CLI** | Writes global skills and steering files. | `.kiro/skills/projectmap/SKILL.md`, `.kiro/skills/reflections/SKILL.md`, `.kiro/steering/code-graph.md` |
+| **Antigravity** | Writes always-on rules and registers workflow commands. | `.agent/rules/projectmap.md`, `.agent/rules/reflections.md`, `.agent/workflows/code-graph.md` |
 
 ### How agents use it:
 1.  **Direct Instructions:** Most platforms are configured to read project-level files (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, etc.) automatically. These files tell the agent: "Before searching files, read `llm-code-graph.md`."
