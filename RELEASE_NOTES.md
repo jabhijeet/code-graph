@@ -1,8 +1,15 @@
 # RELEASE NOTES
 
+### v3.5.4 (2026-04-16)
+- **Fix (Roo Code):** Final correction for persistent Markdown injection into `.roomodes` (YAML).
+- **Stability:** Consolidated all instructions into `.roorules` and `.clinerules`.
+- **Maintenance:** Synchronized version across all metadata files.
+
 ### v3.5.3 (2026-04-16)
 - **Fix (Roo Code):** Completely removed Markdown injection into `.roomodes` (YAML) across all skill installations.
 - **Fix (Roo Code):** Unified global instructions into `.roorules` and `.clinerules` for reliable rule propagation.
+- **CLI:** Added `--version` / `-v` command for better troubleshooting and stale installation detection.
+- **CLI:** Added versioned headers to `generate` command output.
 
 ### v3.5.2 (2026-04-16)
 - **Fix (Roo Code):** Removed incorrect Markdown appends to `.roomodes` (YAML) to prevent syntax errors.

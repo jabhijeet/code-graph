@@ -1,14 +1,16 @@
-# CODE-GRAPH (v3.5.2)
+# CODE-GRAPH (v3.5.4)
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** designed specifically for LLM agents. It optimizes context and token usage while enabling agents to learn from their own mistakes across sessions.
 
+## 🚀 New in v3.5.4: Rule Propagation Stability
+- **Fix (Roo Code):** Finalized rule injection logic to avoid YAML syntax errors in `.roomodes`.
+
+## 🚀 New in v3.5.3: CLI Transparency
+- **CLI:** Added `--version` / `-v` command for better troubleshooting and stale installation detection.
+- **CLI:** Added versioned headers to `generate` command output.
+
 ## 🚀 New in v3.5.2: Roo Code Integrity
 - **Fix (Roo Code):** Resolved YAML syntax errors in `.roomodes` by moving instructions to `.roorules`.
-
-## 🚀 New in v3.5.1: Orchestrator Synchronization
-- **Fix (Gemini CLI):** Corrected global agent/skill paths and added mandatory YAML frontmatter.
-- **Learnings focus:** Refocused `llm-agent-project-learnings.md` exclusively on architectural pitfalls and best practices.
-- **Improved minification:** Final refined notation for better LLM reasoning with fewer tokens.
 
 ## 📥 Installation
 
@@ -22,6 +24,9 @@ npm install --save-dev code-graph-llm
 
 ## 🚀 Quick Start
 ```bash
+# 0. Check version
+code-graph --version
+
 # 1. Initialize rules & memory
 code-graph init
 

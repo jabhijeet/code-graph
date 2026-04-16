@@ -18,6 +18,7 @@ import ignore from 'ignore';
 
 const __filename = fileURLToPath(import.meta.url);
 export const CONFIG = {
+  VERSION: '3.5.4',
   IGNORE_FILE: '.gitignore',
   MAP_FILE: 'llm-code-graph.md',
   REFLECTIONS_FILE: 'llm-agent-project-learnings.md',
@@ -225,7 +226,7 @@ class ProjectMapper {
   }
 
   async generate() {
-    console.log(`[Code-Graph] Mapping ${this.cwd}...`);
+    console.log(`[Code-Graph v${CONFIG.VERSION}] Mapping ${this.cwd}...`);
     await this.walk(this.cwd, this.getIgnores(this.cwd, CONFIG.DEFAULT_IGNORES));
 
     this.files.sort((a, b) => (b.isCore - a.isCore) || ((this.incomingEdges[b.path] || 0) - (this.incomingEdges[a.path] || 0)));
@@ -668,6 +669,10 @@ async function main() {
     const platforms = ['claude', 'codex', 'opencode', 'cursor', 'gemini', 'aider', 'openclaw', 'droid', 'trae', 'trae-cn', 'hermes', 'kiro', 'antigravity', 'copilot', 'vscode', 'roocode', 'intellij'];
     
     switch (command || 'generate') {
+      case '--version':
+      case '-v':
+        console.log(`code-graph-llm v${CONFIG.VERSION}`);
+        break;
       case 'generate':
         await new ProjectMapper(cwd).generate();
         break;
@@ -765,6 +770,11 @@ function startWatcher(cwd) {
 }
 
 if (process.argv[1] && (process.argv[1] === __filename || process.argv[1].endsWith('index.js'))) {
+  main();
+}
+
+export { CodeParser, ProjectMapper, ReflectionManager };
+ndsWith('index.js'))) {
   main();
 }
 

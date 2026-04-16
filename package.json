@@ -1,6 +1,6 @@
 {
   "name": "code-graph-llm",
-  "version": "3.5.3",
+  "version": "3.5.4",
   "description": "Compact, language-agnostic codebase mapper for LLM token efficiency.",
   "main": "index.js",
   "bin": {
