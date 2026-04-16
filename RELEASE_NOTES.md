@@ -1,5 +1,18 @@
 # RELEASE NOTES
 
+### v4.0.0 (2026-04-16)
+- **Breaking: Modular Architecture** — Split monolithic `index.js` (776 lines) into 7 modules under `lib/`. All public exports (`CodeParser`, `ProjectMapper`, `ReflectionManager`, `SkillManager`, `AgentManager`, `ProjectInitializer`, `CONFIG`) remain available from `index.js` via re-exports, but direct imports from internal paths will break.
+- **Security:** Fixed regex injection in `CodeParser.findSymbolContext` — symbol names with regex metacharacters (e.g., `$`, `+`) are now escaped before interpolation.
+- **Fix (Graph Output):** Tag extraction no longer matches regex patterns embedded in source code. Strips string/regex literals while preserving comments where `TODO`/`FIXME` tags live.
+- **Fix (Hook Merge):** `writeJson` now appends new hook entries to existing arrays instead of overwriting. Deduplicates by `message` field.
+- **Fix (Error Handling):** JSON parse failures and global skill install errors now emit warnings instead of being silently swallowed.
+- **Fix (Entry Point):** CLI guard uses `path.resolve()` comparison instead of fragile `endsWith('index.js')`.
+- **Fix (README):** Removed duplicated Implementation Details lines.
+- **CLI:** Added `--help` / `-h` flag with full command, flag, and platform reference.
+- **Quality:** Converted all synchronous `fs` calls to async `fsp` equivalents. Removed `fs` sync import entirely.
+- **Tests:** Expanded from 10 to 21 tests covering regex safety, tag extraction, hook merging, CLI commands, and error paths.
+- **Docs:** Updated README with project structure, pipeline details, and v4 changelog.
+
 ### v3.5.4 (2026-04-16)
 - **Fix (Roo Code):** Final correction for persistent Markdown injection into `.roomodes` (YAML).
 - **Stability:** Consolidated all instructions into `.roorules` and `.clinerules`.

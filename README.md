@@ -1,16 +1,19 @@
-# CODE-GRAPH (v3.5.4)
+# CODE-GRAPH (v4.0.0)
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** designed specifically for LLM agents. It optimizes context and token usage while enabling agents to learn from their own mistakes across sessions.
 
-## 🚀 New in v3.5.4: Rule Propagation Stability
-- **Fix (Roo Code):** Finalized rule injection logic to avoid YAML syntax errors in `.roomodes`.
+## 🚀 New in v4.0.0: Architecture Overhaul
 
-## 🚀 New in v3.5.3: CLI Transparency
-- **CLI:** Added `--version` / `-v` command for better troubleshooting and stale installation detection.
-- **CLI:** Added versioned headers to `generate` command output.
+- **Breaking: Modular Architecture** — Monolithic `index.js` split into 7 focused modules under `lib/`. Public exports remain identical.
+- **Security:** Fixed regex injection vulnerability in symbol context extraction.
+- **Fix:** Garbled graph output caused by regex patterns in source code matching the tag extractor.
+- **Fix:** `writeJson` now appends hook entries instead of overwriting existing user hooks.
+- **Fix:** Silent error swallowing replaced with warnings for JSON parse failures and skill installs.
+- **Fix:** Entry point guard no longer matches arbitrary `index.js` files.
+- **CLI:** Added `--help` / `-h` with comprehensive command reference.
+- **Quality:** Fully async I/O (removed all sync `fs` calls), 21 tests (up from 10).
 
-## 🚀 New in v3.5.2: Roo Code Integrity
-- **Fix (Roo Code):** Resolved YAML syntax errors in `.roomodes` by moving instructions to `.roorules`.
+See [RELEASE_NOTES.md](RELEASE_NOTES.md) for full history.
 
 ## 📥 Installation
 
@@ -24,8 +27,9 @@ npm install --save-dev code-graph-llm
 
 ## 🚀 Quick Start
 ```bash
-# 0. Check version
+# 0. Check version & help
 code-graph --version
+code-graph --help
 
 # 1. Initialize rules & memory
 code-graph init
@@ -78,7 +82,7 @@ code-graph install-skills cursor projectmap
 
 ---
 
-### 2. Code-Graph Agents (Active)
+### 3. Code-Graph Agents (Active)
 **Agents** are specialized personas. Instead of just reading a file, the main orchestrator (like Gemini CLI or Claude) can **delegate** complex mapping or analysis tasks to the Code-Graph agent.
 
 *   **Native Sub-Agents:** Gemini, Antigravity, and Kiro register `code-graph` as an expert in their global config.
@@ -246,10 +250,26 @@ Register `code-graph` as an active sub-agent to enable explicit delegation.
 **Uninstall** using `uninstall-agent <platform>`.
 
 ## 🛠️ Implementation Details
-1. **File Scanning:** Recursively walks the directory, ignoring patterns in `.gitignore`.
-2. **Context Extraction:** Scans for classes, functions, and variables while ignoring matches in comments.
+
+### Project Structure
+```
+index.js              CLI entry point & public re-exports
+lib/
+  config.js           Constants, regex patterns, shared utilities
+  parser.js           CodeParser — symbol, edge, and tag extraction
+  mapper.js           ProjectMapper — file walking, graph generation
+  reflections.js      ReflectionManager — lesson persistence
+  initializer.js      ProjectInitializer — scaffolds rule/reflection files
+  skills.js           SkillManager — platform skill installation
+  agents.js           AgentManager — sub-agent registration
+test/
+  index.test.js       21 tests covering parser, mapper, skills, CLI
+```
+
+### Pipeline
+1. **File Scanning:** Recursively walks the directory, respecting nested `.gitignore` patterns.
+2. **Context Extraction:** Scans for classes, functions, and variables. Strips comments and string literals to avoid false matches.
 3. **Graph Extraction:** Identifies `imports`, `requires`, `extends`, and `implements`.
-4. **Reflection Management:** Deduplicates and persists agent learning into a standardized Markdown format.
-5. **Compilation:** Writes a single, minified `llm-code-graph.md` file with a dedicated `## GRAPH EDGES` section.
- into a standardized Markdown format.
-5. **Compilation:** Writes a single, minified `llm-code-graph.md` file with a dedicated `## GRAPH EDGES` section.
+4. **Tag Extraction:** Captures `TODO`, `FIXME`, `BUG`, `DEPRECATED` from comments while ignoring code literals.
+5. **Reflection Management:** Deduplicates and persists agent learnings into a standardized Markdown format.
+6. **Compilation:** Writes a single, minified `llm-code-graph.md` file with a dedicated `## EDGES` section.
