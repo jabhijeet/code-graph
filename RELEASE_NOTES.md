@@ -1,5 +1,9 @@
 # RELEASE NOTES
 
+### v3.5.2 (2026-04-16)
+- **Fix (Roo Code):** Removed incorrect Markdown appends to `.roomodes` (YAML) to prevent syntax errors.
+- **Fix (Roo Code):** Switched to `.roorules` for global instructions, ensuring compatibility with Roo's hierarchical rule system.
+
 ### v3.5.1 (2026-04-16)
 - **Fix (Gemini CLI):** Modernized integration with YAML frontmatter for global skills and agents.
 - **Fix (Gemini CLI):** Transitioned from unsupported tool hooks to standard `GEMINI.md` Memory Import syntax (`@import`).

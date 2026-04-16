@@ -405,7 +405,7 @@ class SkillManager {
         break;
       case 'roocode':
         await this.appendToFile('.clinerules', section);
-        await this.appendToFile('.roomodes', section);
+        await this.appendToFile('.roorules', section);
         break;
       default:
         await this.appendToFile('AGENTS.md', section);
@@ -484,7 +484,7 @@ class SkillManager {
 
       if (s === 'all') {
         const filesToRemove = [
-          'CLAUDE.md', 'GEMINI.md', 'AGENTS.md', '.clinerules', '.roomodes',
+          'CLAUDE.md', 'GEMINI.md', 'AGENTS.md', '.clinerules', '.roomodes', '.roorules',
           '.github/copilot-instructions.md', 'opencode.json'
         ];
         for (const f of filesToRemove) await this.removeFile(f);
