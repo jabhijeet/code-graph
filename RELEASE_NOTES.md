@@ -1,5 +1,9 @@
 # RELEASE NOTES
 
+### v3.5.3 (2026-04-16)
+- **Fix (Roo Code):** Completely removed Markdown injection into `.roomodes` (YAML) across all skill installations.
+- **Fix (Roo Code):** Unified global instructions into `.roorules` and `.clinerules` for reliable rule propagation.
+
 ### v3.5.2 (2026-04-16)
 - **Fix (Roo Code):** Removed incorrect Markdown appends to `.roomodes` (YAML) to prevent syntax errors.
 - **Fix (Roo Code):** Switched to `.roorules` for global instructions, ensuring compatibility with Roo's hierarchical rule system.

@@ -140,7 +140,7 @@ code-graph uninstall-skills claude reflections
 | **Kiro IDE/CLI** | Writes global skills and steering files. | `~/.kiro/skills/`, `.kiro/steering/` |
 | **Codex** | Updates `AGENTS.md` and installs a `preToolUse` hook for `bash`. | `AGENTS.md`, `.codex/hooks.json` |
 | **OpenCode** | Registers a plugin that fires before `bash` tool calls. | `AGENTS.md`, `.opencode/plugins/`, `opencode.json` |
-| **Roo Code** | Injects instructions into project rule files. | `.clinerules`, `.roomodes` |
+| **Roo Code** | Injects instructions into project rule files. | `.clinerules`, `.roorules` |
 | **IntelliJ / JetBrains** | Adds architectural context to a discoverable file. | `AGENTS.md` |
 | **GitHub Copilot CLI** | Copies skills globally for persistence. | `~/.copilot/skills/` |
 | **VS Code Copilot** | Writes session-persistent instructions. | `.github/copilot-instructions.md` |
@@ -245,4 +245,6 @@ Register `code-graph` as an active sub-agent to enable explicit delegation.
 2. **Context Extraction:** Scans for classes, functions, and variables while ignoring matches in comments.
 3. **Graph Extraction:** Identifies `imports`, `requires`, `extends`, and `implements`.
 4. **Reflection Management:** Deduplicates and persists agent learning into a standardized Markdown format.
+5. **Compilation:** Writes a single, minified `llm-code-graph.md` file with a dedicated `## GRAPH EDGES` section.
+ into a standardized Markdown format.
 5. **Compilation:** Writes a single, minified `llm-code-graph.md` file with a dedicated `## GRAPH EDGES` section.

@@ -444,7 +444,7 @@ class SkillManager {
       case 'roocode':
         const rules = `\n# Reflections Protocol\nStrictly follow the reflection cycle in \`${CONFIG.RULES_FILE}\`. Persist lessons to \`${CONFIG.REFLECTIONS_FILE}\`.\n`;
         await this.appendToFile('.clinerules', rules);
-        await this.appendToFile('.roomodes', rules);
+        await this.appendToFile('.roorules', rules);
         break;
       default:
         await this.appendToFile('AGENTS.md', section);
