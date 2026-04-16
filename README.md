@@ -1,12 +1,11 @@
-# CODE-GRAPH (v3.4.1)
+# CODE-GRAPH (v3.5.0)
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** designed specifically for LLM agents. It optimizes context and token usage while enabling agents to learn from their own mistakes across sessions.
 
-## 🚀 New in v3.4: Hyper-Condensed Context
-- **Token Minification:** Condensed `llm-code-graph.md` output by 30-50% using minified notation.
-- **Grouped Edges:** Consolidated dependency mapping (`[src] -> [target1, target2]`) for extreme density.
-- **Metadata Stripping:** Removed redundant timestamps from reflections to save context window.
-- **Robust Uninstall:** Defensive file and directory cleanup for all 15+ supported platforms.
+## 🚀 New in v3.5: Structural Data Integrity
+- **Release Documentation:** Segregated historical version tracking into a dedicated `RELEASE_NOTES.md`.
+- **Learnings focus:** Refocused `llm-agent-project-learnings.md` exclusively on architectural pitfalls and best practices.
+- **Improved minification:** Final refined notation for better LLM reasoning with fewer tokens.
 
 ## 📥 Installation
 

@@ -10,12 +10,3 @@
 
 ## ✅ BEST PRACTICES
 - [STYLE] Always include dependency counts (↑N ↓M) in `llm-code-graph.md` to help prioritize architectural understanding.
-
-- [TOOLING: 2026-04-15] Added reflect command to simplify LLM memory updates.
-- [TOOLING: 2026-04-16] Upgraded to v3.0.0: Unified agent renaming (llm-agent-*) and added `install-skills` for automated platform integration (Claude, Cursor, Gemini, etc.).
-- [TOOLING: 2026-04-16] Upgraded to v3.1.0: Segregated skills into `projectmap` and `reflections`, enabling selective installation and standardizing on `install-skills` command.
-- [TOOLING: 2026-04-16] Upgraded to v3.2.0: "Universal Agent OS" release. Restored full surgical integration for Antigravity, Kiro, Codex, and OpenCode. Implemented segregated skill hooks for platforms that support them.
-- [TOOLING: 2026-04-16] Upgraded to v3.2.1: Exhaustive documentation of platform-specific installation details and integration table synchronization.
-- [TOOLING: 2026-04-16] Upgraded to v3.3.0: "Active Agent Orchestration" release. Added `install-agent` for explicit delegation, unified `install` commands, and automated `preuninstall` cleanup logic.
-- [TOOLING: 2026-04-16] Upgraded to v3.4.0: "Hyper-Condensed Context" release. Minified project map and reflection outputs (30-50% token reduction). Implemented edge grouping and metadata stripping. Refactored defensive uninstallation for 15+ platforms.
-- [TOOLING: 2026-04-16] Upgraded to v3.4.1: Synchronized NPM installation documentation and reconciled platform integration tables for consistency.
