@@ -17,3 +17,4 @@
 - [TOOLING: 2026-04-16] Upgraded to v3.2.0: "Universal Agent OS" release. Restored full surgical integration for Antigravity, Kiro, Codex, and OpenCode. Implemented segregated skill hooks for platforms that support them.
 - [TOOLING: 2026-04-16] Upgraded to v3.2.1: Exhaustive documentation of platform-specific installation details and integration table synchronization.
 - [TOOLING: 2026-04-16] Upgraded to v3.3.0: "Active Agent Orchestration" release. Added `install-agent` for explicit delegation, unified `install` commands, and automated `preuninstall` cleanup logic.
+- [TOOLING: 2026-04-16] Upgraded to v3.4.0: "Hyper-Condensed Context" release. Minified project map and reflection outputs (30-50% token reduction). Implemented edge grouping and metadata stripping. Refactored defensive uninstallation for 15+ platforms.

@@ -1,12 +1,12 @@
-# CODE-GRAPH (v3.3.0)
+# CODE-GRAPH (v3.4.0)
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** designed specifically for LLM agents. It optimizes context and token usage while enabling agents to learn from their own mistakes across sessions.
 
-## 🚀 New in v3.3: Active Agent Orchestration
-- **Active Sub-Agents:** Register `code-graph` as a specialized sub-agent for Gemini, Claude, and more.
-- **Unified Setup:** New `install` and `uninstall` commands for effortless full-system configuration.
-- **MCP Tool Support:** Expose mapping and reflection tools via Model Context Protocol (Claude/Cursor).
-- **Automated Cleanup:** Smart `preuninstall` hook removes all global and local data upon NPM uninstall.
+## 🚀 New in v3.4: Hyper-Condensed Context
+- **Token Minification:** Condensed `llm-code-graph.md` output by 30-50% using minified notation.
+- **Grouped Edges:** Consolidated dependency mapping (`[src] -> [target1, target2]`) for extreme density.
+- **Metadata Stripping:** Removed redundant timestamps from reflections to save context window.
+- **Robust Uninstall:** Defensive file and directory cleanup for all 15+ supported platforms.
 
 ## 🛠️ The Code-Graph Architecture
 
@@ -136,16 +136,22 @@ Instruct your agent to follow the **STRICT AGENT PROTOCOL** in `llm-agent-rules.
 3. Regenerates the project map (`llm-code-graph.md`) after structural changes.
 
 ### 2. The "Read First" Strategy
-The `llm-code-graph.md` file provides a high-level map and structural graph for relational reasoning:
+The `llm-code-graph.md` file provides a high-level map and structural graph for relational reasoning. It is minified for maximum token efficiency.
+
+**Notation Legend:**
+*   `*` : Core Entry Point (God Node).
+*   `(↑out ↓in)` : Dependency counts (Outgoing ↑ / Incoming ↓).
+*   `s:` : Symbols (Classes, Functions, Types).
+*   `d:` : Description (Contextual Summary).
 
 **Example Map Entry:**
 ```markdown
-- [CORE] src/auth.js (↑3 ↓5) [TODO: Add JWT rotation] | desc: Handles user authentication.
-  - syms: [login [ (username, password) ], validateToken [ (token: string) ]]
+- *src/auth.js (3↑ 5↓) [TODO:Add JWT rotation] | d: Handles user authentication.
+  - s: [login [ (username, password) ], validateToken [ (token: string) ]]
 
-## GRAPH EDGES
-[src/auth.js] -> [imports] -> [jwt-library]
-[AdminUser] -> [inherits] -> [BaseUser]
+## EDGES
+[src/auth.js] -> [jwt-lib, db-connector]
+[AdminUser] -> [BaseUser]
 ```
 
 ### 3. Example System Prompt

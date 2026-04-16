@@ -236,13 +236,28 @@ class ProjectMapper {
   }
 
   formatOutput() {
-    const header = `# CODE_GRAPH_MAP\n> MISSION: COMPACT PROJECT MAP FOR LLM AGENTS.\n> PROTOCOL: Follow llm-agent-rules.md | MEMORY: See llm-agent-project-learnings.md\n> Legend: [CORE] Entry Point, (↑N) Outgoing Deps, (↓M) Incoming Dependents\n> Notation: syms: [Name [Signature/Context]], desc: File Summary, [TAG: Context]\n\n`;
+    const header = `# CODE_GRAPH\n> Protocol: llm-agent-rules.md | Lessons: llm-agent-project-learnings.md\n> Legend: * core, (↑out ↓in deps), s: symbols, d: desc\n\n`;
     const nodes = this.files.map(f => {
       const inCount = this.incomingEdges[f.path] || 0;
-      const tags = f.tags.length ? ` [${f.tags.join(', ')}]` : '';
-      return `- ${f.isCore ? '[CORE] ' : ''}${f.path} (↑${f.outCount} ↓${inCount})${tags} | desc: ${f.desc.substring(0, 100)}\n  - syms: [${f.symbols.join(', ')}]`;
+      const tags = f.tags.length ? ` [${f.tags.join(',')}]` : '';
+      return `- ${f.isCore ? '*' : ''}${f.path} (${f.outCount}↑ ${inCount}↓)${tags} | d: ${f.desc.substring(0, 80)}\n  - s: [${f.symbols.join(', ')}]`;
     }).join('\n');
-    const edges = this.allEdges.length ? `\n\n## GRAPH EDGES\n${Array.from(new Set(this.allEdges)).sort().join('\n')}` : '';
+
+    // Group edges by source for density
+    const groupedEdges = {};
+    this.allEdges.forEach(e => {
+      const match = e.match(/\[(.*?)\] -> \[imports\] -> \[(.*?)\]/);
+      if (match) {
+        const [_, src, target] = match;
+        if (!groupedEdges[src]) groupedEdges[src] = new Set();
+        groupedEdges[src].add(target);
+      }
+    });
+
+    const edges = Object.keys(groupedEdges).length 
+      ? `\n\n## EDGES\n${Object.entries(groupedEdges).map(([src, targets]) => `[${src}] -> [${Array.from(targets).join(', ')}]`).sort().join('\n')}`
+      : '';
+    
     return header + nodes + edges;
   }
 }
@@ -255,8 +270,8 @@ class ReflectionManager {
     if (!lesson) return console.error('[Code-Graph] Usage: reflect <cat> <lesson>');
     
     const filePath = path.join(process.cwd(), CONFIG.REFLECTIONS_FILE);
-    const header = `# LLM_AGENT_PROJECT_LEARNINGS\n> LLM AGENT MEMORY: READ BEFORE STARTING TASKS. UPDATE ON FAILURES.\n`;
-    const entry = `- [${category.toUpperCase()}: ${new Date().toISOString().split('T')[0]}] ${lesson}`;
+    const header = `# LLM_LEARNINGS\n> READ BEFORE TASKS. UPDATE ON FAILURES.\n`;
+    const entry = `- [${category.toUpperCase()}] ${lesson}`;
 
     try {
       let content = fs.existsSync(filePath) ? await fsp.readFile(filePath, 'utf8') : header;
