@@ -16,3 +16,4 @@
 - [TOOLING: 2026-04-16] Upgraded to v3.1.0: Segregated skills into `projectmap` and `reflections`, enabling selective installation and standardizing on `install-skills` command.
 - [TOOLING: 2026-04-16] Upgraded to v3.2.0: "Universal Agent OS" release. Restored full surgical integration for Antigravity, Kiro, Codex, and OpenCode. Implemented segregated skill hooks for platforms that support them.
 - [TOOLING: 2026-04-16] Upgraded to v3.2.1: Exhaustive documentation of platform-specific installation details and integration table synchronization.
+- [TOOLING: 2026-04-16] Upgraded to v3.3.0: "Active Agent Orchestration" release. Added `install-agent` for explicit delegation, unified `install` commands, and automated `preuninstall` cleanup logic.

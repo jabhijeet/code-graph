@@ -1,6 +1,6 @@
 {
   "name": "code-graph-llm",
-  "version": "3.2.1",
+  "version": "3.3.0",
   "description": "Compact, language-agnostic codebase mapper for LLM token efficiency.",
   "main": "index.js",
   "bin": {
@@ -26,6 +26,7 @@
   },
   "type": "module",
   "scripts": {
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "preuninstall": "node index.js uninstall-all"
   }
 }

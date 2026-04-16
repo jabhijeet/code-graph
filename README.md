@@ -1,30 +1,73 @@
-# CODE-GRAPH (v3.2.1)
+# CODE-GRAPH (v3.3.0)
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** designed specifically for LLM agents. It optimizes context and token usage while enabling agents to learn from their own mistakes across sessions.
 
-## 🚀 New in v3.2: Universal Agent OS
-- **Enhanced Platform Matrix:** Full surgical integration for Antigravity, Kiro, and Roo Code.
-- **Segregated Skill Hooks:** Isolated `preToolUse` and `beforeTool` hooks for Mapping vs. Reflections.
-- **Deep Steering:** Standardized `AGENTS.md` and `.cursor/rules/` for non-hookable platforms.
-- **Production-Ready Core:** Refactored Service-based architecture with full async support.
+## 🚀 New in v3.3: Active Agent Orchestration
+- **Active Sub-Agents:** Register `code-graph` as a specialized sub-agent for Gemini, Claude, and more.
+- **Unified Setup:** New `install` and `uninstall` commands for effortless full-system configuration.
+- **MCP Tool Support:** Expose mapping and reflection tools via Model Context Protocol (Claude/Cursor).
+- **Automated Cleanup:** Smart `preuninstall` hook removes all global and local data upon NPM uninstall.
 
-## 🛠️ The Code-Graph Skills
+## 🛠️ The Code-Graph Architecture
 
-Code-Graph provides two primary skills that can be installed independently or together (default).
+Code-Graph operates in two modes: **Passive Skills** and **Active Agents**.
 
-### 1. **Structural Mapping (`projectmap`)**
-*   **What it does:** Scans your project for symbols (classes, functions, interfaces) and builds a dense dependency graph (`imports`, `requires`, `inheritance`).
-*   **Skill Goal:** High-level architectural awareness and navigation.
-*   **Agent Benefit:** Prevents "hallucinating" file paths and reduces token usage by giving the agent a compact map (`llm-code-graph.md`) instead of raw file content.
-
-### 2. **Memory Persistence (`reflections`)**
-*   **What it does:** Logs non-obvious fixes, environment quirks, and architectural lessons into `llm-agent-project-learnings.md`.
-*   **Skill Goal:** Persistent project memory across sessions.
-*   **Agent Benefit:** Enables "Cross-Session Memory." If an agent fixes a bug in one session, the next agent reads the reflection and avoids the same pitfall.
+| Mode | Paradigm | Benefit | Command |
+| :--- | :--- | :--- | :--- |
+| **Unified** | Both | Complete setup of skills and agent. | `code-graph install <platform>` |
+| **Skills** | Passive Context | Injects the graph into the agent's existing loop. | `code-graph install-skills` |
+| **Agents** | Active Delegation | Registers `code-graph` as a specialized sub-agent. | `code-graph install-agent` |
 
 ---
 
-## 🚀 Automated Agent Integration
+### 1. Unified Installation (Recommended)
+Get the full Code-Graph experience by installing both skills and the active sub-agent in one command.
+
+```bash
+# Recommended: Standard full setup
+code-graph install gemini
+```
+
+**Uninstall** using `code-graph uninstall <platform>`.
+
+---
+
+### 2. Code-Graph Skills (Passive)
+**Skills** are "always-on" configurations. They ensure your agent *always* sees the codebase map before it acts.
+
+*   **ProjectMap Skill:** Architectural awareness and navigation via `llm-code-graph.md`.
+*   **Reflections Skill:** Persistent project memory via `llm-agent-project-learnings.md`.
+
+**Usage:**
+```bash
+# Install all skills for a platform
+code-graph install-skills gemini
+
+# Selective installation
+code-graph install-skills cursor projectmap
+```
+
+---
+
+### 2. Code-Graph Agents (Active)
+**Agents** are specialized personas. Instead of just reading a file, the main orchestrator (like Gemini CLI or Claude) can **delegate** complex mapping or analysis tasks to the Code-Graph agent.
+
+*   **Native Sub-Agents:** Gemini, Antigravity, and Kiro register `code-graph` as an expert in their global config.
+*   **MCP Servers:** Claude and Cursor use the Model Context Protocol to call `code-graph` as a live tool.
+*   **Persona Prompts:** Aider and others use a `.code-graph-agent.md` system prompt to "become" the specialist.
+
+**Usage:**
+```bash
+# Register code-graph as a sub-agent
+code-graph install-agent claude
+
+# The main agent can now say:
+# "Hey code-graph, analyze the dependency chain of the auth module."
+```
+
+---
+
+## 🚀 Platform Support Matrix
 
 Configure your agent to use these skills by running the `install-skills` command. **Both skills are installed by default.**
 
@@ -153,7 +196,21 @@ Add to your project prompt or `prompts.md`:
 For any other agent, add this to your system instructions:
 > "This project uses `code-graph-llm` for context management. Always consult `llm-code-graph.md`. You ARE REQUIRED to persist new knowledge about the environment or logic using the `code-graph reflect` tool. Failure to update memory is a failure of the task."
 
-## How it works
+## 🤖 Sub-Agent Registration
+
+Register `code-graph` as an active sub-agent to enable explicit delegation.
+
+| Platform | Command | Action Taken |
+| :--- | :--- | :--- |
+| **Gemini CLI** | `code-graph install-agent gemini` | Registers global agent in `~/.gemini/subagents/`. |
+| **Claude / Cursor** | `code-graph install-agent claude` | Creates `mcp-server-code-graph.json` (MCP tool config). |
+| **Antigravity** | `code-graph install-agent antigravity` | Registers agent in `~/.agent/subagents/`. |
+| **Kiro IDE/CLI** | `code-graph install-agent kiro` | Registers agent in `~/.kiro/agents/`. |
+| **Generic Agent** | `code-graph install-agent generic` | Generates `.code-graph-agent.md` persona prompt. |
+
+**Uninstall** using `uninstall-agent <platform>`.
+
+## 🛠️ Implementation Details
 1. **File Scanning:** Recursively walks the directory, ignoring patterns in `.gitignore`.
 2. **Context Extraction:** Scans for classes, functions, and variables while ignoring matches in comments.
 3. **Graph Extraction:** Identifies `imports`, `requires`, `extends`, and `implements`.
