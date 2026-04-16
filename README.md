@@ -1,4 +1,4 @@
-# CODE-GRAPH (v3.4.0)
+# CODE-GRAPH (v3.4.1)
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** designed specifically for LLM agents. It optimizes context and token usage while enabling agents to learn from their own mistakes across sessions.
 
@@ -7,6 +7,28 @@ A language-agnostic, ultra-compact codebase mapper and **agent memory system** d
 - **Grouped Edges:** Consolidated dependency mapping (`[src] -> [target1, target2]`) for extreme density.
 - **Metadata Stripping:** Removed redundant timestamps from reflections to save context window.
 - **Robust Uninstall:** Defensive file and directory cleanup for all 15+ supported platforms.
+
+## 📥 Installation
+
+```bash
+# Global installation (recommended for CLI usage)
+npm install -g code-graph-llm
+
+# Project-level installation
+npm install --save-dev code-graph-llm
+```
+
+## 🚀 Quick Start
+```bash
+# 1. Initialize rules & memory
+code-graph init
+
+# 2. Build the graph
+code-graph generate
+
+# 3. Connect your favorite agent
+code-graph install gemini
+```
 
 ## 🛠️ The Code-Graph Architecture
 
