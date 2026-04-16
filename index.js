@@ -774,8 +774,3 @@ if (process.argv[1] && (process.argv[1] === __filename || process.argv[1].endsWi
 }
 
 export { CodeParser, ProjectMapper, ReflectionManager };
-ndsWith('index.js'))) {
-  main();
-}
-
-export { CodeParser, ProjectMapper, ReflectionManager };
