@@ -3,7 +3,7 @@
     "code-graph": {
       "command": "node",
       "args": [
-        "D:\\Projects\\code-graph\\index.js",
+        "C:\\Users\\joshi\\AppData\\Roaming\\npm\\node_modules\\code-graph-llm\\index.js",
         "mcp",
         "D:\\Projects\\code-graph"
       ],

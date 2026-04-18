@@ -19,8 +19,8 @@ MEMORY: See llm-agent-project-learnings.md
   - s: [ProjectMapper, generate [()], getIgnores [(dir, baseIg)], processEdges [(relPath, edges, inheritance)], processFile [(fullPath, relPath)], resolveExtension [(target)], walk [(dir, ig, depth = 0)]]
 - lib/parser.js (1↑ 2↓) | d: @file lib/parser.js @description Handles extraction of symbols, edges, and metad
   - s: [CodeParser, extract [(content)], extractEdges [(clean)], extractSymbols [(original, clean)], extractTags [(content)], findSymbolContext [(content, name)]]
-- lib/skills.js (4↑ 2↓) | d: @file lib/skills.js @description Manages platform-specific skills and agent inte
-  - s: [SkillManager, appendToFile [(filename, content)], execute [(platform, action, skill)], install [(p, s)], installGlobalSkill [(platform, skillName, description, body)], installProjectMap [(p)], installReflections [(p)], removeFile [(filename)], removeFileIfEmpty [(filename)], removeFromFile [(filename, content)], removeJsonArrayValue [(filename, key, value)], removeJsonHookEntry [(filename, shouldRemove)], uninstall [(p, s)], writeFile [(filename, content)], writeJson [(filename, data)]]
+- lib/skills.js (5↑ 2↓) | d: @file lib/skills.js @description Manages platform-specific skills and agent inte
+  - s: [SkillManager, appendToFile [(filename, content)], execute [(platform, action, skill)], install [(p, s)], installGlobalSkill [(platform, skillName, description, body)], installSkill [Platform-dispatcher driven by a per-skill spec. Each spec declares which artifacts apply; platforms pick what's relevant. /], removeFile [(filename)], removeFileIfEmpty [(filename)], removeFromFile [(filename, content)], removeJsonArrayValue [(filename, key, value)], removeJsonHookEntry [(filename, shouldRemove)], removeLegacySkills [(p)], removeSkillArtifacts [Remove all artifacts that installSkill creates across platforms for a given skill name + section. Safe to call regardless of which platform originally installed it.], uninstall [(p, s)], writeFile [(filename, content)], writeJson [(filename, data)]]
 - lib/mcp.js (3↑ 1↓) | d: @file lib/mcp.js @description Minimal stdio MCP server for code-graph. /
   - s: [callTool [(message, defaultCwd)], handleMessage [(message, defaultCwd)], readMessage [(buffer)], send [(message)], startMCPServer [(defaultCwd = process.cwd()]]
 - lib/reflections.js (3↑ 1↓) | d: @file lib/reflections.js @description Manages project reflections and lessons le
@@ -36,6 +36,6 @@ MEMORY: See llm-agent-project-learnings.md
 [lib/mcp.js] -> [lib/config.js, lib/initializer.js, lib/mapper.js]
 [lib/parser.js] -> [lib/config.js]
 [lib/reflections.js] -> [lib/config.js, fs, path]
-[lib/skills.js] -> [lib/config.js, fs, os, path]
+[lib/skills.js] -> [lib/config.js, Read, fs, os, path]
 [test/index.test.js] -> [test/foo, test/local-file, test/side-effect, header.h, node:assert, node:fs, node:path, node:test, other-module, react, url]
 [test/platform-audit.js] -> [lib/agents.js, lib/config.js, lib/skills.js, fs, os, path]

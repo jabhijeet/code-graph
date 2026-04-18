@@ -44,11 +44,13 @@ const expectations = {
     globalFiles: [],
     skillChecks: [
       { file: 'CLAUDE.md', contains: ['ProjectMap', 'Reflections', CONFIG.MAP_FILE, CONFIG.REFLECTIONS_FILE] },
+      { file: 'CLAUDE.md', absent: ['RepoContext'] },
       { file: '.claude/skills/projectmap/SKILL.md', contains: ['name: projectmap', 'description:', CONFIG.MAP_FILE] },
       { file: '.claude/skills/reflections/SKILL.md', contains: ['name: reflections', 'description:', CONFIG.REFLECTIONS_FILE] },
       { file: '.claude/settings.json', json: true, check: (d) => {
         const entry = d.hooks?.PreToolUse?.[0];
-        return entry && entry.matcher && Array.isArray(entry.hooks) && entry.hooks[0]?.type === 'command';
+        if (!entry || !Array.isArray(entry.hooks) || entry.hooks[0]?.type !== 'command') return false;
+        return /Read/.test(entry.matcher) && /Grep/.test(entry.matcher) && /Glob/.test(entry.matcher);
       }},
       { file: '.mcp.json', json: true, check: (d) => d.mcpServers?.['code-graph']?.args?.[0]?.endsWith('index.js') }
     ],
@@ -85,6 +87,7 @@ const expectations = {
     globalFiles: [],
     skillChecks: [
       { file: 'AGENTS.md', contains: ['ProjectMap', 'Reflections'] },
+      { file: 'AGENTS.md', absent: ['RepoContext'] },
       { file: '.codex/hooks.json', json: true, check: (d) => d.hooks?.preToolUse?.length > 0 }
     ],
     agentCheck: { file: '.code-graph-agent.md', contains: ['Code-Graph Specialist'] }
@@ -94,6 +97,7 @@ const expectations = {
     globalFiles: [],
     skillChecks: [
       { file: 'AGENTS.md', contains: ['ProjectMap'] },
+      { file: 'AGENTS.md', absent: ['RepoContext'] },
       { file: '.opencode/plugins/projectmap.js', contains: ['projectmap'] },
       { file: 'opencode.json', json: true, check: (d) => Array.isArray(d.plugins) }
     ],
@@ -117,6 +121,7 @@ const expectations = {
       { file: '.agent/skills/reflections/SKILL.md', contains: ['name: reflections', 'description:', CONFIG.REFLECTIONS_FILE] },
       { file: '.agent/rules/projectmap.md', contains: [CONFIG.MAP_FILE] },
       { file: 'AGENTS.md', contains: ['ProjectMap', 'Reflections'] },
+      { file: 'AGENTS.md', absent: ['RepoContext'] },
       { file: 'GEMINI.md', contains: ['ProjectMap', '@./' + CONFIG.MAP_FILE] }
     ],
     agentCheck: {
@@ -139,7 +144,8 @@ const expectations = {
     localFiles: ['AGENTS.md'],
     globalFiles: [],
     skillChecks: [
-      { file: 'AGENTS.md', contains: ['ProjectMap', 'Reflections'] }
+      { file: 'AGENTS.md', contains: ['ProjectMap', 'Reflections'] },
+      { file: 'AGENTS.md', absent: ['RepoContext'] }
     ],
     agentCheck: { file: '.code-graph-agent.md', contains: ['Code-Graph Specialist'] }
   },
@@ -153,7 +159,8 @@ const expectations = {
     localFiles: ['.github/copilot-instructions.md'],
     globalFiles: [],
     skillChecks: [
-      { file: '.github/copilot-instructions.md', contains: ['ProjectMap', 'Reflections'] }
+      { file: '.github/copilot-instructions.md', contains: ['ProjectMap', 'Reflections'] },
+      { file: '.github/copilot-instructions.md', absent: ['RepoContext'] }
     ],
     agentCheck: { file: '.code-graph-agent.md', contains: ['Code-Graph Specialist'] }
   },
@@ -162,7 +169,9 @@ const expectations = {
     globalFiles: [],
     skillChecks: [
       { file: '.clinerules', contains: ['ProjectMap', 'Reflections'] },
-      { file: '.roorules', contains: ['ProjectMap', 'Reflections'] }
+      { file: '.clinerules', absent: ['RepoContext'] },
+      { file: '.roorules', contains: ['ProjectMap', 'Reflections'] },
+      { file: '.roorules', absent: ['RepoContext'] }
     ],
     agentCheck: { file: '.code-graph-agent.md', contains: ['Code-Graph Specialist'] }
   },
@@ -170,7 +179,8 @@ const expectations = {
     localFiles: ['AGENTS.md'],
     globalFiles: ['.aider/skills/projectmap/SKILL.md', '.aider/skills/reflections/SKILL.md'],
     skillChecks: [
-      { file: 'AGENTS.md', contains: ['ProjectMap', 'Reflections'] }
+      { file: 'AGENTS.md', contains: ['ProjectMap', 'Reflections'] },
+      { file: 'AGENTS.md', absent: ['RepoContext'] }
     ],
     agentCheck: { file: '.code-graph-agent.md', contains: ['Code-Graph Specialist'] }
   }
@@ -217,6 +227,11 @@ for (const [platform, expect] of Object.entries(expectations)) {
     if (sc.contains) {
       for (const s of sc.contains) {
         check(platform + ' ' + sc.file + ' contains "' + s + '"', content.includes(s), 'missing');
+      }
+    }
+    if (sc.absent) {
+      for (const s of sc.absent) {
+        check(platform + ' ' + sc.file + ' must not contain "' + s + '"', !content.includes(s), 'still present');
       }
     }
     if (sc.json) {

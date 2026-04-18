@@ -7,45 +7,6 @@ A language-agnostic, ultra-compact codebase mapper and **agent memory system** d
 - **Skill cleanup:** Clarified that stale invalid Codex skills should be removed from `~/.codex/skills` when their `SKILL.md` files lack YAML frontmatter.
 - **Release metadata:** Synchronized runtime version, package metadata, lockfile metadata, README version references, and release notes for the minor documentation release.
 
-## 📝 v4.4.0: Documentation Updates
-
-- **Codex skills:** Documented that installed Codex skills must use YAML frontmatter delimited by `---` so Codex can load them.
-- **Release metadata:** Synchronized package metadata, README version references, and release notes for the minor documentation release.
-
-## 🛠️ v4.3.0: MCP, Safe Uninstall & Graph Accuracy
-
-- **Real MCP server:** Claude and Cursor registrations now point to `code-graph mcp`, a stdio MCP server exposing `code_graph_generate`.
-- **Safe uninstall:** `uninstall-skills` removes Code-Graph managed sections and hooks without deleting user-owned `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, Copilot instructions, or Roo rule files.
-- **Import accuracy:** Default ES imports no longer create false dependency edges from local binding names.
-- **Inheritance graph output:** `extends` / `implements` relationships collected by the parser now appear in the `## EDGES` section.
-- **Docs:** Gemini agent path and Claude/Cursor MCP behavior are now documented to match implementation.
-- **Tests:** Added regression coverage for import edges, inheritance edge rendering, safe uninstall, and MCP config.
-
-## 🔒 v4.2.0: Security & Production Hardening
-
-- **Path traversal fix:** Platform names are whitelisted + regex-validated. Prior versions could be abused to write outside the user's home (e.g. `/etc/...`).
-- **Prototype pollution defense:** `writeJson` strips `__proto__`/`constructor`/`prototype` from parsed JSON before merging.
-- **Resource limits:** Files >5 MB are skipped; directory walk capped at depth 32.
-- **Symlink safety:** `ProjectMapper.walk` ignores symbolic links to prevent escape and infinite loops.
-- **Input sanitization:** `reflect` sanitizes category (20 chars, alphanumeric) and lesson (500 chars, newlines collapsed).
-- **Immutable config:** `CONFIG` and default arrays are `Object.freeze`-d.
-- **Tests:** 30 unit tests (9 new security tests) + 75 platform-audit checks.
-
-## 🚀 v4.1.0: Quality & Integration Fixes
-
-- **Parser Quality:** Symbols now show real declaration signatures instead of call-site args or string literals. File descriptions skip shebang lines and preserve path separators.
-- **Claude Hooks:** `.claude/settings.json` writes modern `PreToolUse` shape with `matcher` + `hooks:[{type,command}]`. Previous format was silently ignored.
-- **MCP Discovery:** Writes `.mcp.json` (Claude) and `.cursor/mcp.json` (Cursor) — the locations each tool actually reads. Existing configs are merged.
-- **CLI:** `generate` now auto-initializes rule/reflection files on first run.
-- **Tests:** Added platform audit (75 integration checks across 12 platforms).
-
-### v4.0.0: Architecture Overhaul
-- **Breaking:** Monolithic `index.js` split into 7 focused modules under `lib/`. Public exports remain identical.
-- **Security:** Fixed regex injection vulnerability in symbol context extraction.
-- **Fix:** Garbled graph output, hook overwrites, silent error swallowing, fragile entry point guard.
-- **CLI:** Added `--help` / `-h`.
-- **Quality:** Fully async I/O, 21 tests.
-
 See [RELEASE_NOTES.md](RELEASE_NOTES.md) for full history.
 
 ## 📥 Installation
@@ -101,7 +62,7 @@ code-graph install gemini
 ### 2. Code-Graph Skills (Passive)
 **Skills** are "always-on" configurations. They ensure your agent *always* sees the codebase map before it acts.
 
-*   **ProjectMap Skill:** Architectural awareness and navigation via `llm-code-graph.md`.
+*   **ProjectMap Skill:** The canonical file/symbol/dependency index from `llm-code-graph.md`. Agents read it before any Read, Grep, or Glob — covers both architecture awareness and fast raw-file triage.
 *   **Reflections Skill:** Persistent project memory via `llm-agent-project-learnings.md`.
 
 **Usage:**
@@ -135,7 +96,7 @@ code-graph install-agent claude
 
 ## 🚀 Platform Support Matrix
 
-Configure your agent to use these skills by running the `install-skills` command. **Both skills are installed by default.**
+Configure your agent to use these skills by running the `install-skills` command. **All bundled skills are installed by default.**
 
 | Platform | Command |
 | :--- | :--- |

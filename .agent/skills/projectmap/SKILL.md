@@ -1,6 +1,6 @@
 ---
 name: projectmap
-description: Use the project knowledge graph for navigation and architectural awareness.
+description: Use the project knowledge graph as the primary index before any raw-file inspection.
 ---
 # ProjectMap
-Read `llm-code-graph.md` before searching raw files for architectural context.
+Read `llm-code-graph.md` before inspecting raw files. It's the canonical index of files, symbols, and dependency edges.

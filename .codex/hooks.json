@@ -5,7 +5,7 @@
         "tools": [
           "bash"
         ],
-        "message": "Skill(ProjectMap): Read llm-code-graph.md for architectural context."
+        "message": "Skill(ProjectMap): Read llm-code-graph.md before inspecting raw files."
       }
     ]
   }
