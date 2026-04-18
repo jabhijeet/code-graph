@@ -1,8 +1,13 @@
-# CODE-GRAPH (v4.4.0)
+# CODE-GRAPH (v4.5.0)
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** designed specifically for LLM agents. It optimizes context and token usage while enabling agents to learn from their own mistakes across sessions.
 
-## 📝 New in v4.4.0: Documentation Updates
+## 📝 New in v4.5.0: Documentation Updates
+
+- **Skill cleanup:** Clarified that stale invalid Codex skills should be removed from `~/.codex/skills` when their `SKILL.md` files lack YAML frontmatter.
+- **Release metadata:** Synchronized runtime version, package metadata, lockfile metadata, README version references, and release notes for the minor documentation release.
+
+## 📝 v4.4.0: Documentation Updates
 
 - **Codex skills:** Documented that installed Codex skills must use YAML frontmatter delimited by `---` so Codex can load them.
 - **Release metadata:** Synchronized package metadata, README version references, and release notes for the minor documentation release.
