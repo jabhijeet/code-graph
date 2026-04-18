@@ -33,18 +33,28 @@ function readFile(p) {
 
 const expectations = {
   claude: {
-    localFiles: ['CLAUDE.md', '.claude/settings.json', '.mcp.json'],
+    localFiles: [
+      'CLAUDE.md',
+      '.claude/settings.json',
+      '.claude/skills/projectmap/SKILL.md',
+      '.claude/skills/reflections/SKILL.md',
+      '.claude/agents/code-graph.md',
+      '.mcp.json'
+    ],
     globalFiles: [],
     skillChecks: [
       { file: 'CLAUDE.md', contains: ['ProjectMap', 'Reflections', CONFIG.MAP_FILE, CONFIG.REFLECTIONS_FILE] },
+      { file: '.claude/skills/projectmap/SKILL.md', contains: ['name: projectmap', 'description:', CONFIG.MAP_FILE] },
+      { file: '.claude/skills/reflections/SKILL.md', contains: ['name: reflections', 'description:', CONFIG.REFLECTIONS_FILE] },
       { file: '.claude/settings.json', json: true, check: (d) => {
         const entry = d.hooks?.PreToolUse?.[0];
         return entry && entry.matcher && Array.isArray(entry.hooks) && entry.hooks[0]?.type === 'command';
-      }}
+      }},
+      { file: '.mcp.json', json: true, check: (d) => d.mcpServers?.['code-graph']?.args?.[0]?.endsWith('index.js') }
     ],
     agentCheck: {
-      file: '.mcp.json', json: true,
-      check: (d) => d.mcpServers?.['code-graph']?.args?.[0]?.endsWith('index.js')
+      file: '.claude/agents/code-graph.md',
+      contains: ['name: code-graph', 'description:', 'tools:', 'code-graph generate']
     }
   },
   cursor: {
@@ -90,14 +100,28 @@ const expectations = {
     agentCheck: { file: '.code-graph-agent.md', contains: ['Code-Graph Specialist'] }
   },
   antigravity: {
-    localFiles: ['.agent/rules/projectmap.md', '.agent/rules/reflections.md', '.agent/workflows/projectmap.md'],
-    globalFiles: ['.agent/subagents/code-graph/AGENT.md'],
+    localFiles: [
+      '.agent/skills/projectmap/SKILL.md',
+      '.agent/skills/reflections/SKILL.md',
+      '.agent/rules/projectmap.md',
+      '.agent/rules/reflections.md',
+      'AGENTS.md',
+      'GEMINI.md'
+    ],
+    globalFiles: [
+      '.gemini/antigravity/skills/code-graph/SKILL.md',
+      '.gemini/antigravity/mcp_config.json'
+    ],
     skillChecks: [
-      { file: '.agent/rules/projectmap.md', contains: [CONFIG.MAP_FILE] }
+      { file: '.agent/skills/projectmap/SKILL.md', contains: ['name: projectmap', 'description:', CONFIG.MAP_FILE] },
+      { file: '.agent/skills/reflections/SKILL.md', contains: ['name: reflections', 'description:', CONFIG.REFLECTIONS_FILE] },
+      { file: '.agent/rules/projectmap.md', contains: [CONFIG.MAP_FILE] },
+      { file: 'AGENTS.md', contains: ['ProjectMap', 'Reflections'] },
+      { file: 'GEMINI.md', contains: ['ProjectMap', '@./' + CONFIG.MAP_FILE] }
     ],
     agentCheck: {
-      globalFile: '.agent/subagents/code-graph/AGENT.md',
-      contains: ['Code-Graph']
+      globalFile: '.gemini/antigravity/skills/code-graph/SKILL.md',
+      contains: ['name: code-graph', 'description:', 'code-graph generate']
     }
   },
   kiro: {

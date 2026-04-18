@@ -12,7 +12,7 @@ MEMORY: See llm-agent-project-learnings.md
 - lib/config.js (0↑ 9↓) | d: @file lib/config.js @description Constants, configuration, and shared utilities.
   - s: [CONFIG [@file lib/config.js @description Constants, configuration, and shared utilities. /], REGEX [=], SUPPORTED_EXTENSIONS [= CONFIG.SUPPORTED_EXTENSIONS], SUPPORTED_PLATFORMS [= Object.freeze([], escapeRegex [(str)], isValidPlatform [(p)], stripDangerousKeys [(value)]]
 - lib/agents.js (5↑ 2↓) | d: @file lib/agents.js @description Manages sub-agent registrations and orchestrato
-  - s: [AgentManager, execute [(platform, action)], install [(p)], installGeminiAgent [()], installMCPServer [(relPath)], removeFile [(filename)], uninstall [(p)]]
+  - s: [AgentManager, execute [(platform, action)], install [(p)], installAntigravityAgent [()], installGeminiAgent [()], installGenericPersona [()], installKiroAgent [()], installMCPServer [(relPath)], installMCPServerAbsolute [(target)], removeFile [(filename)], uninstall [(p)]]
 - lib/initializer.js (3↑ 2↓) | d: @file lib/initializer.js @description Scaffolds the initial agent-agnostic rule 
   - s: [ProjectInitializer, init [(cwd)]]
 - lib/mapper.js (5↑ 2↓) | d: @file lib/mapper.js @description Manages the project mapping and file generation
@@ -20,7 +20,7 @@ MEMORY: See llm-agent-project-learnings.md
 - lib/parser.js (1↑ 2↓) | d: @file lib/parser.js @description Handles extraction of symbols, edges, and metad
   - s: [CodeParser, extract [(content)], extractEdges [(clean)], extractSymbols [(original, clean)], extractTags [(content)], findSymbolContext [(content, name)]]
 - lib/skills.js (4↑ 2↓) | d: @file lib/skills.js @description Manages platform-specific skills and agent inte
-  - s: [SkillManager, appendToFile [(filename, content)], execute [(platform, action, skill)], install [(p, s)], installGlobalSkill [(platform, skillName, content)], installProjectMap [(p)], installReflections [(p)], removeFile [(filename)], removeFileIfEmpty [(filename)], removeFromFile [(filename, content)], removeJsonArrayValue [(filename, key, value)], removeJsonHookEntry [(filename, shouldRemove)], uninstall [(p, s)], writeFile [(filename, content)], writeJson [(filename, data)]]
+  - s: [SkillManager, appendToFile [(filename, content)], execute [(platform, action, skill)], install [(p, s)], installGlobalSkill [(platform, skillName, description, body)], installProjectMap [(p)], installReflections [(p)], removeFile [(filename)], removeFileIfEmpty [(filename)], removeFromFile [(filename, content)], removeJsonArrayValue [(filename, key, value)], removeJsonHookEntry [(filename, shouldRemove)], uninstall [(p, s)], writeFile [(filename, content)], writeJson [(filename, data)]]
 - lib/mcp.js (3↑ 1↓) | d: @file lib/mcp.js @description Minimal stdio MCP server for code-graph. /
   - s: [callTool [(message, defaultCwd)], handleMessage [(message, defaultCwd)], readMessage [(buffer)], send [(message)], startMCPServer [(defaultCwd = process.cwd()]]
 - lib/reflections.js (3↑ 1↓) | d: @file lib/reflections.js @description Manages project reflections and lessons le
