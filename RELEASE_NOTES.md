@@ -1,5 +1,14 @@
 # RELEASE NOTES
 
+### v4.6.0 (2026-04-18)
+- **Skills (Merge):** `RepoContext` has been merged into `ProjectMap`. One skill now covers both architecture awareness and raw-file triage. `code-graph install-skills <platform> repocontext` is no longer accepted — use `projectmap` (or install all).
+- **Skills (Hook coverage):** Claude's `PreToolUse` matcher is now `Read|Grep|Glob` (previously `Grep|Glob`), so the knowledge-graph reminder also fires before direct file reads, which was the most common raw-file tool missing coverage.
+- **Upgrade cleanup:** Every `install-skills` and `uninstall-skills` run now unconditionally scrubs legacy `repocontext` artifacts — `🔎 Skill: RepoContext` sections in CLAUDE.md/AGENTS.md/GEMINI.md/.clinerules/.roorules/.github/copilot-instructions.md, `.claude/skills/repocontext/`, `.cursor/rules/repocontext.mdc`, `.agent/skills/repocontext/`, `.agent/rules/repocontext.md`, `.kiro/steering/repocontext.md`, and the per-platform global skill dir. Upgraders no longer have to clean up by hand.
+- **Refactor:** `SkillManager` replaced three parallel per-skill installers with a single `installSkill(platform, spec)` dispatcher driven by per-skill specs (`projectMapSpec()`, `reflectionsSpec()`). Shared `removeSkillArtifacts()` + `removeLegacySkills()` helpers replace the duplicated uninstall branches. Net: ~100 lines removed, drift between platforms becomes harder.
+- **Behavior parity:** IntelliJ install path unified to "AGENTS.md only, no global skill" for all skills (previously inconsistent between ProjectMap and Reflections). Matches what `test/platform-audit.js` already asserted.
+- **Tests:** `test/platform-audit.js` now supports `absent:` content assertions (currently used to guarantee no `RepoContext` text leaks back into instruction files), and the Claude hook assertion explicitly verifies `Read`, `Grep`, and `Glob` are all in the matcher.
+- **Maintenance:** Synchronized runtime version, package metadata, lockfile metadata, README version references, and release notes.
+
 ### v4.5.0 (2026-04-18)
 - **Docs (Codex Skills):** Documented stale invalid skill cleanup for `~/.codex/skills` entries whose `SKILL.md` files lack required YAML frontmatter.
 - **Maintenance:** Synchronized runtime version, package metadata, lockfile metadata, README version references, and release notes for the minor documentation release.
