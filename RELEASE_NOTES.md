@@ -1,5 +1,28 @@
 # RELEASE NOTES
 
+### v4.2.0 (2026-04-18)
+- **Security (Path Traversal):** Platform name is now strictly validated against a whitelist (`SUPPORTED_PLATFORMS`) plus a `/^[a-z0-9_-]{1,32}$/i` regex. Previously, values like `/../../etc` could traverse out of the user's home via the template-literal path construction in `installGlobalSkill`, potentially writing files under `/etc/skills/...` when run as root.
+- **Security (Prototype Pollution):** `writeJson` now strips `__proto__`, `constructor`, and `prototype` keys from parsed JSON and incoming data. Exposed `stripDangerousKeys` helper. Prevents pollution via a malicious pre-existing `.claude/settings.json` / `.mcp.json`.
+- **Security (Symlink Escape):** `ProjectMapper.walk` skips symbolic-link entries entirely. Prevents escaping `cwd` or infinite loops.
+- **Security (Resource Exhaustion):** `processFile` stats files first and skips anything larger than `CONFIG.MAX_FILE_BYTES` (5 MB). Walker caps recursion at `CONFIG.MAX_WALK_DEPTH` (32).
+- **Security (Injection):** `ReflectionManager.add` sanitizes category (strips non-word chars, 20-char cap) and lesson (collapses newlines, 500-char cap). Prevents markdown/file-format injection via newlines.
+- **Hardening:** `CONFIG` object and `SUPPORTED_EXTENSIONS` / `DEFAULT_IGNORES` arrays are now `Object.freeze`-d. Read-only imports can no longer mutate shared state.
+- **Hardening:** `walk` handles `EACCES`/`EPERM` gracefully (warns + skips) instead of throwing.
+- **Hardening:** `relPath.startsWith('..')` guard added in walk to defense-in-depth against path escape via ignore-rule bypass.
+- **Tests:** Added 9 security tests (30 total). Covers path traversal rejection, prototype pollution resistance, size/symlink limits, input sanitization.
+- **API:** New exports from `index.js`: `SUPPORTED_PLATFORMS`, `isValidPlatform`, `stripDangerousKeys`.
+
+### v4.1.0 (2026-04-18)
+- **Fix (Parser Quality):** `findSymbolContext` now prefers declaration sites over the first textual occurrence. Prior behavior captured call-site args or string literals as "signatures" (e.g., `install [-skills <platform>')]`). Symbols now show real declarations: `install [(p)]`, `writeFile [(filename, content)]`.
+- **Fix (Parser Quality):** `extractFileDesc` skips shebang lines (`#!/usr/bin/env node`) and no longer strips `/` from path references in docstrings. File descriptions are now readable.
+- **Fix (Parser Quality):** Signature fallback limited to 80 chars and stops at newlines/braces, preventing multi-line string bodies from being captured.
+- **Fix (Claude Hooks):** `.claude/settings.json` now writes modern `PreToolUse` shape with `matcher` + `hooks:[{type:"command", command}]`. Previous `preToolUse` (lowercase) + `{tools, message}` format was silently ignored by Claude Code.
+- **Fix (MCP Discovery):** MCP server registration now writes to `.mcp.json` (Claude) and `.cursor/mcp.json` (Cursor) — the locations actually read by each tool. Previously wrote to `mcp-server-code-graph.json` which was never loaded. Existing config is merged rather than overwritten.
+- **Fix (Platform List):** Removed dead references to `openclaw`, `droid`, `trae-cn` from the platforms array in `index.js`. These had no corresponding skill or agent handlers.
+- **CLI:** `generate` now auto-initializes `llm-agent-rules.md` and `llm-agent-project-learnings.md` if missing, so first-run users don't need to `init` separately.
+- **Quality:** `mergeHooks` now dedupes by JSON equivalence, supporting any hook payload shape (not just `{message}` entries).
+- **Tests:** Added `test/platform-audit.js` — 75 integration checks across 12 platforms validating file layout, content, JSON schema, and agent registration.
+
 ### v4.0.0 (2026-04-16)
 - **Breaking: Modular Architecture** — Split monolithic `index.js` (776 lines) into 7 modules under `lib/`. All public exports (`CodeParser`, `ProjectMapper`, `ReflectionManager`, `SkillManager`, `AgentManager`, `ProjectInitializer`, `CONFIG`) remain available from `index.js` via re-exports, but direct imports from internal paths will break.
 - **Security:** Fixed regex injection in `CodeParser.findSymbolContext` — symbol names with regex metacharacters (e.g., `$`, `+`) are now escaped before interpolation.

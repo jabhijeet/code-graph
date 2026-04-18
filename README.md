@@ -1,17 +1,31 @@
-# CODE-GRAPH (v4.0.0)
+# CODE-GRAPH (v4.2.0)
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** designed specifically for LLM agents. It optimizes context and token usage while enabling agents to learn from their own mistakes across sessions.
 
-## 🚀 New in v4.0.0: Architecture Overhaul
+## 🔒 New in v4.2.0: Security & Production Hardening
 
-- **Breaking: Modular Architecture** — Monolithic `index.js` split into 7 focused modules under `lib/`. Public exports remain identical.
+- **Path traversal fix:** Platform names are whitelisted + regex-validated. Prior versions could be abused to write outside the user's home (e.g. `/etc/...`).
+- **Prototype pollution defense:** `writeJson` strips `__proto__`/`constructor`/`prototype` from parsed JSON before merging.
+- **Resource limits:** Files >5 MB are skipped; directory walk capped at depth 32.
+- **Symlink safety:** `ProjectMapper.walk` ignores symbolic links to prevent escape and infinite loops.
+- **Input sanitization:** `reflect` sanitizes category (20 chars, alphanumeric) and lesson (500 chars, newlines collapsed).
+- **Immutable config:** `CONFIG` and default arrays are `Object.freeze`-d.
+- **Tests:** 30 unit tests (9 new security tests) + 75 platform-audit checks.
+
+## 🚀 v4.1.0: Quality & Integration Fixes
+
+- **Parser Quality:** Symbols now show real declaration signatures instead of call-site args or string literals. File descriptions skip shebang lines and preserve path separators.
+- **Claude Hooks:** `.claude/settings.json` writes modern `PreToolUse` shape with `matcher` + `hooks:[{type,command}]`. Previous format was silently ignored.
+- **MCP Discovery:** Writes `.mcp.json` (Claude) and `.cursor/mcp.json` (Cursor) — the locations each tool actually reads. Existing configs are merged.
+- **CLI:** `generate` now auto-initializes rule/reflection files on first run.
+- **Tests:** Added platform audit (75 integration checks across 12 platforms).
+
+### v4.0.0: Architecture Overhaul
+- **Breaking:** Monolithic `index.js` split into 7 focused modules under `lib/`. Public exports remain identical.
 - **Security:** Fixed regex injection vulnerability in symbol context extraction.
-- **Fix:** Garbled graph output caused by regex patterns in source code matching the tag extractor.
-- **Fix:** `writeJson` now appends hook entries instead of overwriting existing user hooks.
-- **Fix:** Silent error swallowing replaced with warnings for JSON parse failures and skill installs.
-- **Fix:** Entry point guard no longer matches arbitrary `index.js` files.
-- **CLI:** Added `--help` / `-h` with comprehensive command reference.
-- **Quality:** Fully async I/O (removed all sync `fs` calls), 21 tests (up from 10).
+- **Fix:** Garbled graph output, hook overwrites, silent error swallowing, fragile entry point guard.
+- **CLI:** Added `--help` / `-h`.
+- **Quality:** Fully async I/O, 21 tests.
 
 See [RELEASE_NOTES.md](RELEASE_NOTES.md) for full history.
 
@@ -263,7 +277,8 @@ lib/
   skills.js           SkillManager — platform skill installation
   agents.js           AgentManager — sub-agent registration
 test/
-  index.test.js       21 tests covering parser, mapper, skills, CLI
+  index.test.js       21 unit tests covering parser, mapper, skills, CLI
+  platform-audit.js   75 integration checks across 12 platforms
 ```
 
 ### Pipeline

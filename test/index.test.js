@@ -8,8 +8,12 @@ import {
   ProjectMapper,
   ReflectionManager,
   SkillManager,
+  AgentManager,
   SUPPORTED_EXTENSIONS,
-  CONFIG
+  SUPPORTED_PLATFORMS,
+  CONFIG,
+  isValidPlatform,
+  stripDangerousKeys
 } from '../index.js';
 
 // --- CodeParser Tests ---
@@ -285,4 +289,152 @@ test('CLI unknown command prints usage', async () => {
   const { execSync } = await import('node:child_process');
   const output = execSync('node index.js unknown-cmd-xyz', { cwd: process.cwd(), encoding: 'utf8' });
   assert.ok(output.includes('Usage:'));
+});
+
+// --- Security Tests ---
+
+test('isValidPlatform accepts whitelisted platforms', () => {
+  for (const p of SUPPORTED_PLATFORMS) assert.ok(isValidPlatform(p), `${p} should be valid`);
+});
+
+test('isValidPlatform rejects path traversal attempts', () => {
+  const attacks = ['/../../etc', '..', '../foo', '/etc', 'claude/../etc',
+    '\\..\\etc', 'claude;rm', 'claude\n', '', null, undefined, 42, {}, 'a'.repeat(33)];
+  for (const a of attacks) assert.strictEqual(isValidPlatform(a), false, `${JSON.stringify(a)} should be rejected`);
+});
+
+test('SkillManager rejects invalid platform without writing files', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_sec_skills');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  const errs = [];
+  const origErr = console.error;
+  console.error = (m) => errs.push(m);
+
+  await new SkillManager(tempDir).execute('/../../etc', 'install-skills');
+
+  console.error = origErr;
+  assert.ok(errs.some(m => m.includes('Unsupported platform')));
+  assert.strictEqual(fs.readdirSync(tempDir).length, 0, 'no files should be written');
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
+test('AgentManager rejects invalid platform', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_sec_agents');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  const errs = [];
+  const origErr = console.error;
+  console.error = (m) => errs.push(m);
+
+  await new AgentManager(tempDir).execute('/../../etc', 'install-agent');
+
+  console.error = origErr;
+  assert.ok(errs.some(m => m.includes('Unsupported platform')));
+  assert.strictEqual(fs.readdirSync(tempDir).length, 0);
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
+test('stripDangerousKeys removes prototype pollution vectors', () => {
+  const malicious = JSON.parse('{"__proto__":{"polluted":true},"constructor":{"evil":1},"safe":"ok"}');
+  const clean = stripDangerousKeys(malicious);
+  assert.strictEqual(clean.safe, 'ok');
+  assert.strictEqual(clean.__proto__.polluted, undefined);
+  assert.strictEqual(clean.constructor, Object);
+  assert.strictEqual({}.polluted, undefined);
+});
+
+test('writeJson does not pollute prototype from malicious existing file', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_sec_proto');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  fs.writeFileSync(path.join(tempDir, 'evil.json'),
+    '{"__proto__":{"polluted":"yes"},"mcpServers":{"old":{"cmd":"x"}}}');
+
+  const sm = new SkillManager(tempDir);
+  await sm.writeJson('evil.json', { mcpServers: { new: { cmd: 'y' } } });
+
+  assert.strictEqual({}.polluted, undefined, 'Object.prototype must not be polluted');
+  const result = JSON.parse(fs.readFileSync(path.join(tempDir, 'evil.json'), 'utf8'));
+  assert.ok(result.mcpServers.new);
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
+test('ReflectionManager sanitizes newlines and long input', async () => {
+  const tempFile = path.join(process.cwd(), CONFIG.REFLECTIONS_FILE);
+  const backup = fs.existsSync(tempFile) ? fs.readFileSync(tempFile, 'utf8') : null;
+  fs.writeFileSync(tempFile, '# LLM_LEARNINGS\n');
+
+  const uniq = 'sanitize-test-' + Date.now();
+  await ReflectionManager.add('LOGIC', `line1\nline2 ${uniq} ` + 'x'.repeat(600));
+  let content = fs.readFileSync(tempFile, 'utf8');
+
+  const entryLines = content.split('\n').filter(l => l.startsWith('- ['));
+  assert.strictEqual(entryLines.length, 1, 'should produce exactly one entry');
+  assert.ok(entryLines[0].startsWith('- [LOGIC]'));
+  assert.ok(entryLines[0].includes(uniq));
+  assert.ok(entryLines[0].length < 600, 'lesson must be length-capped');
+
+  await ReflectionManager.add('BAD\n- [INJECTED] fake', 'another lesson ' + uniq + '-2');
+  content = fs.readFileSync(tempFile, 'utf8');
+  assert.ok(!content.split('\n').some(l => l.startsWith('- [INJECTED]')),
+    'newline in category must not inject new bracketed entries');
+
+  if (backup) fs.writeFileSync(tempFile, backup);
+  else fs.unlinkSync(tempFile);
+});
+
+test('ProjectMapper skips files exceeding MAX_FILE_BYTES', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_sec_size');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  const bigPath = path.join(tempDir, 'huge.js');
+  fs.writeFileSync(bigPath, 'x'.repeat(CONFIG.MAX_FILE_BYTES + 100));
+  fs.writeFileSync(path.join(tempDir, 'small.js'), 'function ok() {}');
+
+  const warns = [];
+  const origWarn = console.warn;
+  console.warn = (m) => warns.push(m);
+
+  await new ProjectMapper(tempDir).generate();
+
+  console.warn = origWarn;
+  const map = fs.readFileSync(path.join(tempDir, CONFIG.MAP_FILE), 'utf8');
+  assert.ok(!map.includes('huge.js'), 'oversized file must be skipped');
+  assert.ok(map.includes('small.js'), 'normal file must be included');
+  assert.ok(warns.some(w => w.includes('Skipping large file')));
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
+test('ProjectMapper skips symbolic links during walk', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_sec_sym');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+  fs.writeFileSync(path.join(tempDir, 'real.js'), 'function real() {}');
+
+  const outside = path.join(process.cwd(), 'temp_sec_sym_outside.js');
+  fs.writeFileSync(outside, 'function outside() {}');
+  let symlinkOk = false;
+  try {
+    fs.symlinkSync(outside, path.join(tempDir, 'link.js'));
+    symlinkOk = true;
+  } catch (e) { /* privilege-required on some Windows */ }
+
+  if (symlinkOk) {
+    await new ProjectMapper(tempDir).generate();
+    const map = fs.readFileSync(path.join(tempDir, CONFIG.MAP_FILE), 'utf8');
+    assert.ok(map.includes('real.js'));
+    assert.ok(!map.includes('link.js'), 'symlinks must not be followed');
+  }
+
+  fs.rmSync(tempDir, { recursive: true });
+  fs.unlinkSync(outside);
 });

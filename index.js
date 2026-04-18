@@ -11,7 +11,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import chokidar from 'chokidar';
 
-import { CONFIG, SUPPORTED_EXTENSIONS, escapeRegex } from './lib/config.js';
+import { CONFIG, SUPPORTED_EXTENSIONS, SUPPORTED_PLATFORMS, escapeRegex, isValidPlatform } from './lib/config.js';
 import { CodeParser } from './lib/parser.js';
 import { ProjectMapper } from './lib/mapper.js';
 import { ReflectionManager } from './lib/reflections.js';
@@ -58,7 +58,7 @@ async function main() {
   const cwd = process.cwd();
 
   try {
-    const platforms = ['claude', 'codex', 'opencode', 'cursor', 'gemini', 'aider', 'openclaw', 'droid', 'trae', 'trae-cn', 'hermes', 'kiro', 'antigravity', 'copilot', 'vscode', 'roocode', 'intellij'];
+    const platforms = SUPPORTED_PLATFORMS;
 
     switch (command || 'generate') {
       case '--help':
@@ -71,6 +71,7 @@ async function main() {
         console.log(`code-graph-llm v${CONFIG.VERSION}`);
         break;
       case 'generate':
+        await ProjectInitializer.init(cwd);
         await new ProjectMapper(cwd).generate();
         break;
       case 'init':
@@ -175,7 +176,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(__filename
 }
 
 // Re-export all public APIs for library consumers
-export { CONFIG, SUPPORTED_EXTENSIONS, escapeRegex } from './lib/config.js';
+export { CONFIG, SUPPORTED_EXTENSIONS, SUPPORTED_PLATFORMS, escapeRegex, isValidPlatform, stripDangerousKeys } from './lib/config.js';
 export { CodeParser } from './lib/parser.js';
 export { ProjectMapper } from './lib/mapper.js';
 export { ReflectionManager } from './lib/reflections.js';
