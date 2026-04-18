@@ -1,8 +1,17 @@
-# CODE-GRAPH (v4.2.0)
+# CODE-GRAPH (v4.3.0)
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** designed specifically for LLM agents. It optimizes context and token usage while enabling agents to learn from their own mistakes across sessions.
 
-## 🔒 New in v4.2.0: Security & Production Hardening
+## 🛠️ New in v4.3.0: MCP, Safe Uninstall & Graph Accuracy
+
+- **Real MCP server:** Claude and Cursor registrations now point to `code-graph mcp`, a stdio MCP server exposing `code_graph_generate`.
+- **Safe uninstall:** `uninstall-skills` removes Code-Graph managed sections and hooks without deleting user-owned `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, Copilot instructions, or Roo rule files.
+- **Import accuracy:** Default ES imports no longer create false dependency edges from local binding names.
+- **Inheritance graph output:** `extends` / `implements` relationships collected by the parser now appear in the `## EDGES` section.
+- **Docs:** Gemini agent path and Claude/Cursor MCP behavior are now documented to match implementation.
+- **Tests:** Added regression coverage for import edges, inheritance edge rendering, safe uninstall, and MCP config.
+
+## 🔒 v4.2.0: Security & Production Hardening
 
 - **Path traversal fix:** Platform names are whitelisted + regex-validated. Prior versions could be abused to write outside the user's home (e.g. `/etc/...`).
 - **Prototype pollution defense:** `writeJson` strips `__proto__`/`constructor`/`prototype` from parsed JSON before merging.
@@ -100,7 +109,7 @@ code-graph install-skills cursor projectmap
 **Agents** are specialized personas. Instead of just reading a file, the main orchestrator (like Gemini CLI or Claude) can **delegate** complex mapping or analysis tasks to the Code-Graph agent.
 
 *   **Native Sub-Agents:** Gemini, Antigravity, and Kiro register `code-graph` as an expert in their global config.
-*   **MCP Servers:** Claude and Cursor use the Model Context Protocol to call `code-graph` as a live tool.
+*   **MCP Servers:** Claude and Cursor use the Model Context Protocol to call `code-graph` through a stdio server.
 *   **Persona Prompts:** Aider and others use a `.code-graph-agent.md` system prompt to "become" the specialist.
 
 **Usage:**
@@ -255,8 +264,8 @@ Register `code-graph` as an active sub-agent to enable explicit delegation.
 
 | Platform | Command | Action Taken |
 | :--- | :--- | :--- |
-| **Gemini CLI** | `code-graph install-agent gemini` | Registers global agent in `~/.gemini/subagents/`. |
-| **Claude / Cursor** | `code-graph install-agent claude` | Creates `mcp-server-code-graph.json` (MCP tool config). |
+| **Gemini CLI** | `code-graph install-agent gemini` | Registers global agent in `~/.gemini/agents/code-graph.md`. |
+| **Claude / Cursor** | `code-graph install-agent claude` | Adds a `code-graph` stdio MCP server to `.mcp.json` or `.cursor/mcp.json`. |
 | **Antigravity** | `code-graph install-agent antigravity` | Registers agent in `~/.agent/subagents/`. |
 | **Kiro IDE/CLI** | `code-graph install-agent kiro` | Registers agent in `~/.kiro/agents/`. |
 | **Generic Agent** | `code-graph install-agent generic` | Generates `.code-graph-agent.md` persona prompt. |

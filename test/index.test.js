@@ -73,6 +73,16 @@ test('extractEdges - Imports and includes', () => {
   assert.ok(edges.includes('header.h'));
 });
 
+test('extractEdges - Default imports do not create binding-name dependencies', () => {
+  const code = `
+    import React from 'react';
+    import foo, { bar } from './foo';
+    import './side-effect';
+  `;
+  const { edges } = CodeParser.extract(code);
+  assert.deepStrictEqual(edges, ['./foo', './side-effect', 'react']);
+});
+
 test('extractSymbols - Java/Spring Annotations', () => {
   const code = `
     @RestController
@@ -147,6 +157,15 @@ test('ProjectMapper - Format Output Header', () => {
   assert.ok(output.includes('MISSION: COMPACT PROJECT MAP FOR LLM AGENTS.'));
   assert.ok(output.includes('PROTOCOL: Follow llm-agent-rules.md'));
   assert.ok(output.includes('MEMORY: See llm-agent-project-learnings.md'));
+});
+
+test('ProjectMapper - Format Output Includes Inheritance Edges', () => {
+  const mapper = new ProjectMapper(process.cwd());
+  mapper.allEdges = ['[AdminUser] -> [inherits] -> [BaseUser]'];
+
+  const output = mapper.formatOutput();
+
+  assert.ok(output.includes('[AdminUser] -> [inherits] -> [BaseUser]'));
 });
 
 test('Recursive Ignore Simulation (Logic Check)', async () => {
@@ -259,6 +278,41 @@ test('SkillManager - writeJson deduplicates identical hooks', async () => {
 
   const result = JSON.parse(fs.readFileSync(path.join(tempDir, 'test-settings.json'), 'utf8'));
   assert.strictEqual(result.hooks.preToolUse.length, 1);
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
+test('SkillManager - uninstall preserves user-owned instruction files', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_uninstall_preserve');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  const agentsPath = path.join(tempDir, 'AGENTS.md');
+  fs.writeFileSync(agentsPath, '# Existing Project Instructions\nKeep this line.\n');
+
+  const sm = new SkillManager(tempDir);
+  await sm.install('codex', 'all');
+  await sm.uninstall('codex', 'all');
+
+  const content = fs.readFileSync(agentsPath, 'utf8');
+  assert.ok(content.includes('Keep this line.'));
+  assert.ok(!content.includes('Skill: ProjectMap'));
+  assert.ok(!content.includes('Skill: Reflections'));
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
+test('AgentManager - Claude MCP config points to stdio server mode', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_mcp_config');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  await new AgentManager(tempDir).install('claude');
+
+  const data = JSON.parse(fs.readFileSync(path.join(tempDir, '.mcp.json'), 'utf8'));
+  assert.strictEqual(data.mcpServers['code-graph'].command, 'node');
+  assert.ok(data.mcpServers['code-graph'].args.includes('mcp'));
+  assert.ok(!data.mcpServers['code-graph'].args.includes('generate'));
 
   fs.rmSync(tempDir, { recursive: true });
 });

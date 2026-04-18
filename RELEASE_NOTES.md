@@ -1,5 +1,13 @@
 # RELEASE NOTES
 
+### v4.3.0 (2026-04-18)
+- **MCP:** Added `code-graph mcp`, a stdio MCP server exposing `code_graph_generate`. Claude and Cursor agent registration now points to this server instead of the one-shot `generate` command.
+- **Fix (Uninstall Safety):** `uninstall-skills` now removes only Code-Graph managed sections, hooks, plugin entries, and generated skill files. It preserves user-owned `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.clinerules`, `.roorules`, `.github/copilot-instructions.md`, and `opencode.json` content.
+- **Fix (Graph Accuracy):** Default ES import bindings are no longer treated as dependencies. `import React from 'react'` records `react`, not `React`.
+- **Fix (Graph Output):** Inheritance edges collected from `extends` / `implements` now render in `## EDGES` instead of being silently dropped.
+- **Docs:** Updated README for stdio MCP behavior and corrected the Gemini agent path to `~/.gemini/agents/code-graph.md`.
+- **Tests:** Added regression tests for import edge extraction, inheritance edge rendering, safe uninstall preservation, and MCP config shape.
+
 ### v4.2.0 (2026-04-18)
 - **Security (Path Traversal):** Platform name is now strictly validated against a whitelist (`SUPPORTED_PLATFORMS`) plus a `/^[a-z0-9_-]{1,32}$/i` regex. Previously, values like `/../../etc` could traverse out of the user's home via the template-literal path construction in `installGlobalSkill`, potentially writing files under `/etc/skills/...` when run as root.
 - **Security (Prototype Pollution):** `writeJson` now strips `__proto__`, `constructor`, and `prototype` keys from parsed JSON and incoming data. Exposed `stripDangerousKeys` helper. Prevents pollution via a malicious pre-existing `.claude/settings.json` / `.mcp.json`.
