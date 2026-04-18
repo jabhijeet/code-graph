@@ -1,8 +1,13 @@
-# CODE-GRAPH (v4.3.0)
+# CODE-GRAPH (v4.4.0)
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** designed specifically for LLM agents. It optimizes context and token usage while enabling agents to learn from their own mistakes across sessions.
 
-## 🛠️ New in v4.3.0: MCP, Safe Uninstall & Graph Accuracy
+## 📝 New in v4.4.0: Documentation Updates
+
+- **Codex skills:** Documented that installed Codex skills must use YAML frontmatter delimited by `---` so Codex can load them.
+- **Release metadata:** Synchronized package metadata, README version references, and release notes for the minor documentation release.
+
+## 🛠️ v4.3.0: MCP, Safe Uninstall & Graph Accuracy
 
 - **Real MCP server:** Claude and Cursor registrations now point to `code-graph mcp`, a stdio MCP server exposing `code_graph_generate`.
 - **Safe uninstall:** `uninstall-skills` removes Code-Graph managed sections and hooks without deleting user-owned `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, Copilot instructions, or Roo rule files.

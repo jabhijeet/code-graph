@@ -1,5 +1,9 @@
 # RELEASE NOTES
 
+### v4.4.0 (2026-04-18)
+- **Docs (Codex Skills):** Documented the required YAML frontmatter format for installed Codex `SKILL.md` files so Codex does not skip them as invalid.
+- **Maintenance:** Synchronized runtime version, package metadata, lockfile metadata, README version references, and release notes for the minor documentation release.
+
 ### v4.3.0 (2026-04-18)
 - **MCP:** Added `code-graph mcp`, a stdio MCP server exposing `code_graph_generate`. Claude and Cursor agent registration now points to this server instead of the one-shot `generate` command.
 - **Fix (Uninstall Safety):** `uninstall-skills` now removes only Code-Graph managed sections, hooks, plugin entries, and generated skill files. It preserves user-owned `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.clinerules`, `.roorules`, `.github/copilot-instructions.md`, and `opencode.json` content.

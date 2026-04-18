@@ -1,0 +1,12 @@
+{
+  "hooks": {
+    "preToolUse": [
+      {
+        "tools": [
+          "bash"
+        ],
+        "message": "Skill(ProjectMap): Read llm-code-graph.md for architectural context."
+      }
+    ]
+  }
+}
