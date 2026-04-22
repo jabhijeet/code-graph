@@ -1,5 +1,9 @@
 # RELEASE NOTES
 
+### v4.7.0 (2026-04-22)
+- **Improvement on prompts:** Enhanced prompt clarity and version synchronization across documentation.
+- **Maintenance:** Synchronized runtime version, package metadata, lockfile metadata, README version references, and release notes.
+
 ### v4.6.0 (2026-04-18)
 - **Skills (Merge):** `RepoContext` has been merged into `ProjectMap`. One skill now covers both architecture awareness and raw-file triage. `code-graph install-skills <platform> repocontext` is no longer accepted — use `projectmap` (or install all).
 - **Skills (Hook coverage):** Claude's `PreToolUse` matcher is now `Read|Grep|Glob` (previously `Grep|Glob`), so the knowledge-graph reminder also fires before direct file reads, which was the most common raw-file tool missing coverage.

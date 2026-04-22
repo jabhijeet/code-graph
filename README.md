@@ -1,14 +1,11 @@
-# CODE-GRAPH (v4.6.0)
+# CODE-GRAPH (v4.7.0)
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** designed specifically for LLM agents. It optimizes context and token usage while enabling agents to learn from their own mistakes across sessions.
 
-## 📝 New in v4.6.0: Unified ProjectMap Skill
+## 📝 New in v4.7.0: Prompt Improvements & Version Sync
 
-- **RepoContext merged into ProjectMap.** One skill covers both architecture awareness and raw-file triage. Fewer overlapping instructions for agents to weigh.
-- **Stronger hook coverage.** Claude's PreToolUse matcher is now `Read|Grep|Glob` (was `Grep|Glob`), so the knowledge-graph reminder fires before the most common raw-file tool too.
-- **Automatic legacy cleanup.** Installs and uninstalls scrub any prior `repocontext` artifacts (sections in CLAUDE.md/AGENTS.md/GEMINI.md, `.claude/skills/repocontext/`, `.agent/skills/repocontext/`, cursor/kiro rules, global skill dirs) so upgraders land clean with no manual steps.
-- **Table-driven installers.** `SkillManager` now uses a single `installSkill(platform, spec)` dispatcher driven by per-skill specs, cutting duplication and making it harder for platform branches to drift.
-- **Tests.** Platform audit adds `absent:` assertions that fail if legacy skill names reappear, plus an explicit Read+Grep+Glob matcher check for the Claude hook.
+- **Improvement on prompts:** Enhanced prompt clarity and version synchronization across documentation.
+- **Maintenance:** Synchronized runtime version, package metadata, lockfile metadata, README version references, and release notes.
 
 See [RELEASE_NOTES.md](RELEASE_NOTES.md) for full history.
 
