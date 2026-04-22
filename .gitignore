@@ -69,3 +69,4 @@ build/
 # Generated files
 llm-code-graph.md
 
+/.agent/

@@ -302,6 +302,46 @@ test('SkillManager - uninstall preserves user-owned instruction files', async ()
   fs.rmSync(tempDir, { recursive: true });
 });
 
+test('SkillManager - reflections prompt forces pre-task memory application', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_reflections_prompt');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  const sm = new SkillManager(tempDir);
+  await sm.install('codex', 'reflections');
+
+  const content = fs.readFileSync(path.join(tempDir, 'AGENTS.md'), 'utf8');
+  assert.ok(content.includes('Before planning or making changes'));
+  assert.ok(content.includes('apply every relevant lesson'));
+  assert.ok(content.includes('same mistake'));
+  assert.ok(content.includes('Do not finish'));
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
+test('SkillManager - reinstall replaces old weak reflections prompt', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_reflections_upgrade');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  const oldPrompt = '\n## 🧠 Skill: Reflections\nFollow the reflection cycle: Read `llm-agent-project-learnings.md` for past lessons and run `code-graph reflect` after any bug fix or failure.\n';
+  const intermediatePrompt = '\n## 🧠 Skill: Reflections\nBefore planning or making changes, read `llm-agent-project-learnings.md` and apply every relevant lesson to the current task.\nIf a lesson matches the current file, tool, OS, dependency, or failure mode, treat it as an active constraint and mention how it changes your approach.\nIf you hit a failure, correction, repeated mistake, or non-obvious project behavior, run `code-graph reflect <CAT> <LESSON>` with a concise reusable lesson.\nDo not finish a bug fix, failed-command recovery, or environment workaround without either recording a new reflection or explicitly stating that no new reusable lesson was learned.\nThe goal is to avoid the same mistake across agents and sessions, not just to append notes after the fact.\n';
+  fs.writeFileSync(path.join(tempDir, 'AGENTS.md'), '# Existing Project Instructions\n' + oldPrompt + intermediatePrompt);
+
+  const sm = new SkillManager(tempDir);
+  await sm.install('codex', 'reflections');
+
+  const content = fs.readFileSync(path.join(tempDir, 'AGENTS.md'), 'utf8');
+  assert.ok(content.includes('# Existing Project Instructions'));
+  assert.strictEqual(content.includes(oldPrompt.trim()), false);
+  assert.strictEqual(content.includes(intermediatePrompt.trim()), false);
+  assert.strictEqual((content.match(/Skill: Reflections/g) || []).length, 1);
+  assert.ok(content.includes('apply every relevant lesson'));
+  assert.ok(content.includes(CONFIG.RULES_FILE));
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
 test('AgentManager - Claude MCP config points to stdio server mode', async () => {
   const tempDir = path.join(process.cwd(), 'temp_test_mcp_config');
   if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
