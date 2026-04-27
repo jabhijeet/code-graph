@@ -1,11 +1,12 @@
-# CODE-GRAPH (v4.7.0)
+# CODE-GRAPH (v4.8.0)
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** designed specifically for LLM agents. It optimizes context and token usage while enabling agents to learn from their own mistakes across sessions.
 
-## 📝 New in v4.7.0: Prompt Improvements & Version Sync
+## 📝 New in v4.8.0: MCP Auto-Install Bug Fix
 
-- **Improvement on prompts:** Enhanced prompt clarity and version synchronization across documentation.
-- **Maintenance:** Synchronized runtime version, package metadata, lockfile metadata, README version references, and release notes.
+- **Fix:** Removed MCP server registration from `install-agent`. Previously, running `code-graph install-agent claude` wrote `.mcp.json` to the project root, causing Claude Code to prompt users to install `code-graph` as an MCP server on every project open — an unintended side effect.
+- **Fix:** `uninstall-agent claude` now cleans up any previously generated `.mcp.json` and legacy `mcp-server-code-graph.json`.
+- **Fix:** Added `.mcp.json` and `.cursor/mcp.json` to `.gitignore` to prevent machine-specific config from being committed.
 
 See [RELEASE_NOTES.md](RELEASE_NOTES.md) for full history.
 
