@@ -1,5 +1,11 @@
 # RELEASE NOTES
 
+### v4.8.0 (2026-04-27)
+- **Fix (MCP auto-install):** Removed MCP server registration from `install-agent`. Previously, `install-agent claude` wrote a `.mcp.json` to the project root and `install-agent cursor` wrote `.cursor/mcp.json`, causing platforms to prompt users to install `code-graph` as an MCP server — an unintended side-effect. Agent install for Claude now only creates the `.claude/agents/code-graph.md` sub-agent file. Cursor falls back to the generic persona prompt.
+- **Fix (uninstall cleanup):** `uninstall-agent claude` now removes any previously generated `.mcp.json` and legacy `mcp-server-code-graph.json` files so existing installs are cleaned up on next uninstall.
+- **Fix (.gitignore):** Added `.mcp.json` and `.cursor/mcp.json` to `.gitignore` to prevent machine-specific MCP config from being committed.
+- **Docs:** Updated README sub-agent table and agent-type bullet points to reflect removal of MCP registration.
+
 ### v4.7.0 (2026-04-22)
 - **Improvement on prompts:** Enhanced prompt clarity and version synchronization across documentation.
 - **Maintenance:** Synchronized runtime version, package metadata, lockfile metadata, README version references, and release notes.

@@ -17,3 +17,4 @@
 - [ENV] Windows sandbox setup can fail before PowerShell runs; retry required reads with approved escalation instead of assuming command failure.
 - [LOGIC] Shared reflection prompt text must mention llm-agent-rules.md because platform audit expects Cursor reflections rules to retain the rules-file link.
 - [LOGIC] When changing generated skill prompt bodies, add the previous generated section text to upgrade cleanup or reinstall may duplicate prompt blocks.
+- [BUG] installMCPServer in AgentManager wrote .mcp.json to project root on install-agent, causing Claude Code to prompt MCP installation in every project. Fix: removed all MCP registration methods; agent install now only creates the platform subagent file.

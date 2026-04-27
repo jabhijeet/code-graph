@@ -11,8 +11,8 @@ MEMORY: See llm-agent-project-learnings.md
   - s: [doSomething [()]]
 - lib/config.js (0↑ 9↓) | d: @file lib/config.js @description Constants, configuration, and shared utilities.
   - s: [CONFIG [@file lib/config.js @description Constants, configuration, and shared utilities. /], REGEX [=], SUPPORTED_EXTENSIONS [= CONFIG.SUPPORTED_EXTENSIONS], SUPPORTED_PLATFORMS [= Object.freeze([], escapeRegex [(str)], isValidPlatform [(p)], stripDangerousKeys [(value)]]
-- lib/agents.js (5↑ 2↓) | d: @file lib/agents.js @description Manages sub-agent registrations and orchestrato
-  - s: [AgentManager, execute [(platform, action)], install [(p)], installAntigravityAgent [()], installGeminiAgent [()], installGenericPersona [()], installKiroAgent [()], installMCPServer [(relPath)], installMCPServerAbsolute [(target)], removeFile [(filename)], uninstall [(p)]]
+- lib/agents.js (4↑ 2↓) | d: @file lib/agents.js @description Manages sub-agent registrations and orchestrato
+  - s: [AgentManager, execute [(platform, action)], install [(p)], installAntigravityAgent [()], installClaudeSubagent [()], installGeminiAgent [()], installGenericPersona [()], installKiroAgent [()], removeFile [(filename)], uninstall [(p)]]
 - lib/initializer.js (3↑ 2↓) | d: @file lib/initializer.js @description Scaffolds the initial agent-agnostic rule 
   - s: [ProjectInitializer, init [(cwd)]]
 - lib/mapper.js (5↑ 2↓) | d: @file lib/mapper.js @description Manages the project mapping and file generation
@@ -30,7 +30,7 @@ MEMORY: See llm-agent-project-learnings.md
 
 ## EDGES
 [index.js] -> [lib/agents.js, lib/config.js, lib/initializer.js, lib/mapper.js, lib/mcp.js, lib/parser.js, lib/reflections.js, lib/skills.js, chokidar, fs, path, url]
-[lib/agents.js] -> [lib/config.js, fs, os, path, url]
+[lib/agents.js] -> [lib/config.js, fs, os, path]
 [lib/initializer.js] -> [lib/config.js, fs, path]
 [lib/mapper.js] -> [lib/config.js, lib/parser.js, fs, ignore, path]
 [lib/mcp.js] -> [lib/config.js, lib/initializer.js, lib/mapper.js]

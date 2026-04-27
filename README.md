@@ -79,8 +79,7 @@ code-graph install-skills cursor projectmap
 ### 3. Code-Graph Agents (Active)
 **Agents** are specialized personas. Instead of just reading a file, the main orchestrator (like Gemini CLI or Claude) can **delegate** complex mapping or analysis tasks to the Code-Graph agent.
 
-*   **Native Sub-Agents:** Gemini, Antigravity, and Kiro register `code-graph` as an expert in their global config.
-*   **MCP Servers:** Claude and Cursor use the Model Context Protocol to call `code-graph` through a stdio server.
+*   **Native Sub-Agents:** Gemini, Antigravity, Kiro, and Claude register `code-graph` as an expert in their global config.
 *   **Persona Prompts:** Aider and others use a `.code-graph-agent.md` system prompt to "become" the specialist.
 
 **Usage:**
@@ -236,8 +235,8 @@ Register `code-graph` as an active sub-agent to enable explicit delegation.
 | Platform | Command | Action Taken |
 | :--- | :--- | :--- |
 | **Gemini CLI** | `code-graph install-agent gemini` | Registers global agent in `~/.gemini/agents/code-graph.md`. |
-| **Claude / Cursor** | `code-graph install-agent claude` | Adds a `code-graph` stdio MCP server to `.mcp.json` or `.cursor/mcp.json`. |
-| **Antigravity** | `code-graph install-agent antigravity` | Registers agent in `~/.agent/subagents/`. |
+| **Claude Code** | `code-graph install-agent claude` | Registers sub-agent in `.claude/agents/code-graph.md`. |
+| **Antigravity** | `code-graph install-agent antigravity` | Registers agent skill in `~/.gemini/antigravity/skills/`. |
 | **Kiro IDE/CLI** | `code-graph install-agent kiro` | Registers agent in `~/.kiro/agents/`. |
 | **Generic Agent** | `code-graph install-agent generic` | Generates `.code-graph-agent.md` persona prompt. |
 
