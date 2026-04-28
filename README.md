@@ -203,14 +203,17 @@ Recommended generic prompt:
 Before acting, read llm-code-graph.md and follow llm-agent-rules.md. If you encounter a bug, environment quirk, or reusable project lesson, record it with code-graph reflect <CAT> <LESSON>.
 ```
 
-### Map Notation
+### Reading the Map
 
-- `*`: Core entry point or god node.
-- `(↑out ↓in)`: Dependency counts.
-- `s:`: Symbols such as classes, functions, and types.
-- `d:`: Contextual summary.
+`llm-code-graph.md` is a compact index generated from the project. Each file entry is designed to help an agent decide which files matter before opening raw source:
 
-Example:
+- `*` marks a core entry point or high-importance file.
+- `(↑out ↓in)` shows dependency counts. Outgoing dependencies are files or packages this file references; incoming dependencies are files that reference it.
+- `d:` is a short description extracted from file comments or nearby context.
+- `s:` lists important symbols found in the file, such as classes, functions, types, and exported values.
+- The `## EDGES` section lists dependency relationships in the form `[source] -> [targets]`.
+
+For example:
 
 ```markdown
 - *src/auth.js (3↑ 5↓) [TODO:Add JWT rotation] | d: Handles user authentication.
@@ -220,6 +223,8 @@ Example:
 [src/auth.js] -> [jwt-lib, db-connector]
 [AdminUser] -> [BaseUser]
 ```
+
+This means `src/auth.js` is a core file with 3 outgoing dependencies and 5 incoming references. It contains the `login` and `validateToken` symbols, has a TODO about JWT rotation, depends on `jwt-lib` and `db-connector`, and includes an inheritance relationship where `AdminUser` extends or implements `BaseUser`.
 
 ## Sub-Agent Registration
 
