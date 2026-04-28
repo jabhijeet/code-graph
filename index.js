@@ -35,10 +35,10 @@ Commands:
   reflect <category> <lesson>           Record a project lesson
   watch                                 Watch for changes and auto-regenerate
 
-  install <platform>                    Install skills + agent for a platform
-  uninstall <platform>                  Remove skills + agent for a platform
-  install-skills <platform> [skill]     Install skills (projectmap|reflections)
-  uninstall-skills <platform> [skill]   Remove skills
+  install [-g] <platform>                    Install skills + agent for a platform
+  uninstall [-g] <platform>                  Remove skills + agent for a platform
+  install-skills [-g] <platform> [skill]     Install skills (projectmap|reflections|simplicity|changelimit)
+  uninstall-skills [-g] <platform> [skill]   Remove skills (projectmap|reflections|simplicity|changelimit)
   install-agent <platform>              Register as sub-agent
   uninstall-agent <platform>            Remove sub-agent registration
   uninstall-all                         Remove all platform integrations
@@ -46,16 +46,29 @@ Commands:
   install-hook                          Install git pre-commit hook
 
 Flags:
+  -g, --global                          Install to user home dir (all projects)
+                                        Default installs to current project only
   --version, -v                         Print version
   --help, -h                            Print this help
 
-Platforms:
+Platforms (original):
   claude, cursor, gemini, codex, opencode, roocode, kiro,
-  antigravity, copilot, vscode, intellij, aider, trae, hermes`);
+  antigravity, copilot, vscode, intellij, aider, trae, hermes, generic
+
+Platforms (extended — 53 agents total):
+  aider-desk, amp, augment, bob, openclaw, cline, warp, codearts-agent,
+  codebuddy, codemaker, codestudio, command-code, continue, cortex, crush,
+  deepagents, devin, droid, firebender, forgecode, gemini-cli, github-copilot,
+  goose, junie, iflow-cli, kilo, kimi-cli, kiro-cli, kode, mcpjam,
+  mistral-vibe, mux, openhands, pi, qoder, qwen-code, replit, rovodev, roo,
+  tabnine-cli, trae-cn, universal, windsurf, zencoder, neovate, pochi, adal`);
 }
 
 async function main() {
-  const [command, ...args] = process.argv.slice(2);
+  const rawArgs = process.argv.slice(2);
+  const isGlobal = rawArgs.includes('-g') || rawArgs.includes('--global');
+  const filteredArgs = rawArgs.filter(a => a !== '-g' && a !== '--global');
+  const [command, ...args] = filteredArgs;
   const cwd = process.cwd();
 
   try {
@@ -86,10 +99,10 @@ async function main() {
         await installGitHook(cwd);
         break;
       case 'install-skills':
-        await new SkillManager(cwd).execute(args[0], 'install-skills', args[1]);
+        await new SkillManager(cwd).execute(args[0], 'install-skills', args[1], isGlobal);
         break;
       case 'uninstall-skills':
-        await new SkillManager(cwd).execute(args[0], 'uninstall-skills', args[1]);
+        await new SkillManager(cwd).execute(args[0], 'uninstall-skills', args[1], isGlobal);
         break;
       case 'install-agent':
         await new AgentManager(cwd).execute(args[0], 'install-agent');
@@ -98,17 +111,17 @@ async function main() {
         await new AgentManager(cwd).execute(args[0], 'uninstall-agent');
         break;
       case 'install':
-        await new SkillManager(cwd).execute(args[0], 'install-skills');
+        await new SkillManager(cwd).execute(args[0], 'install-skills', undefined, isGlobal);
         await new AgentManager(cwd).execute(args[0], 'install-agent');
         break;
       case 'uninstall':
-        await new SkillManager(cwd).execute(args[0], 'uninstall-skills');
+        await new SkillManager(cwd).execute(args[0], 'uninstall-skills', undefined, isGlobal);
         await new AgentManager(cwd).execute(args[0], 'uninstall-agent');
         break;
       case 'uninstall-all':
         console.log('[Code-Graph] Performing full cleanup...');
         for (const p of platforms) {
-          await new SkillManager(cwd).execute(p, 'uninstall-skills');
+          await new SkillManager(cwd).execute(p, 'uninstall-skills', undefined, isGlobal);
           await new AgentManager(cwd).execute(p, 'uninstall-agent');
         }
         break;
@@ -120,7 +133,7 @@ async function main() {
         break;
       default:
         if (platforms.includes(command?.toLowerCase())) {
-          await new SkillManager(cwd).execute(command, args[0], args[1]);
+          await new SkillManager(cwd).execute(command, args[0], args[1], isGlobal);
         } else {
           printHelp();
         }

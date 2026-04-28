@@ -1,5 +1,13 @@
 # RELEASE NOTES
 
+### v4.9.0 (2026-04-28)
+- **Feature (Agent Support):** Expanded supported platforms from 15 to 62. All 53 agents listed on [vercel-labs/skills](https://github.com/vercel-labs/skills) are now supported — `PLATFORM_GLOBAL_PATHS` maps each agent to its correct user-level skills directory (handles XDG paths, nested dirs, and renamed dirs like `~/.codeium/windsurf/skills/`, `~/.snowflake/cortex/skills/`, `~/.factory/skills/`, etc.).
+- **Feature (`-g` flag):** Added `-g` / `--global` flag to `install-skills`, `uninstall-skills`, `install`, and `uninstall`. Without `-g`: writes only to project files (CLAUDE.md, AGENTS.md, cursor rules, hooks). With `-g`: writes only to the agent's user-level skills directory, available across all projects. Follows `npm install -g` convention.
+- **Skills (Simplicity):** New built-in skill installed by default (`all`). Injects a MANDATORY prompt enforcing minimal code — no extra parameters, no abstractions for single-use logic, no error handling for impossible cases, no refactoring during bug fixes. Installs to Claude, Cursor, Kiro, Antigravity, and all other agents via AGENTS.md + global skill dir.
+- **Skills (ChangeLimit):** New built-in skill installed by default (`all`). Injects a MANDATORY prompt enforcing minimal diffs — no renaming, reformatting, or "improving" surrounding code, exact style matching, only fix breakage caused by your own change. Same platform coverage as Simplicity.
+- **Credits:** Added attribution to Andrej Karpathy's llm-wiki Gist in README.
+- **Maintenance:** Synchronized runtime version, package metadata, README version references, and release notes.
+
 ### v4.8.0 (2026-04-27)
 - **Fix (MCP auto-install):** Removed MCP server registration from `install-agent`. Previously, `install-agent claude` wrote a `.mcp.json` to the project root and `install-agent cursor` wrote `.cursor/mcp.json`, causing platforms to prompt users to install `code-graph` as an MCP server — an unintended side-effect. Agent install for Claude now only creates the `.claude/agents/code-graph.md` sub-agent file. Cursor falls back to the generic persona prompt.
 - **Fix (uninstall cleanup):** `uninstall-agent claude` now removes any previously generated `.mcp.json` and legacy `mcp-server-code-graph.json` files so existing installs are cleaned up on next uninstall.

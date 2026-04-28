@@ -1,12 +1,16 @@
-# CODE-GRAPH (v4.8.0)
+# CODE-GRAPH (v4.9.0)
+
+> Inspired by Andrej Karpathy's llm-wiki Gist and the community's work building on it.
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** designed specifically for LLM agents. It optimizes context and token usage while enabling agents to learn from their own mistakes across sessions.
 
-## 📝 New in v4.8.0: MCP Auto-Install Bug Fix
+## 📝 New in v4.9.0
 
-- **Fix:** Removed MCP server registration from `install-agent`. Previously, running `code-graph install-agent claude` wrote `.mcp.json` to the project root, causing Claude Code to prompt users to install `code-graph` as an MCP server on every project open — an unintended side effect.
-- **Fix:** `uninstall-agent claude` now cleans up any previously generated `.mcp.json` and legacy `mcp-server-code-graph.json`.
-- **Fix:** Added `.mcp.json` and `.cursor/mcp.json` to `.gitignore` to prevent machine-specific config from being committed.
+- **Feature (Agent Support):** Expanded from 15 to 62 supported platforms. All 53 agents listed on [vercel-labs/skills](https://github.com/vercel-labs/skills) are now first-class targets — correct global skill paths per agent via `PLATFORM_GLOBAL_PATHS`.
+- **Feature (`-g` flag):** `install-skills -g <platform>` installs to the agent's user-level skills directory (`~/...`) instead of the current project. Works with all commands: `install`, `uninstall`, `install-skills`, `uninstall-skills`.
+- **Skills (Simplicity):** New built-in skill. Forces agents to write only what the task requires — no extra features, no premature abstractions, no unnecessary helpers. On by default.
+- **Skills (ChangeLimit):** New built-in skill. Forces agents to change only what is explicitly required — no refactoring nearby code, no style improvements, no scope creep. On by default.
+- **Credits:** Added attribution to Andrej Karpathy's llm-wiki Gist.
 
 See [RELEASE_NOTES.md](RELEASE_NOTES.md) for full history.
 
@@ -32,8 +36,11 @@ code-graph init
 # 2. Build the graph
 code-graph generate
 
-# 3. Connect your favorite agent
-code-graph install gemini
+# 3. Connect your agent (project-level)
+code-graph install-skills claude
+
+# 3b. Or install globally for all projects
+code-graph install-skills -g claude
 ```
 
 ## 🛠️ The Code-Graph Architecture
@@ -65,6 +72,8 @@ code-graph install gemini
 
 *   **ProjectMap Skill:** The canonical file/symbol/dependency index from `llm-code-graph.md`. Agents read it before any Read, Grep, or Glob — covers both architecture awareness and fast raw-file triage.
 *   **Reflections Skill:** Persistent project memory via `llm-agent-project-learnings.md`.
+*   **Simplicity Skill:** Forces agents to write only what the task requires — no extra features, no premature abstractions, no unnecessary flexibility.
+*   **ChangeLimit Skill:** Forces agents to change only what is explicitly required — no refactoring nearby code, no style "improvements", no scope creep.
 
 **Usage:**
 ```bash
@@ -96,22 +105,137 @@ code-graph install-agent claude
 
 ## 🚀 Platform Support Matrix
 
-Configure your agent to use these skills by running the `install-skills` command. **All bundled skills are installed by default.**
+Configure your agent to use these skills by running `install-skills`. Add `-g` before the platform to install globally (all projects). **All bundled skills are installed by default.**
 
-| Platform | Command |
+| Agent | Command |
 | :--- | :--- |
 | **Claude Code** | `code-graph install-skills claude` |
 | **Cursor** | `code-graph install-skills cursor` |
-| **Gemini CLI** | `code-graph install-skills gemini` |
+| **Gemini CLI** | `code-graph install-skills gemini` or `gemini-cli` |
 | **Antigravity** | `code-graph install-skills antigravity` |
-| **Kiro IDE/CLI** | `code-graph install-skills kiro` |
-| **Roo Code (Cline)** | `code-graph install-skills roocode` |
+| **Kiro IDE/CLI** | `code-graph install-skills kiro` or `kiro-cli` |
+| **Roo Code** | `code-graph install-skills roocode` or `roo` |
 | **IntelliJ / JetBrains** | `code-graph install-skills intellij` |
 | **Codex** | `code-graph install-skills codex` |
 | **OpenCode** | `code-graph install-skills opencode` |
-| **GitHub Copilot CLI** | `code-graph install-skills copilot` |
+| **GitHub Copilot** | `code-graph install-skills copilot` or `github-copilot` |
 | **VS Code Copilot Chat** | `code-graph install-skills vscode` |
+| **Windsurf** | `code-graph install-skills windsurf` |
+| **Cursor** | `code-graph install-skills cursor` |
+| **Cline / Warp** | `code-graph install-skills cline` or `warp` |
+| **AiderDesk** | `code-graph install-skills aider-desk` |
 | **Aider / Trae / Hermes** | `code-graph install-skills aider` |
+| **Amp** | `code-graph install-skills amp` |
+| **Augment** | `code-graph install-skills augment` |
+| **IBM Bob** | `code-graph install-skills bob` |
+| **OpenClaw** | `code-graph install-skills openclaw` |
+| **CodeArts Agent** | `code-graph install-skills codearts-agent` |
+| **CodeBuddy** | `code-graph install-skills codebuddy` |
+| **Codemaker** | `code-graph install-skills codemaker` |
+| **Code Studio** | `code-graph install-skills codestudio` |
+| **Command Code** | `code-graph install-skills command-code` |
+| **Continue** | `code-graph install-skills continue` |
+| **Cortex Code** | `code-graph install-skills cortex` |
+| **Crush** | `code-graph install-skills crush` |
+| **Deep Agents** | `code-graph install-skills deepagents` |
+| **Devin for Terminal** | `code-graph install-skills devin` |
+| **Droid** | `code-graph install-skills droid` |
+| **Firebender** | `code-graph install-skills firebender` |
+| **ForgeCode** | `code-graph install-skills forgecode` |
+| **Goose** | `code-graph install-skills goose` |
+| **Junie** | `code-graph install-skills junie` |
+| **iFlow CLI** | `code-graph install-skills iflow-cli` |
+| **Kilo Code** | `code-graph install-skills kilo` |
+| **Kimi Code CLI** | `code-graph install-skills kimi-cli` |
+| **Kode** | `code-graph install-skills kode` |
+| **MCPJam** | `code-graph install-skills mcpjam` |
+| **Mistral Vibe** | `code-graph install-skills mistral-vibe` |
+| **Mux** | `code-graph install-skills mux` |
+| **OpenHands** | `code-graph install-skills openhands` |
+| **Pi** | `code-graph install-skills pi` |
+| **Qoder** | `code-graph install-skills qoder` |
+| **Qwen Code** | `code-graph install-skills qwen-code` |
+| **Replit** | `code-graph install-skills replit` |
+| **Rovo Dev** | `code-graph install-skills rovodev` |
+| **Tabnine CLI** | `code-graph install-skills tabnine-cli` |
+| **Trae CN** | `code-graph install-skills trae-cn` |
+| **Universal** | `code-graph install-skills universal` |
+| **Zencoder** | `code-graph install-skills zencoder` |
+| **Neovate** | `code-graph install-skills neovate` |
+| **Pochi** | `code-graph install-skills pochi` |
+| **AdaL** | `code-graph install-skills adal` |
+
+## 🤖 Supported Agents
+
+Skills can be installed to any of these agents. Use `-g` to install globally (available across all projects) or omit it for project-level install only.
+
+```bash
+# Project-level (current directory only)
+code-graph install-skills <agent>
+
+# Global (available in all projects)
+code-graph install-skills -g <agent>
+```
+
+Global install paths per agent:
+
+| Agent | Command | Global Path |
+| :--- | :--- | :--- |
+| AiderDesk | `code-graph install-skills aider-desk` | `~/.aider-desk/skills/` |
+| Amp | `code-graph install-skills amp` | `~/.config/agents/skills/` |
+| Antigravity | `code-graph install-skills antigravity` | `~/.gemini/antigravity/skills/` |
+| Augment | `code-graph install-skills augment` | `~/.augment/skills/` |
+| IBM Bob | `code-graph install-skills bob` | `~/.bob/skills/` |
+| Claude Code | `code-graph install-skills claude` | `~/.claude/skills/` |
+| OpenClaw | `code-graph install-skills openclaw` | `~/.openclaw/skills/` |
+| Cline | `code-graph install-skills cline` | `~/.agents/skills/` |
+| Warp | `code-graph install-skills warp` | `~/.agents/skills/` |
+| CodeArts Agent | `code-graph install-skills codearts-agent` | `~/.codeartsdoer/skills/` |
+| CodeBuddy | `code-graph install-skills codebuddy` | `~/.codebuddy/skills/` |
+| Codemaker | `code-graph install-skills codemaker` | `~/.codemaker/skills/` |
+| Code Studio | `code-graph install-skills codestudio` | `~/.codestudio/skills/` |
+| Codex | `code-graph install-skills codex` | `~/.codex/skills/` |
+| Command Code | `code-graph install-skills command-code` | `~/.commandcode/skills/` |
+| Continue | `code-graph install-skills continue` | `~/.continue/skills/` |
+| Cortex Code | `code-graph install-skills cortex` | `~/.snowflake/cortex/skills/` |
+| Crush | `code-graph install-skills crush` | `~/.config/crush/skills/` |
+| Cursor | `code-graph install-skills cursor` | `~/.cursor/skills/` |
+| Deep Agents | `code-graph install-skills deepagents` | `~/.deepagents/agent/skills/` |
+| Devin for Terminal | `code-graph install-skills devin` | `~/.config/devin/skills/` |
+| Droid | `code-graph install-skills droid` | `~/.factory/skills/` |
+| Firebender | `code-graph install-skills firebender` | `~/.firebender/skills/` |
+| ForgeCode | `code-graph install-skills forgecode` | `~/.forge/skills/` |
+| Gemini CLI | `code-graph install-skills gemini` | `~/.gemini/skills/` |
+| GitHub Copilot | `code-graph install-skills copilot` | `~/.copilot/skills/` |
+| Goose | `code-graph install-skills goose` | `~/.config/goose/skills/` |
+| Junie | `code-graph install-skills junie` | `~/.junie/skills/` |
+| iFlow CLI | `code-graph install-skills iflow-cli` | `~/.iflow/skills/` |
+| Kilo Code | `code-graph install-skills kilo` | `~/.kilocode/skills/` |
+| Kimi Code CLI | `code-graph install-skills kimi-cli` | `~/.config/agents/skills/` |
+| Kiro CLI | `code-graph install-skills kiro` | `~/.kiro/skills/` |
+| Kode | `code-graph install-skills kode` | `~/.kode/skills/` |
+| MCPJam | `code-graph install-skills mcpjam` | `~/.mcpjam/skills/` |
+| Mistral Vibe | `code-graph install-skills mistral-vibe` | `~/.vibe/skills/` |
+| Mux | `code-graph install-skills mux` | `~/.mux/skills/` |
+| OpenCode | `code-graph install-skills opencode` | `~/.config/opencode/skills/` |
+| OpenHands | `code-graph install-skills openhands` | `~/.openhands/skills/` |
+| Pi | `code-graph install-skills pi` | `~/.pi/agent/skills/` |
+| Qoder | `code-graph install-skills qoder` | `~/.qoder/skills/` |
+| Qwen Code | `code-graph install-skills qwen-code` | `~/.qwen/skills/` |
+| Replit | `code-graph install-skills replit` | `~/.config/agents/skills/` |
+| Rovo Dev | `code-graph install-skills rovodev` | `~/.rovodev/skills/` |
+| Roo Code | `code-graph install-skills roocode` | `~/.roo/skills/` |
+| Tabnine CLI | `code-graph install-skills tabnine-cli` | `~/.tabnine/agent/skills/` |
+| Trae | `code-graph install-skills trae` | `~/.trae/skills/` |
+| Trae CN | `code-graph install-skills trae-cn` | `~/.trae-cn/skills/` |
+| Universal | `code-graph install-skills universal` | `~/.config/agents/skills/` |
+| Windsurf | `code-graph install-skills windsurf` | `~/.codeium/windsurf/skills/` |
+| Zencoder | `code-graph install-skills zencoder` | `~/.zencoder/skills/` |
+| Neovate | `code-graph install-skills neovate` | `~/.neovate/skills/` |
+| Pochi | `code-graph install-skills pochi` | `~/.pochi/skills/` |
+| AdaL | `code-graph install-skills adal` | `~/.adal/skills/` |
+
+---
 
 ### Selective Installation
 You can choose to install or uninstall specific skills:
@@ -122,6 +246,12 @@ code-graph install-skills gemini projectmap
 
 # Install only reflections
 code-graph install-skills cursor reflections
+
+# Install only simplicity rules
+code-graph install-skills claude simplicity
+
+# Install only change-limit rules
+code-graph install-skills claude changelimit
 
 # Uninstall only reflections
 code-graph uninstall-skills claude reflections
