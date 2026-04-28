@@ -1,13 +1,14 @@
-# CODE-GRAPH (v4.9.1)
+# CODE-GRAPH (v4.10.0)
 
 > Inspired by Andrej Karpathy's llm-wiki Gist and the community's work building on it.
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** for LLM agents. Code-Graph gives agents a compact file, symbol, and dependency index, then pairs it with persistent project learnings so agents can avoid repeating mistakes across sessions.
 
-## New in v4.9.1
+## New in v4.10.0
 
-- **Fix (OpenCode plugins):** `install-skills opencode all` now merges and deduplicates plugin registrations instead of replacing earlier entries or user-owned plugins.
-- **Fix (Skill uninstall):** `uninstall-skills` now removes OpenCode plugin files/config entries and Codex hook entries for every managed skill, including `simplicity` and `changelimit`.
+- **Skill (FreshDeps):** New mandatory bundled skill that forces latest stable compatible dependencies and current, non-deprecated APIs.
+- **Agent rules:** `llm-agent-rules.md` now makes every bundled skill mandatory for agents: ProjectMap, Reflections, Simplicity, ChangeLimit, and FreshDeps.
+- **Coverage:** `freshdeps` is installed by `all` and uses the same dispatcher as the other bundled skills, so every supported platform receives either its native skill/rule artifact or the generic project instruction fallback.
 - **Maintenance:** Synchronized runtime version, package metadata, lockfile metadata, README version references, and release notes.
 
 See [RELEASE_NOTES.md](RELEASE_NOTES.md) for full history.
@@ -68,12 +69,13 @@ code-graph uninstall <platform>
 
 ### Passive Skills
 
-Skills are always-on configurations that tell your agent how to use the project map and memory files.
+Skills are always-on configurations that tell your agent how to use the project map and memory files. `code-graph install-skills <platform>` installs all bundled skills by default for every supported platform.
 
 - **ProjectMap:** Reads `llm-code-graph.md`, the canonical file, symbol, and dependency index, before raw file searches.
 - **Reflections:** Reads and updates `llm-agent-project-learnings.md` so agents retain project-specific lessons.
 - **Simplicity:** Keeps changes limited to what the task actually requires.
 - **ChangeLimit:** Prevents unrelated refactors, style churn, and scope creep.
+- **FreshDeps:** Forces latest stable compatible dependencies and current, non-deprecated APIs.
 
 ```bash
 # Install all bundled skills
@@ -81,6 +83,9 @@ code-graph install-skills gemini
 
 # Install one skill
 code-graph install-skills cursor projectmap
+
+# Install only dependency freshness rules
+code-graph install-skills codex freshdeps
 
 # Uninstall one skill
 code-graph uninstall-skills claude reflections
@@ -173,6 +178,8 @@ Use `-g` before the platform to install skills globally. Without `-g`, skills ar
 
 ## Platform Integration Details
 
+Every supported platform receives `freshdeps` when installing all skills. Platforms with native skill or rule formats get native artifacts; the rest receive the same mandatory FreshDeps instructions through their project instruction file, usually `AGENTS.md`.
+
 | Platform | Action Taken | Directory / Files |
 | :--- | :--- | :--- |
 | **Claude Code** | Injects instructions and installs `preToolUse` hooks for `glob` and `grep`. | `CLAUDE.md`, `.claude/settings.json` |
@@ -192,15 +199,17 @@ Use `-g` before the platform to install skills globally. Without `-g`, skills ar
 
 Instruct your agent to follow the strict protocol in `llm-agent-rules.md`:
 
-1. Read `llm-agent-project-learnings.md` before starting any task.
-2. Read `llm-code-graph.md` before raw file searches or architecture analysis.
-3. Update reflections after failures, corrections, repeated mistakes, or non-obvious project behavior.
-4. Regenerate `llm-code-graph.md` after structural code changes.
+1. Treat every bundled skill as mandatory: ProjectMap, Reflections, Simplicity, ChangeLimit, and FreshDeps.
+2. Read `llm-agent-project-learnings.md` before starting any task.
+3. Read `llm-code-graph.md` before raw file searches or architecture analysis.
+4. Use latest stable compatible dependencies and current APIs; avoid deprecated packages, methods, functions, flags, and patterns.
+5. Update reflections after failures, corrections, repeated mistakes, or non-obvious project behavior.
+6. Regenerate `llm-code-graph.md` after structural code changes.
 
 Recommended generic prompt:
 
 ```text
-Before acting, read llm-code-graph.md and follow llm-agent-rules.md. If you encounter a bug, environment quirk, or reusable project lesson, record it with code-graph reflect <CAT> <LESSON>.
+Before acting, read llm-code-graph.md and follow llm-agent-rules.md. Treat all bundled skills as mandatory. Use latest stable compatible dependencies and current APIs; avoid deprecated choices. If you encounter a bug, environment quirk, or reusable project lesson, record it with code-graph reflect <CAT> <LESSON>.
 ```
 
 ### Reading the Map

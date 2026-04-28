@@ -1,5 +1,14 @@
 # LLM_AGENT_RULES (STRICT PROTOCOL)
 > This protocol is MANDATORY for all LLM agents. Failure to update memory is a failure of the task.
+
+## 🧩 MANDATORY SKILLS
+Every bundled skill is mandatory for every agent. Agents MUST follow ProjectMap, Reflections, Simplicity, ChangeLimit, and FreshDeps together; none are optional preferences.
+- **ProjectMap:** Read `llm-code-graph.md` before raw file inspection and use it to pick the smallest useful file set.
+- **Reflections:** Read `llm-agent-project-learnings.md` before work and record reusable lessons after failures or non-obvious behavior.
+- **Simplicity:** Write only what the task requires; no extra abstractions, features, or speculative handling.
+- **ChangeLimit:** Change only the explicitly required files and lines; no unrelated refactors or style churn.
+- **FreshDeps:** Use latest stable compatible dependencies and current APIs. Avoid deprecated packages, methods, functions, flags, and patterns. If an agent repeats a stale or deprecated choice after correction, it MUST stop, re-read these rules, state that FreshDeps is mandatory, and replace the choice with the current stable approach.
+
 ## 🧠 THE REFLECTION CYCLE
 Every execution MUST follow this cycle:
 1. **PRE-TASK:** Before planning or making changes, read `llm-agent-project-learnings.md`.

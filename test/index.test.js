@@ -7,6 +7,7 @@ import {
   CodeParser,
   ProjectMapper,
   ReflectionManager,
+  ProjectInitializer,
   SkillManager,
   AgentManager,
   SUPPORTED_EXTENSIONS,
@@ -299,12 +300,13 @@ test('SkillManager - opencode install merges plugin registrations', async () => 
     './custom-plugin.js',
     './.opencode/plugins/projectmap.js',
     './.opencode/plugins/simplicity.js',
-    './.opencode/plugins/changelimit.js'
+    './.opencode/plugins/changelimit.js',
+    './.opencode/plugins/freshdeps.js'
   ]);
 
   await sm.install('opencode', 'all');
   const reinstalled = JSON.parse(fs.readFileSync(path.join(tempDir, 'opencode.json'), 'utf8'));
-  assert.strictEqual(reinstalled.plugins.length, 4);
+  assert.strictEqual(reinstalled.plugins.length, 5);
 
   fs.rmSync(tempDir, { recursive: true });
 });
@@ -412,6 +414,76 @@ test('SkillManager - reinstall replaces old weak reflections prompt', async () =
   assert.strictEqual((content.match(/Skill: Reflections/g) || []).length, 1);
   assert.ok(content.includes('apply every matching lesson'));
   assert.ok(content.includes(CONFIG.RULES_FILE));
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
+test('SkillManager - freshdeps skill installs forceful dependency guidance', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_freshdeps_skill');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  const sm = new SkillManager(tempDir);
+  await sm.install('codex', 'freshdeps');
+
+  let content = fs.readFileSync(path.join(tempDir, 'AGENTS.md'), 'utf8');
+  assert.ok(content.includes('Skill: FreshDeps'));
+  assert.ok(content.includes('latest stable release'));
+  assert.ok(content.includes('DO NOT use deprecated packages'));
+  assert.ok(content.includes('repeat a deprecated or stale choice'));
+  assert.ok(content.includes(CONFIG.RULES_FILE));
+
+  await sm.uninstall('codex', 'freshdeps');
+  content = fs.existsSync(path.join(tempDir, 'AGENTS.md'))
+    ? fs.readFileSync(path.join(tempDir, 'AGENTS.md'), 'utf8')
+    : '';
+  assert.ok(!content.includes('Skill: FreshDeps'));
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
+test('SkillManager - freshdeps installs for every supported platform', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_freshdeps_platforms');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  const readAllFiles = (dir) => {
+    const out = [];
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) out.push(...readAllFiles(full));
+      else out.push(fs.readFileSync(full, 'utf8'));
+    }
+    return out;
+  };
+
+  for (const platform of SUPPORTED_PLATFORMS) {
+    const platformDir = path.join(tempDir, platform);
+    fs.mkdirSync(platformDir);
+
+    const sm = new SkillManager(platformDir);
+    await sm.install(platform, 'freshdeps');
+
+    const installed = readAllFiles(platformDir).some(content =>
+      content.includes('FreshDeps') || content.includes('freshdeps'));
+    assert.ok(installed, `${platform} should receive FreshDeps instructions`);
+  }
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
+test('ProjectInitializer - rules make all bundled skills mandatory', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_mandatory_skills');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  await ProjectInitializer.init(tempDir);
+
+  const content = fs.readFileSync(path.join(tempDir, CONFIG.RULES_FILE), 'utf8');
+  assert.ok(content.includes('MANDATORY SKILLS'));
+  assert.ok(content.includes('ProjectMap, Reflections, Simplicity, ChangeLimit, and FreshDeps'));
+  assert.ok(content.includes('latest stable compatible dependencies'));
+  assert.ok(content.includes('replace the choice with the current stable approach'));
 
   fs.rmSync(tempDir, { recursive: true });
 });

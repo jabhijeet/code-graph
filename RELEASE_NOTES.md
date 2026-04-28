@@ -1,5 +1,13 @@
 # RELEASE NOTES
 
+### v4.10.0 (2026-04-28)
+- **Skill (FreshDeps):** Added `freshdeps`, a mandatory bundled skill that requires latest stable compatible dependency/library versions and current APIs. It explicitly rejects deprecated packages, methods, functions, flags, import paths, configuration keys, and stale examples.
+- **Agent enforcement:** `llm-agent-rules.md` and newly initialized rule files now mark ProjectMap, Reflections, Simplicity, ChangeLimit, and FreshDeps as mandatory for every agent.
+- **Platform coverage:** `freshdeps` is included in `install-skills <platform>` / `install-skills <platform> all` and uses the shared platform dispatcher, giving every supported platform either native skill/rule files or the generic project instruction fallback.
+- **Docs:** Updated README to describe FreshDeps, all-skill default installation, and cross-platform coverage.
+- **Tests:** Added regression coverage for FreshDeps install/uninstall, mandatory rule generation, and supported-platform install coverage.
+- **Maintenance:** Synchronized runtime version, package metadata, lockfile metadata, README version references, and release notes.
+
 ### v4.9.1 (2026-04-28)
 - **Fix (OpenCode plugins):** `install-skills opencode all` now merges and deduplicates `opencode.json` plugin entries instead of replacing previously installed Code-Graph plugins or user-owned plugins.
 - **Fix (OpenCode uninstall):** `uninstall-skills opencode simplicity`, `changelimit`, and `all` now remove each managed `.opencode/plugins/*.js` file plus its `opencode.json` registration.
