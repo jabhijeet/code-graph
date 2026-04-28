@@ -1,16 +1,14 @@
-# CODE-GRAPH (v4.9.0)
+# CODE-GRAPH (v4.9.1)
 
 > Inspired by Andrej Karpathy's llm-wiki Gist and the community's work building on it.
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** designed specifically for LLM agents. It optimizes context and token usage while enabling agents to learn from their own mistakes across sessions.
 
-## 📝 New in v4.9.0
+## 📝 New in v4.9.1
 
-- **Feature (Agent Support):** Expanded from 15 to 62 supported platforms. All 53 agents listed on [vercel-labs/skills](https://github.com/vercel-labs/skills) are now first-class targets — correct global skill paths per agent via `PLATFORM_GLOBAL_PATHS`.
-- **Feature (`-g` flag):** `install-skills -g <platform>` installs to the agent's user-level skills directory (`~/...`) instead of the current project. Works with all commands: `install`, `uninstall`, `install-skills`, `uninstall-skills`.
-- **Skills (Simplicity):** New built-in skill. Forces agents to write only what the task requires — no extra features, no premature abstractions, no unnecessary helpers. On by default.
-- **Skills (ChangeLimit):** New built-in skill. Forces agents to change only what is explicitly required — no refactoring nearby code, no style improvements, no scope creep. On by default.
-- **Credits:** Added attribution to Andrej Karpathy's llm-wiki Gist.
+- **Fix (OpenCode plugins):** `install-skills opencode all` now merges and deduplicates plugin registrations instead of replacing earlier entries or user-owned plugins.
+- **Fix (Skill uninstall):** `uninstall-skills` now removes OpenCode plugin files/config entries and Codex hook entries for every managed skill, including `simplicity` and `changelimit`.
+- **Maintenance:** Synchronized runtime version, package metadata, lockfile metadata, README version references, and release notes.
 
 See [RELEASE_NOTES.md](RELEASE_NOTES.md) for full history.
 
@@ -272,7 +270,7 @@ code-graph uninstall-skills claude reflections
 | **Antigravity** | Writes always-on rules and registers slash command workflows. | `.agent/rules/`, `.agent/workflows/` |
 | **Kiro IDE/CLI** | Writes global skills and steering files. | `~/.kiro/skills/`, `.kiro/steering/` |
 | **Codex** | Updates `AGENTS.md` and installs a `preToolUse` hook for `bash`. | `AGENTS.md`, `.codex/hooks.json` |
-| **OpenCode** | Registers a plugin that fires before `bash` tool calls. | `AGENTS.md`, `.opencode/plugins/`, `opencode.json` |
+| **OpenCode** | Registers per-skill plugins and preserves existing `opencode.json` plugin entries. | `AGENTS.md`, `.opencode/plugins/`, `opencode.json` |
 | **Roo Code** | Injects instructions into project rule files. | `.clinerules`, `.roorules` |
 | **IntelliJ / JetBrains** | Adds architectural context to a discoverable file. | `AGENTS.md` |
 | **GitHub Copilot CLI** | Copies skills globally for persistence. | `~/.copilot/skills/` |

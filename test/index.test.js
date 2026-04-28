@@ -282,6 +282,80 @@ test('SkillManager - writeJson deduplicates identical hooks', async () => {
   fs.rmSync(tempDir, { recursive: true });
 });
 
+test('SkillManager - opencode install merges plugin registrations', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_opencode_plugins');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  fs.writeFileSync(path.join(tempDir, 'opencode.json'), JSON.stringify({
+    plugins: ['./custom-plugin.js']
+  }, null, 2));
+
+  const sm = new SkillManager(tempDir);
+  await sm.install('opencode', 'all');
+
+  const result = JSON.parse(fs.readFileSync(path.join(tempDir, 'opencode.json'), 'utf8'));
+  assert.deepStrictEqual(result.plugins, [
+    './custom-plugin.js',
+    './.opencode/plugins/projectmap.js',
+    './.opencode/plugins/simplicity.js',
+    './.opencode/plugins/changelimit.js'
+  ]);
+
+  await sm.install('opencode', 'all');
+  const reinstalled = JSON.parse(fs.readFileSync(path.join(tempDir, 'opencode.json'), 'utf8'));
+  assert.strictEqual(reinstalled.plugins.length, 4);
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
+test('SkillManager - opencode uninstall removes every managed plugin artifact', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_opencode_uninstall');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  fs.writeFileSync(path.join(tempDir, 'opencode.json'), JSON.stringify({
+    plugins: ['./custom-plugin.js']
+  }, null, 2));
+
+  const sm = new SkillManager(tempDir);
+  await sm.install('opencode', 'all');
+  await sm.uninstall('opencode', 'simplicity');
+
+  assert.ok(!fs.existsSync(path.join(tempDir, '.opencode/plugins/simplicity.js')));
+  assert.ok(fs.existsSync(path.join(tempDir, '.opencode/plugins/projectmap.js')));
+
+  let result = JSON.parse(fs.readFileSync(path.join(tempDir, 'opencode.json'), 'utf8'));
+  assert.ok(result.plugins.includes('./custom-plugin.js'));
+  assert.ok(!result.plugins.includes('./.opencode/plugins/simplicity.js'));
+  assert.ok(result.plugins.includes('./.opencode/plugins/projectmap.js'));
+
+  await sm.uninstall('opencode', 'all');
+  result = JSON.parse(fs.readFileSync(path.join(tempDir, 'opencode.json'), 'utf8'));
+  assert.deepStrictEqual(result.plugins, ['./custom-plugin.js']);
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
+test('SkillManager - codex uninstall removes every managed hook', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_codex_hooks_uninstall');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  const sm = new SkillManager(tempDir);
+  await sm.install('codex', 'all');
+  await sm.uninstall('codex', 'simplicity');
+
+  let result = JSON.parse(fs.readFileSync(path.join(tempDir, '.codex/hooks.json'), 'utf8'));
+  assert.ok(!result.hooks.preToolUse.some(entry => entry.message?.includes('MANDATORY(Simplicity)')));
+  assert.ok(result.hooks.preToolUse.some(entry => entry.message?.includes('MANDATORY(ProjectMap)')));
+
+  await sm.uninstall('codex', 'all');
+  assert.ok(!fs.existsSync(path.join(tempDir, '.codex/hooks.json')));
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
 test('SkillManager - uninstall preserves user-owned instruction files', async () => {
   const tempDir = path.join(process.cwd(), 'temp_test_uninstall_preserve');
   if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
@@ -311,10 +385,10 @@ test('SkillManager - reflections prompt forces pre-task memory application', asy
   await sm.install('codex', 'reflections');
 
   const content = fs.readFileSync(path.join(tempDir, 'AGENTS.md'), 'utf8');
-  assert.ok(content.includes('Before planning or making changes'));
-  assert.ok(content.includes('apply every relevant lesson'));
-  assert.ok(content.includes('same mistake'));
-  assert.ok(content.includes('Do not finish'));
+  assert.ok(content.includes('BEFORE planning or writing any code'));
+  assert.ok(content.includes('apply every matching lesson'));
+  assert.ok(content.includes('no agent repeats a mistake'));
+  assert.ok(content.includes('Do NOT mark a task complete'));
 
   fs.rmSync(tempDir, { recursive: true });
 });
@@ -336,28 +410,36 @@ test('SkillManager - reinstall replaces old weak reflections prompt', async () =
   assert.strictEqual(content.includes(oldPrompt.trim()), false);
   assert.strictEqual(content.includes(intermediatePrompt.trim()), false);
   assert.strictEqual((content.match(/Skill: Reflections/g) || []).length, 1);
-  assert.ok(content.includes('apply every relevant lesson'));
+  assert.ok(content.includes('apply every matching lesson'));
   assert.ok(content.includes(CONFIG.RULES_FILE));
 
   fs.rmSync(tempDir, { recursive: true });
 });
 
-test('AgentManager - Claude MCP config points to stdio server mode', async () => {
+test('AgentManager - Claude install creates subagent without MCP registration', async () => {
   const tempDir = path.join(process.cwd(), 'temp_test_mcp_config');
   if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
   fs.mkdirSync(tempDir);
 
   await new AgentManager(tempDir).install('claude');
 
-  const data = JSON.parse(fs.readFileSync(path.join(tempDir, '.mcp.json'), 'utf8'));
-  assert.strictEqual(data.mcpServers['code-graph'].command, 'node');
-  assert.ok(data.mcpServers['code-graph'].args.includes('mcp'));
-  assert.ok(!data.mcpServers['code-graph'].args.includes('generate'));
+  const agentPath = path.join(tempDir, '.claude/agents/code-graph.md');
+  assert.ok(fs.existsSync(agentPath));
+  assert.ok(!fs.existsSync(path.join(tempDir, '.mcp.json')));
 
   fs.rmSync(tempDir, { recursive: true });
 });
 
 // --- CLI Tests ---
+
+test('Package metadata version matches runtime version', () => {
+  const packageJson = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf8'));
+  const packageLock = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package-lock.json'), 'utf8'));
+
+  assert.strictEqual(packageJson.version, CONFIG.VERSION);
+  assert.strictEqual(packageLock.version, CONFIG.VERSION);
+  assert.strictEqual(packageLock.packages[''].version, CONFIG.VERSION);
+});
 
 test('CLI --version prints version', async () => {
   const { execSync } = await import('node:child_process');

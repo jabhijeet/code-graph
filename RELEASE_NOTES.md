@@ -1,5 +1,12 @@
 # RELEASE NOTES
 
+### v4.9.1 (2026-04-28)
+- **Fix (OpenCode plugins):** `install-skills opencode all` now merges and deduplicates `opencode.json` plugin entries instead of replacing previously installed Code-Graph plugins or user-owned plugins.
+- **Fix (OpenCode uninstall):** `uninstall-skills opencode simplicity`, `changelimit`, and `all` now remove each managed `.opencode/plugins/*.js` file plus its `opencode.json` registration.
+- **Fix (Codex uninstall):** `uninstall-skills codex` now removes managed hook entries for `projectmap`, `simplicity`, and `changelimit`, preventing removed mandatory hooks from staying active.
+- **Tests:** Added regression coverage for OpenCode plugin merging, OpenCode plugin cleanup, Codex hook cleanup, and metadata/runtime version synchronization.
+- **Maintenance:** Synchronized runtime version, package metadata, lockfile metadata, README version references, and release notes.
+
 ### v4.9.0 (2026-04-28)
 - **Feature (Agent Support):** Expanded supported platforms from 15 to 62. All 53 agents listed on [vercel-labs/skills](https://github.com/vercel-labs/skills) are now supported — `PLATFORM_GLOBAL_PATHS` maps each agent to its correct user-level skills directory (handles XDG paths, nested dirs, and renamed dirs like `~/.codeium/windsurf/skills/`, `~/.snowflake/cortex/skills/`, `~/.factory/skills/`, etc.).
 - **Feature (`-g` flag):** Added `-g` / `--global` flag to `install-skills`, `uninstall-skills`, `install`, and `uninstall`. Without `-g`: writes only to project files (CLAUDE.md, AGENTS.md, cursor rules, hooks). With `-g`: writes only to the agent's user-level skills directory, available across all projects. Follows `npm install -g` convention.
