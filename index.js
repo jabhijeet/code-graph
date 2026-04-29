@@ -37,8 +37,8 @@ Commands:
 
   install [-g] <platform>                    Install skills + agent for a platform
   uninstall [-g] <platform>                  Remove skills + agent for a platform
-  install-skills [-g] <platform> [skill]     Install skills (projectmap|reflections|simplicity|changelimit|freshdeps)
-  uninstall-skills [-g] <platform> [skill]   Remove skills (projectmap|reflections|simplicity|changelimit|freshdeps)
+  install-skills [-g] <platform> [skill]     Install skills (projectmap|reflections|simplicity|changelimit|freshdeps|contextbudget)
+  uninstall-skills [-g] <platform> [skill]   Remove skills (projectmap|reflections|simplicity|changelimit|freshdeps|contextbudget)
   install-agent <platform>              Register as sub-agent
   uninstall-agent <platform>            Remove sub-agent registration
   uninstall-all                         Remove all platform integrations

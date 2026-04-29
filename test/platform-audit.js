@@ -38,15 +38,17 @@ const expectations = {
       '.claude/settings.json',
       '.claude/skills/projectmap/SKILL.md',
       '.claude/skills/reflections/SKILL.md',
+      '.claude/skills/contextbudget/SKILL.md',
       '.claude/agents/code-graph.md',
       '.mcp.json'
     ],
     globalFiles: [],
     skillChecks: [
-      { file: 'CLAUDE.md', contains: ['ProjectMap', 'Reflections', CONFIG.MAP_FILE, CONFIG.REFLECTIONS_FILE] },
+      { file: 'CLAUDE.md', contains: ['ProjectMap', 'Reflections', 'ContextBudget', CONFIG.MAP_FILE, CONFIG.REFLECTIONS_FILE] },
       { file: 'CLAUDE.md', absent: ['RepoContext'] },
       { file: '.claude/skills/projectmap/SKILL.md', contains: ['name: projectmap', 'description:', CONFIG.MAP_FILE] },
       { file: '.claude/skills/reflections/SKILL.md', contains: ['name: reflections', 'description:', CONFIG.REFLECTIONS_FILE] },
+      { file: '.claude/skills/contextbudget/SKILL.md', contains: ['name: contextbudget', 'description:', 'compact rolling summary'] },
       { file: '.claude/settings.json', json: true, check: (d) => {
         const entry = d.hooks?.PreToolUse?.[0];
         if (!entry || !Array.isArray(entry.hooks) || entry.hooks[0]?.type !== 'command') return false;
@@ -60,11 +62,12 @@ const expectations = {
     }
   },
   cursor: {
-    localFiles: ['.cursor/rules/projectmap.mdc', '.cursor/rules/reflections.mdc', '.cursor/mcp.json'],
+    localFiles: ['.cursor/rules/projectmap.mdc', '.cursor/rules/reflections.mdc', '.cursor/rules/contextbudget.mdc', '.cursor/mcp.json'],
     globalFiles: [],
     skillChecks: [
       { file: '.cursor/rules/projectmap.mdc', contains: ['alwaysApply: true', CONFIG.MAP_FILE] },
-      { file: '.cursor/rules/reflections.mdc', contains: ['alwaysApply: true', CONFIG.RULES_FILE] }
+      { file: '.cursor/rules/reflections.mdc', contains: ['alwaysApply: true', CONFIG.RULES_FILE] },
+      { file: '.cursor/rules/contextbudget.mdc', contains: ['alwaysApply: true', 'ContextBudget'] }
     ],
     agentCheck: {
       file: '.cursor/mcp.json', json: true,
@@ -75,7 +78,7 @@ const expectations = {
     localFiles: ['GEMINI.md'],
     globalFiles: ['.gemini/skills/projectmap/SKILL.md', '.gemini/skills/reflections/SKILL.md', '.gemini/agents/code-graph.md'],
     skillChecks: [
-      { file: 'GEMINI.md', contains: ['ProjectMap', '@./' + CONFIG.MAP_FILE, 'Reflections'] }
+      { file: 'GEMINI.md', contains: ['ProjectMap', '@./' + CONFIG.MAP_FILE, 'Reflections', 'ContextBudget'] }
     ],
     agentCheck: {
       globalFile: '.gemini/agents/code-graph.md',
@@ -86,19 +89,20 @@ const expectations = {
     localFiles: ['AGENTS.md', '.codex/hooks.json'],
     globalFiles: [],
     skillChecks: [
-      { file: 'AGENTS.md', contains: ['ProjectMap', 'Reflections'] },
+      { file: 'AGENTS.md', contains: ['ProjectMap', 'Reflections', 'ContextBudget'] },
       { file: 'AGENTS.md', absent: ['RepoContext'] },
       { file: '.codex/hooks.json', json: true, check: (d) => d.hooks?.preToolUse?.length > 0 }
     ],
     agentCheck: { file: '.code-graph-agent.md', contains: ['Code-Graph Specialist'] }
   },
   opencode: {
-    localFiles: ['AGENTS.md', '.opencode/plugins/projectmap.js', 'opencode.json'],
+    localFiles: ['AGENTS.md', '.opencode/plugins/projectmap.js', '.opencode/plugins/contextbudget.js', 'opencode.json'],
     globalFiles: [],
     skillChecks: [
-      { file: 'AGENTS.md', contains: ['ProjectMap'] },
+      { file: 'AGENTS.md', contains: ['ProjectMap', 'ContextBudget'] },
       { file: 'AGENTS.md', absent: ['RepoContext'] },
       { file: '.opencode/plugins/projectmap.js', contains: ['projectmap'] },
+      { file: '.opencode/plugins/contextbudget.js', contains: ['contextbudget'] },
       { file: 'opencode.json', json: true, check: (d) => Array.isArray(d.plugins) }
     ],
     agentCheck: { file: '.code-graph-agent.md', contains: ['Code-Graph Specialist'] }
@@ -107,8 +111,10 @@ const expectations = {
     localFiles: [
       '.agent/skills/projectmap/SKILL.md',
       '.agent/skills/reflections/SKILL.md',
+      '.agent/skills/contextbudget/SKILL.md',
       '.agent/rules/projectmap.md',
       '.agent/rules/reflections.md',
+      '.agent/rules/contextbudget.md',
       'AGENTS.md',
       'GEMINI.md'
     ],
@@ -119,8 +125,10 @@ const expectations = {
     skillChecks: [
       { file: '.agent/skills/projectmap/SKILL.md', contains: ['name: projectmap', 'description:', CONFIG.MAP_FILE] },
       { file: '.agent/skills/reflections/SKILL.md', contains: ['name: reflections', 'description:', CONFIG.REFLECTIONS_FILE] },
+      { file: '.agent/skills/contextbudget/SKILL.md', contains: ['name: contextbudget', 'description:', 'compact rolling summary'] },
       { file: '.agent/rules/projectmap.md', contains: [CONFIG.MAP_FILE] },
-      { file: 'AGENTS.md', contains: ['ProjectMap', 'Reflections'] },
+      { file: '.agent/rules/contextbudget.md', contains: ['ContextBudget'] },
+      { file: 'AGENTS.md', contains: ['ProjectMap', 'Reflections', 'ContextBudget'] },
       { file: 'AGENTS.md', absent: ['RepoContext'] },
       { file: 'GEMINI.md', contains: ['ProjectMap', '@./' + CONFIG.MAP_FILE] }
     ],
@@ -130,10 +138,11 @@ const expectations = {
     }
   },
   kiro: {
-    localFiles: ['.kiro/steering/projectmap.md'],
+    localFiles: ['.kiro/steering/projectmap.md', '.kiro/steering/contextbudget.md'],
     globalFiles: ['.kiro/skills/projectmap/SKILL.md', '.kiro/skills/reflections/SKILL.md', '.kiro/agents/code-graph/AGENT.md'],
     skillChecks: [
-      { file: '.kiro/steering/projectmap.md', contains: [CONFIG.MAP_FILE] }
+      { file: '.kiro/steering/projectmap.md', contains: [CONFIG.MAP_FILE] },
+      { file: '.kiro/steering/contextbudget.md', contains: ['ContextBudget'] }
     ],
     agentCheck: {
       globalFile: '.kiro/agents/code-graph/AGENT.md',
@@ -144,7 +153,7 @@ const expectations = {
     localFiles: ['AGENTS.md'],
     globalFiles: [],
     skillChecks: [
-      { file: 'AGENTS.md', contains: ['ProjectMap', 'Reflections'] },
+      { file: 'AGENTS.md', contains: ['ProjectMap', 'Reflections', 'ContextBudget'] },
       { file: 'AGENTS.md', absent: ['RepoContext'] }
     ],
     agentCheck: { file: '.code-graph-agent.md', contains: ['Code-Graph Specialist'] }
@@ -159,7 +168,7 @@ const expectations = {
     localFiles: ['.github/copilot-instructions.md'],
     globalFiles: [],
     skillChecks: [
-      { file: '.github/copilot-instructions.md', contains: ['ProjectMap', 'Reflections'] },
+      { file: '.github/copilot-instructions.md', contains: ['ProjectMap', 'Reflections', 'ContextBudget'] },
       { file: '.github/copilot-instructions.md', absent: ['RepoContext'] }
     ],
     agentCheck: { file: '.code-graph-agent.md', contains: ['Code-Graph Specialist'] }
@@ -168,9 +177,9 @@ const expectations = {
     localFiles: ['.clinerules', '.roorules'],
     globalFiles: [],
     skillChecks: [
-      { file: '.clinerules', contains: ['ProjectMap', 'Reflections'] },
+      { file: '.clinerules', contains: ['ProjectMap', 'Reflections', 'ContextBudget'] },
       { file: '.clinerules', absent: ['RepoContext'] },
-      { file: '.roorules', contains: ['ProjectMap', 'Reflections'] },
+      { file: '.roorules', contains: ['ProjectMap', 'Reflections', 'ContextBudget'] },
       { file: '.roorules', absent: ['RepoContext'] }
     ],
     agentCheck: { file: '.code-graph-agent.md', contains: ['Code-Graph Specialist'] }
@@ -179,7 +188,7 @@ const expectations = {
     localFiles: ['AGENTS.md'],
     globalFiles: ['.aider/skills/projectmap/SKILL.md', '.aider/skills/reflections/SKILL.md'],
     skillChecks: [
-      { file: 'AGENTS.md', contains: ['ProjectMap', 'Reflections'] },
+      { file: 'AGENTS.md', contains: ['ProjectMap', 'Reflections', 'ContextBudget'] },
       { file: 'AGENTS.md', absent: ['RepoContext'] }
     ],
     agentCheck: { file: '.code-graph-agent.md', contains: ['Code-Graph Specialist'] }

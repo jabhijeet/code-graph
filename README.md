@@ -1,13 +1,14 @@
-# CODE-GRAPH (v4.10.0)
+# CODE-GRAPH (v4.11.0)
 
 > Inspired by Andrej Karpathy's llm-wiki Gist and the community's work building on it.
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** for LLM agents. Code-Graph gives agents a compact file, symbol, and dependency index, then pairs it with persistent project learnings so agents can avoid repeating mistakes across sessions.
 
-## New in v4.10.0
+## New in v4.11.0
 
+- **Skill (ContextBudget):** New mandatory bundled skill that periodically condenses working context to reduce token load and stale detail.
 - **Skill (FreshDeps):** New mandatory bundled skill that forces latest stable compatible dependencies and current, non-deprecated APIs.
-- **Agent rules:** `llm-agent-rules.md` now makes every bundled skill mandatory for agents: ProjectMap, Reflections, Simplicity, ChangeLimit, and FreshDeps.
+- **Agent rules:** `llm-agent-rules.md` now makes every bundled skill mandatory for agents: ProjectMap, Reflections, Simplicity, ChangeLimit, FreshDeps, and ContextBudget.
 - **Coverage:** `freshdeps` is installed by `all` and uses the same dispatcher as the other bundled skills, so every supported platform receives either its native skill/rule artifact or the generic project instruction fallback.
 - **Maintenance:** Synchronized runtime version, package metadata, lockfile metadata, README version references, and release notes.
 
@@ -76,6 +77,7 @@ Skills are always-on configurations that tell your agent how to use the project 
 - **Simplicity:** Keeps changes limited to what the task actually requires.
 - **ChangeLimit:** Prevents unrelated refactors, style churn, and scope creep.
 - **FreshDeps:** Forces latest stable compatible dependencies and current, non-deprecated APIs.
+- **ContextBudget:** Periodically condenses working context to reduce token load and stale detail.
 
 ```bash
 # Install all bundled skills
@@ -199,7 +201,7 @@ Every supported platform receives `freshdeps` when installing all skills. Platfo
 
 Instruct your agent to follow the strict protocol in `llm-agent-rules.md`:
 
-1. Treat every bundled skill as mandatory: ProjectMap, Reflections, Simplicity, ChangeLimit, and FreshDeps.
+1. Treat every bundled skill as mandatory: ProjectMap, Reflections, Simplicity, ChangeLimit, FreshDeps, and ContextBudget.
 2. Read `llm-agent-project-learnings.md` before starting any task.
 3. Read `llm-code-graph.md` before raw file searches or architecture analysis.
 4. Use latest stable compatible dependencies and current APIs; avoid deprecated packages, methods, functions, flags, and patterns.

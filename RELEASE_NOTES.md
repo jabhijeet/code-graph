@@ -1,5 +1,13 @@
 # RELEASE NOTES
 
+### v4.11.0 (2026-04-29)
+- **Skill (ContextBudget):** Added `contextbudget`, a mandatory bundled skill that periodically condenses working context to reduce token load and stale detail.
+- **Agent enforcement:** `llm-agent-rules.md` and newly initialized rule files now mark ProjectMap, Reflections, Simplicity, ChangeLimit, FreshDeps, and ContextBudget as mandatory for every agent.
+- **Platform coverage:** `contextbudget` is included in `install-skills <platform>` / `install-skills <platform> all` and uses the shared platform dispatcher, giving every supported platform either native skill/rule files or the generic project instruction fallback.
+- **Docs:** Updated README to describe ContextBudget, all-skill default installation, and cross-platform coverage.
+- **Tests:** Added regression coverage for ContextBudget install/uninstall, mandatory rule generation, and supported-platform install coverage.
+- **Maintenance:** Synchronized runtime version, package metadata, lockfile metadata, README version references, and release notes.
+
 ### v4.10.0 (2026-04-28)
 - **Skill (FreshDeps):** Added `freshdeps`, a mandatory bundled skill that requires latest stable compatible dependency/library versions and current APIs. It explicitly rejects deprecated packages, methods, functions, flags, import paths, configuration keys, and stale examples.
 - **Agent enforcement:** `llm-agent-rules.md` and newly initialized rule files now mark ProjectMap, Reflections, Simplicity, ChangeLimit, and FreshDeps as mandatory for every agent.

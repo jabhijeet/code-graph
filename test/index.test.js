@@ -301,12 +301,13 @@ test('SkillManager - opencode install merges plugin registrations', async () => 
     './.opencode/plugins/projectmap.js',
     './.opencode/plugins/simplicity.js',
     './.opencode/plugins/changelimit.js',
-    './.opencode/plugins/freshdeps.js'
+    './.opencode/plugins/freshdeps.js',
+    './.opencode/plugins/contextbudget.js'
   ]);
 
   await sm.install('opencode', 'all');
   const reinstalled = JSON.parse(fs.readFileSync(path.join(tempDir, 'opencode.json'), 'utf8'));
-  assert.strictEqual(reinstalled.plugins.length, 5);
+  assert.strictEqual(reinstalled.plugins.length, 6);
 
   fs.rmSync(tempDir, { recursive: true });
 });
@@ -374,6 +375,7 @@ test('SkillManager - uninstall preserves user-owned instruction files', async ()
   assert.ok(content.includes('Keep this line.'));
   assert.ok(!content.includes('Skill: ProjectMap'));
   assert.ok(!content.includes('Skill: Reflections'));
+  assert.ok(!content.includes('Skill: ContextBudget'));
 
   fs.rmSync(tempDir, { recursive: true });
 });
@@ -472,6 +474,36 @@ test('SkillManager - freshdeps installs for every supported platform', async () 
   fs.rmSync(tempDir, { recursive: true });
 });
 
+test('SkillManager - contextbudget installs for every supported platform', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_contextbudget_platforms');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  const readAllFiles = (dir) => {
+    const out = [];
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) out.push(...readAllFiles(full));
+      else out.push(fs.readFileSync(full, 'utf8'));
+    }
+    return out;
+  };
+
+  for (const platform of SUPPORTED_PLATFORMS) {
+    const platformDir = path.join(tempDir, platform);
+    fs.mkdirSync(platformDir);
+
+    const sm = new SkillManager(platformDir);
+    await sm.install(platform, 'contextbudget');
+
+    const installed = readAllFiles(platformDir).some(content =>
+      content.includes('ContextBudget') || content.includes('contextbudget'));
+    assert.ok(installed, `${platform} should receive ContextBudget instructions`);
+  }
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
 test('ProjectInitializer - rules make all bundled skills mandatory', async () => {
   const tempDir = path.join(process.cwd(), 'temp_test_mandatory_skills');
   if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
@@ -481,9 +513,10 @@ test('ProjectInitializer - rules make all bundled skills mandatory', async () =>
 
   const content = fs.readFileSync(path.join(tempDir, CONFIG.RULES_FILE), 'utf8');
   assert.ok(content.includes('MANDATORY SKILLS'));
-  assert.ok(content.includes('ProjectMap, Reflections, Simplicity, ChangeLimit, and FreshDeps'));
+  assert.ok(content.includes('ProjectMap, Reflections, Simplicity, ChangeLimit, FreshDeps, and ContextBudget'));
   assert.ok(content.includes('latest stable compatible dependencies'));
   assert.ok(content.includes('replace the choice with the current stable approach'));
+  assert.ok(content.includes('compact rolling summary after each phase or every 10 tool calls'));
 
   fs.rmSync(tempDir, { recursive: true });
 });
@@ -498,6 +531,27 @@ test('AgentManager - Claude install creates subagent without MCP registration', 
   const agentPath = path.join(tempDir, '.claude/agents/code-graph.md');
   assert.ok(fs.existsSync(agentPath));
   assert.ok(!fs.existsSync(path.join(tempDir, '.mcp.json')));
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
+test('SkillManager - installs and uninstalls contextbudget skill', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_contextbudget_skill');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  const sm = new SkillManager(tempDir);
+  await sm.install('codex', 'contextbudget');
+
+  const agentsPath = path.join(tempDir, 'AGENTS.md');
+  assert.ok(fs.existsSync(agentsPath));
+  let content = fs.readFileSync(agentsPath, 'utf8');
+  assert.ok(content.includes('Skill: ContextBudget'));
+  assert.ok(content.includes('periodic context condensation'));
+  assert.ok(content.includes('every 10 tool calls'));
+
+  await sm.uninstall('codex', 'contextbudget');
+  assert.ok(!fs.existsSync(agentsPath));
 
   fs.rmSync(tempDir, { recursive: true });
 });
