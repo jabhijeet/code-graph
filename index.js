@@ -16,7 +16,7 @@ import { CodeParser } from './lib/parser.js';
 import { ProjectMapper } from './lib/mapper.js';
 import { ReflectionManager } from './lib/reflections.js';
 import { ProjectInitializer } from './lib/initializer.js';
-import { SkillManager } from './lib/skills.js';
+import { SkillManager } from './lib/skills/core.js';
 import { AgentManager } from './lib/agents.js';
 import { startMCPServer } from './lib/mcp.js';
 
@@ -37,8 +37,8 @@ Commands:
 
   install [-g] <platform>                    Install skills + agent for a platform
   uninstall [-g] <platform>                  Remove skills + agent for a platform
-  install-skills [-g] <platform> [skill]     Install skills (projectmap|reflections|simplicity|changelimit|freshdeps|contextbudget)
-  uninstall-skills [-g] <platform> [skill]   Remove skills (projectmap|reflections|simplicity|changelimit|freshdeps|contextbudget)
+  install-skills [-g] <platform> [skill]     Install skills (projectmap|reflections|thinkbeforecoding|simplicity|changelimit|surgicalchanges|goaldriven|freshdeps|contextbudget)
+  uninstall-skills [-g] <platform> [skill]   Remove skills (projectmap|reflections|thinkbeforecoding|simplicity|changelimit|surgicalchanges|goaldriven|freshdeps|contextbudget)
   install-agent <platform>              Register as sub-agent
   uninstall-agent <platform>            Remove sub-agent registration
   uninstall-all                         Remove all platform integrations
@@ -178,14 +178,29 @@ fi
   console.log('[Code-Graph] Pre-commit Advisory installed (Soft Enforcement).');
 }
 
-function startWatcher(cwd) {
+let activeWatcher = null;
+
+export function startWatcher(cwd) {
   console.log(`[Code-Graph] Watching ${cwd}...`);
   let timer;
-  chokidar.watch(cwd, { ignoreInitial: true, ignored: [/node_modules/, /\.git/, new RegExp(CONFIG.MAP_FILE)] })
+  const watcher = chokidar.watch(cwd, { ignoreInitial: true, ignored: [/node_modules/, /\.git/, new RegExp(CONFIG.MAP_FILE)] })
     .on('all', () => {
       clearTimeout(timer);
       timer = setTimeout(() => new ProjectMapper(cwd).generate(), 1000);
+    })
+    .on('error', (err) => {
+      console.error(`[Code-Graph] Watcher error: ${err.message}`);
     });
+  activeWatcher = watcher;
+  return watcher;
+}
+
+export function stopWatcher() {
+  if (activeWatcher) {
+    activeWatcher.close();
+    activeWatcher = null;
+    console.log('[Code-Graph] Watcher stopped.');
+  }
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(__filename)) {
@@ -198,5 +213,5 @@ export { CodeParser } from './lib/parser.js';
 export { ProjectMapper } from './lib/mapper.js';
 export { ReflectionManager } from './lib/reflections.js';
 export { ProjectInitializer } from './lib/initializer.js';
-export { SkillManager } from './lib/skills.js';
+export { SkillManager } from './lib/skills/core.js';
 export { AgentManager } from './lib/agents.js';

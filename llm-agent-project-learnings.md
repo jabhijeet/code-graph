@@ -10,8 +10,6 @@
 
 ## ✅ BEST PRACTICES
 - [STYLE] Always include dependency counts (↑N ↓M) in `llm-code-graph.md` to help prioritize architectural understanding.
-- [LOGIC-INJECTEDFAKE] line1 line2 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-- [LOGIC] line1 line2 test-lesson-unique-xyz
 - [SKILL] Installed Codex skills require YAML frontmatter delimited by ---; a plain Markdown SKILL.md will be skipped as invalid.
 - [VERSION] When bumping package metadata, also update CONFIG.VERSION because CLI banners and MCP serverInfo use the runtime constant rather than package.json.
 - [ENV] Windows sandbox setup can fail before PowerShell runs; retry required reads with approved escalation instead of assuming command failure.
@@ -19,3 +17,4 @@
 - [LOGIC] When changing generated skill prompt bodies, add the previous generated section text to upgrade cleanup or reinstall may duplicate prompt blocks.
 - [BUG] installMCPServer in AgentManager wrote .mcp.json to project root on install-agent, causing Claude Code to prompt MCP installation in every project. Fix: removed all MCP registration methods; agent install now only creates the platform subagent file.
 - [TEST] When adding a default bundled skill, update exhaustive install/uninstall expectations that assert every managed plugin, hook, or artifact.
+- [ENV] If command execution is blocked by Windows sandbox and approvals are disabled, continue with filesystem MCP edits and report verification as blocked.

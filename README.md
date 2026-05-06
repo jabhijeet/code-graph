@@ -1,16 +1,22 @@
-# CODE-GRAPH (v4.11.0)
+# CODE-GRAPH (v4.12.0)
 
-> Inspired by Andrej Karpathy's llm-wiki Gist and the community's work building on it.
+> Inspired by [Andrej Karpathy skills](https://github.com/forrestchang/andrej-karpathy-skills), [juliusbrussee/caveman](https://github.com/juliusbrussee/caveman), and the community's work building better agent workflows.
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** for LLM agents. Code-Graph gives agents a compact file, symbol, and dependency index, then pairs it with persistent project learnings so agents can avoid repeating mistakes across sessions.
 
-## New in v4.11.0
+## New in v4.12.0
 
-- **Skill (ContextBudget):** New mandatory bundled skill that periodically condenses working context to reduce token load and stale detail.
-- **Skill (FreshDeps):** New mandatory bundled skill that forces latest stable compatible dependencies and current, non-deprecated APIs.
-- **Agent rules:** `llm-agent-rules.md` now makes every bundled skill mandatory for agents: ProjectMap, Reflections, Simplicity, ChangeLimit, FreshDeps, and ContextBudget.
-- **Coverage:** `freshdeps` is installed by `all` and uses the same dispatcher as the other bundled skills, so every supported platform receives either its native skill/rule artifact or the generic project instruction fallback.
+- **New skills:** Added `thinkbeforecoding` and `goaldriven` as bundled mandatory skills.
+- **Naming:** `ChangeLimit` is now presented as `SurgicalChanges` in installed instructions while keeping `changelimit` as a CLI-compatible alias.
+- **Examples:** Added `EXAMPLES.md` with weak-vs-better guidance for assumptions, simplicity, surgical diffs, and verification.
+- **Goal-driven workflow:** Agents are now instructed to state assumptions, define verifiable goals, and report verification results or blockers before completion.
+- **Agent rules:** Every bundled skill remains mandatory for agents: ProjectMap, Reflections, ThinkBeforeCoding, Simplicity, SurgicalChanges, GoalDriven, FreshDeps, and ContextBudget.
 - **Maintenance:** Synchronized runtime version, package metadata, lockfile metadata, README version references, and release notes.
+- **Fix (Codex hooks):** Project-level Codex skill installs now write the enabled nested hook shape with `codex_hooks: true`, `hooks.PreToolUse`, `matcher: "Bash"`, and nested command hooks.
+- **UX (Install visibility):** Skill and agent installs now print each absolute path written or updated via `[Code-Graph v4.12.0] Installed/updated: ...`, covering local project files, project hooks, global skill files, and agent registrations.
+- **Agents (Delegation):** Claude agent install now creates focused sub-agents: `code-graph`, `code-graph-locator`, `code-graph-tracer`, and `code-graph-reviewer`.
+- **Map size control:** Default ignores now exclude generated Code-Graph and agent artifacts from maps.
+- **Map output caps:** `llm-code-graph.md` now caps per-file descriptions, symbol lists, and tag lists.
 
 See [RELEASE_NOTES.md](RELEASE_NOTES.md) for full history.
 
@@ -44,6 +50,13 @@ code-graph install-skills claude
 code-graph install-skills -g claude
 ```
 
+Every install prints each target it writes:
+
+```text
+[Code-Graph v4.12.0] Installed/updated: /absolute/path/to/AGENTS.md
+[Code-Graph v4.12.0] Installed/updated: /absolute/path/to/.codex/hooks.json
+```
+
 ## Core Concepts
 
 Code-Graph operates in two modes: **Passive Skills** and **Active Agents**.
@@ -74,8 +87,10 @@ Skills are always-on configurations that tell your agent how to use the project 
 
 - **ProjectMap:** Reads `llm-code-graph.md`, the canonical file, symbol, and dependency index, before raw file searches.
 - **Reflections:** Reads and updates `llm-agent-project-learnings.md` so agents retain project-specific lessons.
+- **ThinkBeforeCoding:** Surfaces assumptions, ambiguity, tradeoffs, and simpler options before non-trivial work.
 - **Simplicity:** Keeps changes limited to what the task actually requires.
-- **ChangeLimit:** Prevents unrelated refactors, style churn, and scope creep.
+- **SurgicalChanges:** Prevents unrelated refactors, style churn, and scope creep while allowing cleanup caused by your own diff.
+- **GoalDriven:** Forces explicit success criteria and verification before completion.
 - **FreshDeps:** Forces latest stable compatible dependencies and current, non-deprecated APIs.
 - **ContextBudget:** Periodically condenses working context to reduce token load and stale detail.
 
@@ -88,6 +103,9 @@ code-graph install-skills cursor projectmap
 
 # Install only dependency freshness rules
 code-graph install-skills codex freshdeps
+
+# Install surgical diff rules (CLI alias remains changelimit-compatible)
+code-graph install-skills claude surgicalchanges
 
 # Uninstall one skill
 code-graph uninstall-skills claude reflections
@@ -113,6 +131,13 @@ Uninstall with:
 ```bash
 code-graph uninstall-agent <platform>
 ```
+
+Claude Code receives focused sub-agents when available:
+
+- `code-graph`: General project-map and reflection specialist.
+- `code-graph-locator`: Finds the smallest relevant file and symbol set before raw source reads.
+- `code-graph-tracer`: Traces dependency and inheritance paths from `## EDGES`.
+- `code-graph-reviewer`: Checks map freshness, reflection coverage, scope creep, and dependency freshness.
 
 ## Supported Platforms
 
@@ -180,16 +205,16 @@ Use `-g` before the platform to install skills globally. Without `-g`, skills ar
 
 ## Platform Integration Details
 
-Every supported platform receives `freshdeps` when installing all skills. Platforms with native skill or rule formats get native artifacts; the rest receive the same mandatory FreshDeps instructions through their project instruction file, usually `AGENTS.md`.
+Every supported platform receives all bundled skills when installing all skills. Platforms with native skill or rule formats get native artifacts; the rest receive the same mandatory instructions through their project instruction file, usually `AGENTS.md`.
 
 | Platform | Action Taken | Directory / Files |
 | :--- | :--- | :--- |
-| **Claude Code** | Injects instructions and installs `preToolUse` hooks for `glob` and `grep`. | `CLAUDE.md`, `.claude/settings.json` |
-| **Cursor** | Writes global rule files with `alwaysApply: true`. | `.cursor/rules/projectmap.mdc`, `.cursor/rules/reflections.mdc` |
+| **Claude Code** | Injects instructions and installs `PreToolUse` hooks for `Read`, `Grep`, and `Glob`; agent install creates split Code-Graph sub-agents. | `CLAUDE.md`, `.claude/settings.json`, `.claude/agents/` |
+| **Cursor** | Writes always-on `.mdc` rule files for each bundled skill with `alwaysApply: true`. | `.cursor/rules/` |
 | **Gemini CLI** | Installs global skills with YAML frontmatter and `GEMINI.md` memory imports. | `~/.gemini/skills/`, `GEMINI.md` |
-| **Antigravity** | Writes always-on rules and registers slash command workflows. | `.agent/rules/`, `.agent/workflows/` |
-| **Kiro IDE/CLI** | Writes global skills and steering files. | `~/.kiro/skills/`, `.kiro/steering/` |
-| **Codex** | Updates `AGENTS.md` and installs a `preToolUse` hook for `bash`. | `AGENTS.md`, `.codex/hooks.json` |
+| **Antigravity** | Writes always-on skills and rules locally, plus the specialized Code-Graph agent skill globally. | `.agent/skills/`, `.agent/rules/`, `~/.gemini/antigravity/skills/code-graph/` |
+| **Kiro IDE/CLI** | Writes steering files locally; the specialized Code-Graph agent is registered globally. | `.kiro/steering/`, `~/.kiro/agents/code-graph/` |
+| **Codex** | Updates `AGENTS.md` and installs enabled nested `PreToolUse` hooks for `Bash`. | `AGENTS.md`, `.codex/hooks.json` |
 | **OpenCode** | Registers per-skill plugins and preserves existing plugin entries. | `AGENTS.md`, `.opencode/plugins/`, `opencode.json` |
 | **Roo Code** | Injects instructions into project rule files. | `.clinerules`, `.roorules` |
 | **IntelliJ / JetBrains** | Adds architectural context to a discoverable file. | `AGENTS.md` |
@@ -201,12 +226,14 @@ Every supported platform receives `freshdeps` when installing all skills. Platfo
 
 Instruct your agent to follow the strict protocol in `llm-agent-rules.md`:
 
-1. Treat every bundled skill as mandatory: ProjectMap, Reflections, Simplicity, ChangeLimit, FreshDeps, and ContextBudget.
+1. Treat every bundled skill as mandatory: ProjectMap, Reflections, ThinkBeforeCoding, Simplicity, SurgicalChanges, GoalDriven, FreshDeps, and ContextBudget.
 2. Read `llm-agent-project-learnings.md` before starting any task.
 3. Read `llm-code-graph.md` before raw file searches or architecture analysis.
-4. Use latest stable compatible dependencies and current APIs; avoid deprecated packages, methods, functions, flags, and patterns.
-5. Update reflections after failures, corrections, repeated mistakes, or non-obvious project behavior.
-6. Regenerate `llm-code-graph.md` after structural code changes.
+4. Surface assumptions and ambiguity before non-trivial work.
+5. Define success criteria and report verification results or blockers.
+6. Use latest stable compatible dependencies and current APIs; avoid deprecated packages, methods, functions, flags, and patterns.
+7. Update reflections after failures, corrections, repeated mistakes, or non-obvious project behavior.
+8. Regenerate `llm-code-graph.md` after structural code changes.
 
 Recommended generic prompt:
 
@@ -244,7 +271,7 @@ Register `code-graph` as an active sub-agent to enable explicit delegation.
 | Platform | Command | Action Taken |
 | :--- | :--- | :--- |
 | **Gemini CLI** | `code-graph install-agent gemini` | Registers global agent in `~/.gemini/agents/code-graph.md`. |
-| **Claude Code** | `code-graph install-agent claude` | Registers sub-agent in `.claude/agents/code-graph.md`. |
+| **Claude Code** | `code-graph install-agent claude` | Registers split sub-agents in `.claude/agents/`: `code-graph`, `code-graph-locator`, `code-graph-tracer`, and `code-graph-reviewer`. |
 | **Antigravity** | `code-graph install-agent antigravity` | Registers agent skill in `~/.gemini/antigravity/skills/`. |
 | **Kiro IDE/CLI** | `code-graph install-agent kiro` | Registers agent in `~/.kiro/agents/`. |
 | **Generic Agent** | `code-graph install-agent generic` | Generates `.code-graph-agent.md` persona prompt. |
@@ -261,6 +288,7 @@ lib/
   mapper.js           ProjectMapper: file walking and graph generation
   reflections.js      ReflectionManager: lesson persistence
   initializer.js      ProjectInitializer: rule and reflection scaffolding
+  install-log.js      Shared versioned install target logging
   skills.js           SkillManager: platform skill installation
   agents.js           AgentManager: sub-agent registration
 test/
@@ -275,4 +303,4 @@ test/
 3. **Graph Extraction:** Identifies imports, requires, extends, and implements edges.
 4. **Tag Extraction:** Captures `TODO`, `FIXME`, `BUG`, and `DEPRECATED` tags from comments.
 5. **Reflection Management:** Deduplicates and persists agent learnings into a standardized Markdown file.
-6. **Compilation:** Writes a compact `llm-code-graph.md` file with a dedicated `## EDGES` section.
+6. **Compilation:** Writes a compact `llm-code-graph.md` file with capped descriptions, symbols, tags, and a dedicated `## EDGES` section.

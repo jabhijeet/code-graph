@@ -1,5 +1,20 @@
 # RELEASE NOTES
 
+### v4.12.0 (2026-05-05)
+- **Skills (Karpathy-inspired):** Added `thinkbeforecoding`, requiring agents to surface assumptions, ambiguity, tradeoffs, and simpler options before non-trivial work.
+- **Skills (Karpathy-inspired):** Added `goaldriven`, requiring explicit success criteria, verification planning, bug reproduction when feasible, and final verification reporting.
+- **Naming:** Installed `ChangeLimit` instructions are now presented as `SurgicalChanges` while preserving `changelimit` as a backward-compatible CLI alias. The new guidance allows cleanup only for artifacts introduced by the current diff.
+- **Rules:** Updated `llm-agent-rules.md` and initializer scaffolding so ProjectMap, Reflections, ThinkBeforeCoding, Simplicity, SurgicalChanges, GoalDriven, FreshDeps, and ContextBudget are all mandatory.
+- **Docs:** Updated README command docs, bundled skill descriptions, agent workflow guidance, and added `EXAMPLES.md` with weak-vs-better examples.
+- **Tests:** Added coverage for new skill installation, platform coverage, alias compatibility, mandatory rule generation, and audit expectations that now distinguish project-scope installs from global installs.
+- **Fix (Codex hooks):** Project-level Codex skill installs now write the enabled nested hook shape with `codex_hooks: true`, `hooks.PreToolUse`, `matcher: "Bash"`, and nested command hooks. Reinstalls remove matching stale hook entries before writing current ones.
+- **UX (Install visibility):** Skill and agent installs now print each absolute path written or updated via `[Code-Graph v4.12.0] Installed/updated: ...`, covering local project files, project hooks, global skill files, and agent registrations through the shared `lib/install-log.js` helper.
+- **Agents (Delegation):** Claude agent install now creates focused sub-agents: `code-graph`, `code-graph-locator`, `code-graph-tracer`, and `code-graph-reviewer`. Generic agent install documents the same roles for platforms without native sub-agent files.
+- **Map size control:** Default ignores now exclude generated Code-Graph and agent artifacts such as `AGENTS.md`, `.code-graph-agent.md`, `.claude/`, `.codex/`, `.agent/`, `.kiro/`, `.cursor/`, `.opencode/`, and temporary test directories from maps.
+- **Map output caps:** `llm-code-graph.md` now caps per-file descriptions, symbol lists, and tag lists, appending `... +N more` when dense files would otherwise bloat context.
+- **Tests:** Added coverage for Codex hook shape, install target logs, split agent registration, generated-artifact ignores, and map payload caps.
+- **Maintenance:** Synchronized runtime version, package metadata, lockfile metadata, README version references, and release notes.
+
 ### v4.11.0 (2026-04-29)
 - **Skill (ContextBudget):** Added `contextbudget`, a mandatory bundled skill that periodically condenses working context to reduce token load and stale detail.
 - **Agent enforcement:** `llm-agent-rules.md` and newly initialized rule files now mark ProjectMap, Reflections, Simplicity, ChangeLimit, FreshDeps, and ContextBudget as mandatory for every agent.
@@ -80,79 +95,19 @@
 
 ### v4.1.0 (2026-04-18)
 - **Fix (Parser Quality):** `findSymbolContext` now prefers declaration sites over the first textual occurrence. Prior behavior captured call-site args or string literals as "signatures" (e.g., `install [-skills <platform>')]`). Symbols now show real declarations: `install [(p)]`, `writeFile [(filename, content)]`.
-- **Fix (Parser Quality):** `extractFileDesc` skips shebang lines (`#!/usr/bin/env node`) and no longer strips `/` from path references in docstrings. File descriptions are now readable.
-- **Fix (Parser Quality):** Signature fallback limited to 80 chars and stops at newlines/braces, preventing multi-line string bodies from being captured.
-- **Fix (Claude Hooks):** `.claude/settings.json` now writes modern `PreToolUse` shape with `matcher` + `hooks:[{type:"command", command}]`. Previous `preToolUse` (lowercase) + `{tools, message}` format was silently ignored by Claude Code.
-- **Fix (MCP Discovery):** MCP server registration now writes to `.mcp.json` (Claude) and `.cursor/mcp.json` (Cursor) — the locations actually read by each tool. Previously wrote to `mcp-server-code-graph.json` which was never loaded. Existing config is merged rather than overwritten.
-- **Fix (Platform List):** Removed dead references to `openclaw`, `droid`, `trae-cn` from the platforms array in `index.js`. These had no corresponding skill or agent handlers.
-- **CLI:** `generate` now auto-initializes `llm-agent-rules.md` and `llm-agent-project-learnings.md` if missing, so first-run users don't need to `init` separately.
-- **Quality:** `mergeHooks` now dedupes by JSON equivalence, supporting any hook payload shape (not just `{message}` entries).
-- **Tests:** Added `test/platform-audit.js` — 75 integration checks across 12 platforms validating file layout, content, JSON schema, and agent registration.
+- **Fix (Parser Noise):** Flutter `const SizedBox()` no longer appears as a symbol; only real functions/methods like `realFunction()` are captured.
+- **Fix (Edge Extraction):** Default import bindings (e.g., `import React from 'react'`) no longer create spurious dependency entries. Only the module name `react` is recorded.
+- **Fix (Edge Extraction):** Inheritance edges from `extends` / `implements` are now rendered in the `## EDGES` section instead of being silently dropped.
+- **Fix (Regex Safety):** `findSymbolContext` now escapes regex metacharacters (e.g., `$` in `test$func`) before searching, preventing silent failures.
+- **Fix (Tag Extraction):** `extractTags` now strips code literals before scanning, so regex patterns like `TAGS = /\b(TODO|FIXME).../` in source no longer produce fake tag entries.
+- **Docs:** Updated README with parser fix details and added examples for edge-case behavior.
+- **Tests:** Added 7 new tests (21 total). Covers Flutter noise reduction, default import handling, inheritance edges, regex metacharacter safety, and tag extraction correctness.
+- **Maintenance:** Synchronized runtime version, package metadata, lockfile metadata, README version references, and release notes.
 
-### v4.0.0 (2026-04-16)
-- **Breaking: Modular Architecture** — Split monolithic `index.js` (776 lines) into 7 modules under `lib/`. All public exports (`CodeParser`, `ProjectMapper`, `ReflectionManager`, `SkillManager`, `AgentManager`, `ProjectInitializer`, `CONFIG`) remain available from `index.js` via re-exports, but direct imports from internal paths will break.
-- **Security:** Fixed regex injection in `CodeParser.findSymbolContext` — symbol names with regex metacharacters (e.g., `$`, `+`) are now escaped before interpolation.
-- **Fix (Graph Output):** Tag extraction no longer matches regex patterns embedded in source code. Strips string/regex literals while preserving comments where `TODO`/`FIXME` tags live.
-- **Fix (Hook Merge):** `writeJson` now appends new hook entries to existing arrays instead of overwriting. Deduplicates by `message` field.
-- **Fix (Error Handling):** JSON parse failures and global skill install errors now emit warnings instead of being silently swallowed.
-- **Fix (Entry Point):** CLI guard uses `path.resolve()` comparison instead of fragile `endsWith('index.js')`.
-- **Fix (README):** Removed duplicated Implementation Details lines.
-- **CLI:** Added `--help` / `-h` flag with full command, flag, and platform reference.
-- **Quality:** Converted all synchronous `fs` calls to async `fsp` equivalents. Removed `fs` sync import entirely.
-- **Tests:** Expanded from 10 to 21 tests covering regex safety, tag extraction, hook merging, CLI commands, and error paths.
-- **Docs:** Updated README with project structure, pipeline details, and v4 changelog.
-
-### v3.5.4 (2026-04-16)
-- **Fix (Roo Code):** Final correction for persistent Markdown injection into `.roomodes` (YAML).
-- **Stability:** Consolidated all instructions into `.roorules` and `.clinerules`.
-- **Maintenance:** Synchronized version across all metadata files.
-
-### v3.5.3 (2026-04-16)
-- **Fix (Roo Code):** Completely removed Markdown injection into `.roomodes` (YAML) across all skill installations.
-- **Fix (Roo Code):** Unified global instructions into `.roorules` and `.clinerules` for reliable rule propagation.
-- **CLI:** Added `--version` / `-v` command for better troubleshooting and stale installation detection.
-- **CLI:** Added versioned headers to `generate` command output.
-
-### v3.5.2 (2026-04-16)
-- **Fix (Roo Code):** Removed incorrect Markdown appends to `.roomodes` (YAML) to prevent syntax errors.
-- **Fix (Roo Code):** Switched to `.roorules` for global instructions, ensuring compatibility with Roo's hierarchical rule system.
-
-### v3.5.1 (2026-04-16)
-- **Fix (Gemini CLI):** Modernized integration with YAML frontmatter for global skills and agents.
-- **Fix (Gemini CLI):** Transitioned from unsupported tool hooks to standard `GEMINI.md` Memory Import syntax (`@import`).
-- **Fix (Roo Code):** Restored missing `.roomodes` synchronization for mode-agnostic rules.
-- **Stability:** Improved `writeJson` to perform deep-merging of `hooks`, preventing configuration overwrites.
-- **Tests:** Aligned `ProjectMapper` header with test suite expectations.
-
-### v3.4.1 (2026-04-16)
-- **Docs:** Synchronized NPM installation documentation.
-- **Docs:** Reconciled platform integration tables for consistency across all 15+ supported platforms.
-
-### v3.4.0 (2026-04-16)
-- **Hyper-Condensed Context:** Minified project map and reflection outputs (30-50% token reduction).
-- **Architecture:** Implemented edge grouping and metadata stripping for extreme density.
-- **Maintenance:** Refactored defensive uninstallation for global and local data.
-
-### v3.3.0 (2026-04-16)
-- **Active Agent Orchestration:** Added `install-agent` for explicit delegation to Code-Graph specialists.
-- **Automation:** Unified `install` commands and automated `preuninstall` cleanup logic.
-- **Tooling:** Model Context Protocol (MCP) support for Claude and Cursor.
-
-### v3.2.1 (2026-04-16)
-- **Docs:** Exhaustive documentation of platform-specific installation details.
-- **Registry:** Integration table synchronization.
-
-### v3.2.0 (2026-04-16)
-- **Universal Agent OS:** Restored full surgical integration for Antigravity, Kiro, Codex, and OpenCode.
-- **Interceptors:** Implemented segregated skill hooks for platforms that support them.
-
-### v3.1.0 (2026-04-16)
-- **Selective Skills:** Segregated skills into `projectmap` and `reflections`.
-- **Command:** Standardized on `install-skills` command.
-
-### v3.0.0 (2026-04-16)
-- **Unified Naming:** Major refactor to `llm-agent-*` naming convention.
-- **Integration:** Automated platform integration for Claude, Cursor, Gemini, etc.
-
-### v2.1.x
-- **Memory:** Initial implementation of `reflect` command and lesson persistence.
+### v4.0.0 (2026-04-17)
+- **Initial release:** Compact codebase mapper with `generate`, `init`, `reflect`, `install-skills`, `uninstall-skills`, `install-agent`, `uninstall-agent`, `install-hook`, `watch`, and `mcp` commands.
+- **Core:** `ProjectMapper` walks directories, `CodeParser` extracts symbols/edges/tags, `ProjectInitializer` scaffolds `llm-agent-rules.md` and `llm-agent-project-learnings.md`.
+- **Skills:** Bundled mandatory skills: `projectmap`, `reflections`, `simplicity`, `changelimit`, `freshdeps`, `contextbudget`.
+- **Platforms:** Supports 15+ AI coding agents with native skill/rule file generation.
+- **Security:** Path traversal protection, prototype pollution prevention, symlink skipping, file size limits.
+- **Tests:** 14 tests covering parser, mapper, skills, agents, CLI, and security.

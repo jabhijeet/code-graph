@@ -299,15 +299,17 @@ test('SkillManager - opencode install merges plugin registrations', async () => 
   assert.deepStrictEqual(result.plugins, [
     './custom-plugin.js',
     './.opencode/plugins/projectmap.js',
+    './.opencode/plugins/thinkbeforecoding.js',
     './.opencode/plugins/simplicity.js',
     './.opencode/plugins/changelimit.js',
+    './.opencode/plugins/goaldriven.js',
     './.opencode/plugins/freshdeps.js',
     './.opencode/plugins/contextbudget.js'
   ]);
 
   await sm.install('opencode', 'all');
   const reinstalled = JSON.parse(fs.readFileSync(path.join(tempDir, 'opencode.json'), 'utf8'));
-  assert.strictEqual(reinstalled.plugins.length, 6);
+  assert.strictEqual(reinstalled.plugins.length, 8);
 
   fs.rmSync(tempDir, { recursive: true });
 });
@@ -350,8 +352,8 @@ test('SkillManager - codex uninstall removes every managed hook', async () => {
   await sm.uninstall('codex', 'simplicity');
 
   let result = JSON.parse(fs.readFileSync(path.join(tempDir, '.codex/hooks.json'), 'utf8'));
-  assert.ok(!result.hooks.preToolUse.some(entry => entry.message?.includes('MANDATORY(Simplicity)')));
-  assert.ok(result.hooks.preToolUse.some(entry => entry.message?.includes('MANDATORY(ProjectMap)')));
+  assert.ok(!result.hooks.PreToolUse.some(entry => JSON.stringify(entry).includes('MANDATORY(Simplicity)')));
+  assert.ok(result.hooks.PreToolUse.some(entry => JSON.stringify(entry).includes('MANDATORY(ProjectMap)')));
 
   await sm.uninstall('codex', 'all');
   assert.ok(!fs.existsSync(path.join(tempDir, '.codex/hooks.json')));
@@ -474,6 +476,145 @@ test('SkillManager - freshdeps installs for every supported platform', async () 
   fs.rmSync(tempDir, { recursive: true });
 });
 
+test('SkillManager - thinkbeforecoding skill installs guidance', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_thinkbeforecoding_skill');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  const sm = new SkillManager(tempDir);
+  await sm.install('codex', 'thinkbeforecoding');
+
+  let content = fs.readFileSync(path.join(tempDir, 'AGENTS.md'), 'utf8');
+  assert.ok(content.includes('Skill: ThinkBeforeCoding'));
+  assert.ok(content.includes('State assumptions'));
+  assert.ok(content.includes('Ask for clarification'));
+
+  await sm.uninstall('codex', 'thinkbeforecoding');
+  content = fs.existsSync(path.join(tempDir, 'AGENTS.md'))
+    ? fs.readFileSync(path.join(tempDir, 'AGENTS.md'), 'utf8')
+    : '';
+  assert.ok(!content.includes('Skill: ThinkBeforeCoding'));
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
+test('SkillManager - goaldriven skill installs verification guidance', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_goaldriven_skill');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  const sm = new SkillManager(tempDir);
+  await sm.install('codex', 'goaldriven');
+
+  let content = fs.readFileSync(path.join(tempDir, 'AGENTS.md'), 'utf8');
+  assert.ok(content.includes('Skill: GoalDriven'));
+  assert.ok(content.includes('State the goal in verifiable terms'));
+  assert.ok(content.includes('Final response must include verification result'));
+
+  await sm.uninstall('codex', 'goaldriven');
+  content = fs.existsSync(path.join(tempDir, 'AGENTS.md'))
+    ? fs.readFileSync(path.join(tempDir, 'AGENTS.md'), 'utf8')
+    : '';
+  assert.ok(!content.includes('Skill: GoalDriven'));
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
+test('SkillManager - surgicalchanges alias uninstalls changelimit artifacts', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_surgicalchanges_uninstall');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  const sm = new SkillManager(tempDir);
+  await sm.install('codex', 'surgicalchanges');
+
+  let content = fs.readFileSync(path.join(tempDir, 'AGENTS.md'), 'utf8');
+  assert.ok(content.includes('Skill: SurgicalChanges'));
+
+  await sm.uninstall('codex', 'surgicalchanges');
+  content = fs.existsSync(path.join(tempDir, 'AGENTS.md'))
+    ? fs.readFileSync(path.join(tempDir, 'AGENTS.md'), 'utf8')
+    : '';
+  assert.ok(!content.includes('Skill: SurgicalChanges'));
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
+test('SkillManager - surgicalchanges alias installs same changelimit skill', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_surgicalchanges_alias');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  const sm = new SkillManager(tempDir);
+  await sm.install('codex', 'surgicalchanges');
+
+  const content = fs.readFileSync(path.join(tempDir, 'AGENTS.md'), 'utf8');
+  assert.ok(content.includes('Skill: SurgicalChanges'));
+  assert.ok(content.includes('Remove imports, variables, functions, or files that YOUR change made unused'));
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
+test('SkillManager - thinkbeforecoding installs for every supported platform', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_thinkbeforecoding_platforms');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  const readAllFiles = (dir) => {
+    const out = [];
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) out.push(...readAllFiles(full));
+      else out.push(fs.readFileSync(full, 'utf8'));
+    }
+    return out;
+  };
+
+  for (const platform of SUPPORTED_PLATFORMS) {
+    const platformDir = path.join(tempDir, platform);
+    fs.mkdirSync(platformDir);
+
+    const sm = new SkillManager(platformDir);
+    await sm.install(platform, 'thinkbeforecoding');
+
+    const installed = readAllFiles(platformDir).some(content =>
+      content.includes('ThinkBeforeCoding') || content.includes('thinkbeforecoding'));
+    assert.ok(installed, `${platform} should receive ThinkBeforeCoding instructions`);
+  }
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
+test('SkillManager - goaldriven installs for every supported platform', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_goaldriven_platforms');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  const readAllFiles = (dir) => {
+    const out = [];
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) out.push(...readAllFiles(full));
+      else out.push(fs.readFileSync(full, 'utf8'));
+    }
+    return out;
+  };
+
+  for (const platform of SUPPORTED_PLATFORMS) {
+    const platformDir = path.join(tempDir, platform);
+    fs.mkdirSync(platformDir);
+
+    const sm = new SkillManager(platformDir);
+    await sm.install(platform, 'goaldriven');
+
+    const installed = readAllFiles(platformDir).some(content =>
+      content.includes('GoalDriven') || content.includes('goaldriven'));
+    assert.ok(installed, `${platform} should receive GoalDriven instructions`);
+  }
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
 test('SkillManager - contextbudget installs for every supported platform', async () => {
   const tempDir = path.join(process.cwd(), 'temp_test_contextbudget_platforms');
   if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
@@ -513,7 +654,9 @@ test('ProjectInitializer - rules make all bundled skills mandatory', async () =>
 
   const content = fs.readFileSync(path.join(tempDir, CONFIG.RULES_FILE), 'utf8');
   assert.ok(content.includes('MANDATORY SKILLS'));
-  assert.ok(content.includes('ProjectMap, Reflections, Simplicity, ChangeLimit, FreshDeps, and ContextBudget'));
+  assert.ok(content.includes('ProjectMap, Reflections, ThinkBeforeCoding, Simplicity, SurgicalChanges, GoalDriven, FreshDeps, and ContextBudget'));
+  assert.ok(content.includes('Surface assumptions'));
+  assert.ok(content.includes('verifiable terms'));
   assert.ok(content.includes('latest stable compatible dependencies'));
   assert.ok(content.includes('replace the choice with the current stable approach'));
   assert.ok(content.includes('compact rolling summary after each phase or every 10 tool calls'));
@@ -530,7 +673,46 @@ test('AgentManager - Claude install creates subagent without MCP registration', 
 
   const agentPath = path.join(tempDir, '.claude/agents/code-graph.md');
   assert.ok(fs.existsSync(agentPath));
+  assert.ok(fs.existsSync(path.join(tempDir, '.claude/agents/code-graph-locator.md')));
+  assert.ok(fs.existsSync(path.join(tempDir, '.claude/agents/code-graph-tracer.md')));
+  assert.ok(fs.existsSync(path.join(tempDir, '.claude/agents/code-graph-reviewer.md')));
   assert.ok(!fs.existsSync(path.join(tempDir, '.mcp.json')));
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
+test('AgentManager - generic install creates split agent personas', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_split_agents');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  await new AgentManager(tempDir).install('generic');
+
+  const content = fs.readFileSync(path.join(tempDir, '.code-graph-agent.md'), 'utf8');
+  assert.ok(content.includes('code-graph-locator'));
+  assert.ok(content.includes('code-graph-tracer'));
+  assert.ok(content.includes('code-graph-reviewer'));
+  assert.ok(content.includes('Return compact outputs'));
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
+test('AgentManager - install logs created agent paths', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_agent_install_logs');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  const logs = [];
+  const originalLog = console.log;
+  console.log = (msg) => logs.push(msg);
+
+  await new AgentManager(tempDir).install('claude');
+
+  console.log = originalLog;
+  assert.ok(logs.some(m => m.includes(`[Code-Graph v${CONFIG.VERSION}]`) && m.includes('Installed/updated:') && m.includes('.claude') && m.includes('code-graph.md')));
+  assert.ok(logs.some(m => m.includes('code-graph-locator.md')));
+  assert.ok(logs.some(m => m.includes('code-graph-tracer.md')));
+  assert.ok(logs.some(m => m.includes('code-graph-reviewer.md')));
 
   fs.rmSync(tempDir, { recursive: true });
 });
@@ -554,6 +736,88 @@ test('SkillManager - installs and uninstalls contextbudget skill', async () => {
   assert.ok(!fs.existsSync(agentsPath));
 
   fs.rmSync(tempDir, { recursive: true });
+});
+
+test('SkillManager - codex hooks use enabled nested hook shape', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_codex_hook_shape');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  const sm = new SkillManager(tempDir);
+  await sm.install('codex', 'projectmap');
+
+  const hookPath = path.join(tempDir, '.codex/hooks.json');
+  const hooks = JSON.parse(fs.readFileSync(hookPath, 'utf8'));
+  assert.strictEqual(hooks.codex_hooks, true);
+  assert.ok(Array.isArray(hooks.hooks.PreToolUse));
+  assert.strictEqual(hooks.hooks.PreToolUse[0].matcher, 'Bash');
+  assert.strictEqual(hooks.hooks.PreToolUse[0].hooks[0].type, 'command');
+  assert.ok(hooks.hooks.PreToolUse[0].hooks[0].command.includes('MANDATORY(ProjectMap)'));
+
+  await sm.uninstall('codex', 'projectmap');
+  assert.ok(!fs.existsSync(hookPath));
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
+test('SkillManager - install logs local skill target paths', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_skill_install_logs');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  const logs = [];
+  const originalLog = console.log;
+  console.log = (msg) => logs.push(msg);
+
+  await new SkillManager(tempDir).install('codex', 'projectmap');
+
+  console.log = originalLog;
+  assert.ok(logs.some(m => m.includes(`[Code-Graph v${CONFIG.VERSION}]`) && m.includes('Installed/updated:') && m.includes('AGENTS.md')));
+  assert.ok(logs.some(m => m.includes(`[Code-Graph v${CONFIG.VERSION}]`) && m.includes('Installed/updated:') && m.includes('.codex') && m.includes('hooks.json')));
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
+test('ProjectMapper - skips generated agent artifacts by default', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_generated_ignores');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+  fs.mkdirSync(path.join(tempDir, '.claude', 'agents'), { recursive: true });
+  fs.mkdirSync(path.join(tempDir, '.codex'), { recursive: true });
+
+  fs.writeFileSync(path.join(tempDir, 'src.js'), 'function source() {}');
+  fs.writeFileSync(path.join(tempDir, 'AGENTS.md'), 'function shouldNotMap() {}');
+  fs.writeFileSync(path.join(tempDir, '.code-graph-agent.md'), 'function shouldNotMapEither() {}');
+  fs.writeFileSync(path.join(tempDir, '.claude', 'agents', 'code-graph.md'), 'function agentPrompt() {}');
+  fs.writeFileSync(path.join(tempDir, '.codex', 'generated.js'), 'function generatedHook() {}');
+
+  await new ProjectMapper(tempDir).generate();
+  const map = fs.readFileSync(path.join(tempDir, CONFIG.MAP_FILE), 'utf8');
+  assert.ok(map.includes('src.js'));
+  assert.ok(!map.includes('AGENTS.md'));
+  assert.ok(!map.includes('.code-graph-agent.md'));
+  assert.ok(!map.includes('.claude/agents'));
+  assert.ok(!map.includes('generatedHook'));
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
+test('ProjectMapper - caps per-file symbols and tags to limit map bloat', () => {
+  const mapper = new ProjectMapper(process.cwd());
+  mapper.files = [{
+    path: 'dense.js',
+    symbols: Array.from({ length: CONFIG.MAX_SYMBOLS_PER_FILE + 5 }, (_, i) => `symbol${i}`),
+    tags: Array.from({ length: CONFIG.MAX_TAGS_PER_FILE + 3 }, (_, i) => `TODO: item ${i}`),
+    isCore: false,
+    outCount: 0,
+    desc: 'x'.repeat(CONFIG.MAX_DESC_CHARS + 20)
+  }];
+
+  const output = mapper.formatOutput();
+  assert.ok(output.includes(`... +5 more`));
+  assert.ok(output.includes(`... +3 more`));
+  assert.ok(!output.includes('symbol29'));
+  assert.ok(output.includes('x'.repeat(CONFIG.MAX_DESC_CHARS)));
 });
 
 // --- CLI Tests ---
