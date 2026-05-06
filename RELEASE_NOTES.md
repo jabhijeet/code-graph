@@ -1,5 +1,10 @@
 # RELEASE NOTES
 
+### v4.12.1 (2026-05-06)
+- **Fix (Windows junction paths):** `code-graph` installed globally via npm on Windows silently exited with code 0 and produced no output. Root cause: `process.argv[1]` resolves to the junction path (`node_global/node_modules/code-graph-llm/index.js`) while `import.meta.url` resolves through the junction to the real path (`D:\Projects\code-graph\index.js`). `path.resolve` does not dereference Windows junctions, so the CLI entry guard (`argv[1] === __filename`) always failed and `main()` was never called. Fixed by using `realpathSync` on both sides of the comparison.
+- **Fix (Self-referential dependency):** `package.json` listed `code-graph-llm` as its own dependency. On global install, npm resolved the self-reference from the registry (4.11.0, latest published) instead of the local source, making the global binary permanently stale. Removed the self-dependency.
+- **Maintenance:** Synchronized runtime version, package metadata, lockfile metadata, README version references, and release notes.
+
 ### v4.12.0 (2026-05-05)
 - **Skills (Karpathy-inspired):** Added `thinkbeforecoding`, requiring agents to surface assumptions, ambiguity, tradeoffs, and simpler options before non-trivial work.
 - **Skills (Karpathy-inspired):** Added `goaldriven`, requiring explicit success criteria, verification planning, bug reproduction when feasible, and final verification reporting.

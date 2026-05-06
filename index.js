@@ -6,7 +6,7 @@
  * Compact, language-agnostic codebase mapper for LLM token efficiency.
  */
 
-import { promises as fsp } from 'fs';
+import { promises as fsp, realpathSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import chokidar from 'chokidar';
@@ -203,7 +203,7 @@ export function stopWatcher() {
   }
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(__filename)) {
+if (process.argv[1] && realpathSync(path.resolve(process.argv[1])) === realpathSync(path.resolve(__filename))) {
   main();
 }
 

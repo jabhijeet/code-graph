@@ -1,22 +1,13 @@
-# CODE-GRAPH (v4.12.0)
+# CODE-GRAPH (v4.12.1)
 
 > Inspired by [Andrej Karpathy skills](https://github.com/forrestchang/andrej-karpathy-skills), [juliusbrussee/caveman](https://github.com/juliusbrussee/caveman), and the community's work building better agent workflows.
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** for LLM agents. Code-Graph gives agents a compact file, symbol, and dependency index, then pairs it with persistent project learnings so agents can avoid repeating mistakes across sessions.
 
-## New in v4.12.0
+## New in v4.12.1
 
-- **New skills:** Added `thinkbeforecoding` and `goaldriven` as bundled mandatory skills.
-- **Naming:** `ChangeLimit` is now presented as `SurgicalChanges` in installed instructions while keeping `changelimit` as a CLI-compatible alias.
-- **Examples:** Added `EXAMPLES.md` with weak-vs-better guidance for assumptions, simplicity, surgical diffs, and verification.
-- **Goal-driven workflow:** Agents are now instructed to state assumptions, define verifiable goals, and report verification results or blockers before completion.
-- **Agent rules:** Every bundled skill remains mandatory for agents: ProjectMap, Reflections, ThinkBeforeCoding, Simplicity, SurgicalChanges, GoalDriven, FreshDeps, and ContextBudget.
-- **Maintenance:** Synchronized runtime version, package metadata, lockfile metadata, README version references, and release notes.
-- **Fix (Codex hooks):** Project-level Codex skill installs now write the enabled nested hook shape with `codex_hooks: true`, `hooks.PreToolUse`, `matcher: "Bash"`, and nested command hooks.
-- **UX (Install visibility):** Skill and agent installs now print each absolute path written or updated via `[Code-Graph v4.12.0] Installed/updated: ...`, covering local project files, project hooks, global skill files, and agent registrations.
-- **Agents (Delegation):** Claude agent install now creates focused sub-agents: `code-graph`, `code-graph-locator`, `code-graph-tracer`, and `code-graph-reviewer`.
-- **Map size control:** Default ignores now exclude generated Code-Graph and agent artifacts from maps.
-- **Map output caps:** `llm-code-graph.md` now caps per-file descriptions, symbol lists, and tag lists.
+- **Fix (Windows junction paths):** Global npm installs on Windows silently exited with no output. `process.argv[1]` resolves to the junction path while `import.meta.url` resolves the real path; `path.resolve` doesn't dereference junctions so `main()` was never called. Fixed with `realpathSync` on both sides.
+- **Fix (Self-referential dependency):** Removed `code-graph-llm` from its own `dependencies`. npm resolved the self-reference from the registry (stale 4.11.0) instead of local source, making global installs permanently stale.
 
 See [RELEASE_NOTES.md](RELEASE_NOTES.md) for full history.
 
@@ -53,8 +44,8 @@ code-graph install-skills -g claude
 Every install prints each target it writes:
 
 ```text
-[Code-Graph v4.12.0] Installed/updated: /absolute/path/to/AGENTS.md
-[Code-Graph v4.12.0] Installed/updated: /absolute/path/to/.codex/hooks.json
+[Code-Graph v4.12.1] Installed/updated: /absolute/path/to/AGENTS.md
+[Code-Graph v4.12.1] Installed/updated: /absolute/path/to/.codex/hooks.json
 ```
 
 ## Core Concepts
