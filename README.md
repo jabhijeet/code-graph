@@ -1,13 +1,16 @@
-# CODE-GRAPH (v4.12.1)
+# CODE-GRAPH (v4.13.0)
 
 > Inspired by [Andrej Karpathy skills](https://github.com/forrestchang/andrej-karpathy-skills), [juliusbrussee/caveman](https://github.com/juliusbrussee/caveman), and the community's work building better agent workflows.
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** for LLM agents. Code-Graph gives agents a compact file, symbol, and dependency index, then pairs it with persistent project learnings so agents can avoid repeating mistakes across sessions.
 
-## New in v4.12.1
+## New in v4.13.0
 
-- **Fix (Windows junction paths):** Global npm installs on Windows silently exited with no output. `process.argv[1]` resolves to the junction path while `import.meta.url` resolves the real path; `path.resolve` doesn't dereference junctions so `main()` was never called. Fixed with `realpathSync` on both sides.
-- **Fix (Self-referential dependency):** Removed `code-graph-llm` from its own `dependencies`. npm resolved the self-reference from the registry (stale 4.11.0) instead of local source, making global installs permanently stale.
+- **Enforcement (UserPromptSubmit hook):** Claude Code and Codex now inject a compact mandatory-skills checklist at the start of every agent turn via `UserPromptSubmit` hook. The agent sees all 8 mandatory skills before thinking — not mid-execution after context is bloated.
+- **Enforcement (Stop hook):** Claude Code and Codex now fire a `Stop` hook before the agent completes any task. It requires the agent to either record a reflection or explicitly state none was learned, and to report verification against stated success criteria.
+- **Enforcement (Write/Edit hook):** A `PreToolUse` hook on `Write|Edit|MultiEdit` (Claude Code) and `Write|Edit` (Codex) fires before any file write, reminding the agent of SurgicalChanges and Simplicity. Scope creep is intercepted before it lands in the file.
+- **OpenCode plugins:** All 8 skill plugins are now context-aware — they fire only for relevant tool types (`write`, `edit`, `bash`, etc.) and use explicit violation language (`VIOLATION(...)`, `Task failure if violated`) instead of advisory language.
+- **Stronger hook messages:** All hook commands (Claude, Codex) now use `VIOLATION(...)` language with explicit failure conditions instead of `MANDATORY(...)` advisory language. Agents treat violations as hard stops, not suggestions.
 
 See [RELEASE_NOTES.md](RELEASE_NOTES.md) for full history.
 
@@ -44,8 +47,8 @@ code-graph install-skills -g claude
 Every install prints each target it writes:
 
 ```text
-[Code-Graph v4.12.1] Installed/updated: /absolute/path/to/AGENTS.md
-[Code-Graph v4.12.1] Installed/updated: /absolute/path/to/.codex/hooks.json
+[Code-Graph v4.13.0] Installed/updated: /absolute/path/to/AGENTS.md
+[Code-Graph v4.13.0] Installed/updated: /absolute/path/to/.codex/hooks.json
 ```
 
 ## Core Concepts

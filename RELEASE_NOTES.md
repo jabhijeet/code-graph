@@ -1,5 +1,14 @@
 # RELEASE NOTES
 
+### v4.13.0 (2026-05-06)
+- **Enforcement (UserPromptSubmit hook):** Claude Code and Codex now install a `UserPromptSubmit` hook that injects a compact mandatory-skills checklist at the start of every agent turn. The agent sees all 8 mandatory skills before thinking, not mid-execution when context is bloated. Owned by `projectmap` so it installs and uninstalls with that skill.
+- **Enforcement (Stop hook):** Claude Code and Codex now install a `Stop` hook that fires before the agent completes any task. It requires the agent to either run `code-graph reflect` for any failure or correction, or explicitly state no new lesson was learned, and to report verification against stated success criteria or the exact blocker. Owned by `reflections`.
+- **Enforcement (Write/Edit hook):** A `PreToolUse` hook on `Write|Edit|MultiEdit` (Claude Code) and `Write|Edit` (Codex) now fires before any file write, reminding the agent of SurgicalChanges and Simplicity constraints before code lands on disk. Owned by `changelimit`.
+- **OpenCode plugins:** All 8 skill plugins are now context-aware — each `beforeExecute` fires only for relevant tool types (e.g., write/edit for changelimit, bash/read for projectmap) and uses explicit `VIOLATION(...)` language with task failure conditions.
+- **Stronger hook messages:** All `PreToolUse` hook commands (Claude, Codex) changed from advisory `MANDATORY(...)` language to hard-stop `VIOLATION(...)` language. Agents treat the hook output as an intercepted violation, not a suggestion.
+- **Uninstall cleanup:** `uninstall-skills` for projectmap, reflections, and changelimit now also removes the corresponding UserPromptSubmit, Stop, and Write hook entries from `.claude/settings.json` and `.codex/hooks.json`.
+- **Maintenance:** Synchronized runtime version, package metadata, lockfile metadata, README version references, and release notes.
+
 ### v4.12.1 (2026-05-06)
 - **Fix (Windows junction paths):** `code-graph` installed globally via npm on Windows silently exited with code 0 and produced no output. Root cause: `process.argv[1]` resolves to the junction path (`node_global/node_modules/code-graph-llm/index.js`) while `import.meta.url` resolves through the junction to the real path (`D:\Projects\code-graph\index.js`). `path.resolve` does not dereference Windows junctions, so the CLI entry guard (`argv[1] === __filename`) always failed and `main()` was never called. Fixed by using `realpathSync` on both sides of the comparison.
 - **Fix (Self-referential dependency):** `package.json` listed `code-graph-llm` as its own dependency. On global install, npm resolved the self-reference from the registry (4.11.0, latest published) instead of the local source, making the global binary permanently stale. Removed the self-dependency.

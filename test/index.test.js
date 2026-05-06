@@ -352,8 +352,8 @@ test('SkillManager - codex uninstall removes every managed hook', async () => {
   await sm.uninstall('codex', 'simplicity');
 
   let result = JSON.parse(fs.readFileSync(path.join(tempDir, '.codex/hooks.json'), 'utf8'));
-  assert.ok(!result.hooks.PreToolUse.some(entry => JSON.stringify(entry).includes('MANDATORY(Simplicity)')));
-  assert.ok(result.hooks.PreToolUse.some(entry => JSON.stringify(entry).includes('MANDATORY(ProjectMap)')));
+  assert.ok(!result.hooks.PreToolUse.some(entry => JSON.stringify(entry).includes('VIOLATION(Simplicity)')));
+  assert.ok(result.hooks.PreToolUse.some(entry => JSON.stringify(entry).includes('VIOLATION(ProjectMap)')));
 
   await sm.uninstall('codex', 'all');
   assert.ok(!fs.existsSync(path.join(tempDir, '.codex/hooks.json')));
@@ -752,7 +752,7 @@ test('SkillManager - codex hooks use enabled nested hook shape', async () => {
   assert.ok(Array.isArray(hooks.hooks.PreToolUse));
   assert.strictEqual(hooks.hooks.PreToolUse[0].matcher, 'Bash');
   assert.strictEqual(hooks.hooks.PreToolUse[0].hooks[0].type, 'command');
-  assert.ok(hooks.hooks.PreToolUse[0].hooks[0].command.includes('MANDATORY(ProjectMap)'));
+  assert.ok(hooks.hooks.PreToolUse[0].hooks[0].command.includes('VIOLATION(ProjectMap)'));
 
   await sm.uninstall('codex', 'projectmap');
   assert.ok(!fs.existsSync(hookPath));
