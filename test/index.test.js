@@ -964,17 +964,17 @@ test('ProjectMapper skips files exceeding MAX_FILE_BYTES', async () => {
   fs.writeFileSync(bigPath, 'x'.repeat(CONFIG.MAX_FILE_BYTES + 100));
   fs.writeFileSync(path.join(tempDir, 'small.js'), 'function ok() {}');
 
-  const warns = [];
-  const origWarn = console.warn;
-  console.warn = (m) => warns.push(m);
+  const errs = [];
+  const origErr = console.error;
+  console.error = (m) => errs.push(m);
 
   await new ProjectMapper(tempDir).generate();
 
-  console.warn = origWarn;
+  console.error = origErr;
   const map = fs.readFileSync(path.join(tempDir, CONFIG.MAP_FILE), 'utf8');
   assert.ok(!map.includes('huge.js'), 'oversized file must be skipped');
   assert.ok(map.includes('small.js'), 'normal file must be included');
-  assert.ok(warns.some(w => w.includes('Skipping large file')));
+  assert.ok(errs.some(w => w.includes('oversized')));
 
   fs.rmSync(tempDir, { recursive: true });
 });
@@ -1002,4 +1002,140 @@ test('ProjectMapper skips symbolic links during walk', async () => {
 
   fs.rmSync(tempDir, { recursive: true });
   fs.unlinkSync(outside);
+});
+
+// --- v4.19.0 Tests ---
+
+test('ProjectMapper - skips parse on large file (>100KB) but still indexes it', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_large_no_parse');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  // 110KB JS file — large enough to skip parsing
+  fs.writeFileSync(path.join(tempDir, 'big.js'), '// generated\n' + 'x=1;\n'.repeat(22000));
+  fs.writeFileSync(path.join(tempDir, 'small.js'), 'function helper() {}');
+
+  const errs = [];
+  const origErr = console.error;
+  console.error = (m) => errs.push(m);
+
+  await new ProjectMapper(tempDir).generate();
+
+  console.error = origErr;
+  const map = fs.readFileSync(path.join(tempDir, CONFIG.MAP_FILE), 'utf8');
+
+  assert.ok(map.includes('big.js'), 'large file must still appear in map');
+  assert.ok(map.includes('small.js'));
+  assert.ok(errs.some(e => e.includes('large') && e.includes('big.js')), 'must log error for large file');
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
+test('ProjectMapper - skip summary lists skipped files after generate', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_skip_summary');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  fs.writeFileSync(path.join(tempDir, 'big.js'), 'x=1;\n'.repeat(22000));
+
+  const errs = [];
+  const origErr = console.error;
+  console.error = (m) => errs.push(m);
+
+  await new ProjectMapper(tempDir).generate();
+
+  console.error = origErr;
+
+  assert.ok(errs.some(e => e.includes('WARNINGS') && e.includes('skipped')), 'must print skip summary');
+  assert.ok(errs.some(e => e.includes('large-no-parse') && e.includes('big.js')), 'summary must name the file and reason');
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
+test('ProjectMapper - _skipped tracking resets per instance', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_skipped_reset');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  fs.writeFileSync(path.join(tempDir, 'small.js'), 'function a() {}');
+
+  const mapper = new ProjectMapper(tempDir);
+  assert.deepStrictEqual(mapper._skipped, [], '_skipped must start empty');
+
+  const origErr = console.error;
+  console.error = () => {};
+  await mapper.generate();
+  console.error = origErr;
+
+  assert.strictEqual(mapper._skipped.length, 0, 'no skips for normal file');
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
+test('ProjectMapper - elapsed timer active during generate', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_elapsed_timer');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  fs.writeFileSync(path.join(tempDir, 'a.js'), 'function a() {}');
+
+  const logs = [];
+  const origLog = console.log;
+  console.log = (m) => { logs.push(m); origLog(m); };
+
+  await new ProjectMapper(tempDir).generate();
+
+  console.log = origLog;
+
+  const scanLines = logs.filter(l => l.includes('Scanning:'));
+  assert.ok(scanLines.length > 0, 'must emit Scanning lines');
+  assert.ok(scanLines.every(l => /\+\d+\.\ds/.test(l)), 'every Scanning line must have +Xs timestamp');
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
+test('ProjectMapper - Processing log emitted before each file', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_processing_log');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  fs.writeFileSync(path.join(tempDir, 'foo.js'), 'function foo() {}');
+  fs.writeFileSync(path.join(tempDir, 'bar.js'), 'function bar() {}');
+
+  const logs = [];
+  const origLog = console.log;
+  console.log = (m) => logs.push(m);
+
+  await new ProjectMapper(tempDir).generate();
+
+  console.log = origLog;
+
+  assert.ok(logs.some(l => l.includes('Processing:') && l.includes('foo.js')));
+  assert.ok(logs.some(l => l.includes('Processing:') && l.includes('bar.js')));
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
+test('ProjectMapper - file timeout emits error and tracks in _skipped', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_file_timeout');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  fs.writeFileSync(path.join(tempDir, 'normal.js'), 'function ok() {}');
+
+  const mapper = new ProjectMapper(tempDir);
+  mapper.FILE_TIMEOUT_MS = 1;
+
+  const errs = [];
+  const origErr = console.error;
+  console.error = (m) => errs.push(m);
+
+  await mapper.generate();
+
+  console.error = origErr;
+
+  assert.ok(mapper._skipped.some(s => s.reason === 'file-timeout'), 'timed-out file must appear in _skipped');
+  assert.ok(errs.some(e => e.includes('ERROR') && e.includes('timeout')));
+
+  fs.rmSync(tempDir, { recursive: true });
 });
