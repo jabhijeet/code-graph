@@ -1,14 +1,18 @@
-# CODE-GRAPH (v4.18.0)
+# CODE-GRAPH (v4.19.0)
 
 > Inspired by [Andrej Karpathy skills](https://github.com/forrestchang/andrej-karpathy-skills), [juliusbrussee/caveman](https://github.com/juliusbrussee/caveman), and the community's work building better agent workflows.
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** for LLM agents. Code-Graph gives agents a compact file, symbol, and dependency index, then pairs it with persistent project learnings so agents can avoid repeating mistakes across sessions.
 
-## New in v4.18.0
+## New in v4.19.0
 
-- **Fix (Generate — build cache ignores):** Added `.gradle/`, `.kotlin/`, `Pods/`, `DerivedData/`, `.swiftpm/`, `xcuserdata/`, `__pycache__/`, `.mypy_cache/`, `.pytest_cache/` to default ignores. Previously the scanner crawled Android Gradle caches (e.g. `android/.gradle/8.14/kotlin/`) and processed generated Kotlin files inside them.
-- **Fix (Generate — per-file timeout):** Each file now has a 15s processing timeout. If a file hangs (stuck I/O or slow parse), the scanner logs a warning and moves on to the next file instead of blocking forever.
-- **Fix (Generate — depth logging):** Subdirectories at depth 2–4 are now logged with indentation, making it easy to pinpoint which subtree is slow.
+- **Fix (Generate — large file hang):** Files over 100KB now skip symbol extraction instead of running the regex parser. Compiled/generated files like `drift_worker.js` (343KB Dart→JS) caused catastrophic regex backtracking that blocked the Node.js event loop entirely, preventing timeouts and heartbeats from firing. Large files are still indexed in the graph with their description; only symbol extraction is skipped.
+- **Fix (Generate — file timeout reduced):** Per-file timeout reduced from 15s to 5s. Timed-out files are now logged as errors (`console.error`) instead of warnings.
+- **Fix (Generate — readdir timeout):** Directory reads (`readdir`) now have an 8s timeout. If a directory hangs (e.g. broken symlink, network path), the scanner logs an error and skips it instead of blocking forever.
+- **UX (Generate — elapsed timestamps):** Every `Scanning:` log line now shows elapsed time since generation started (e.g. `+0.3s`), making it easy to spot which directory is slow.
+- **UX (Generate — heartbeat):** A `Still scanning...` heartbeat fires every 5s during the walk phase, confirming the process is alive on large repos.
+- **UX (Generate — per-file processing log):** Each file logs `Processing: <path>` before parse begins, so if the process hangs the last visible line identifies the culprit file.
+- **UX (Generate — skip summary):** End-of-run summary lists every skipped file with reason (`large-no-parse`, `file-timeout`, `readdir-timeout`, `oversized`, `permission`, `exception`).
 
 See [RELEASE_NOTES.md](RELEASE_NOTES.md) for full history.
 
@@ -45,8 +49,8 @@ code-graph install-skills -g claude
 Every install prints each target it writes:
 
 ```text
-[Code-Graph v4.18.0] Installed/updated: /absolute/path/to/AGENTS.md
-[Code-Graph v4.18.0] Installed/updated: /absolute/path/to/.codex/hooks.json
+[Code-Graph v4.19.0] Installed/updated: /absolute/path/to/AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: /absolute/path/to/.codex/hooks.json
 ```
 
 ## Core Concepts

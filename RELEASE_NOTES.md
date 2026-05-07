@@ -1,5 +1,15 @@
 # RELEASE NOTES
 
+### v4.19.0 (2026-05-07)
+- **Fix (Generate — large file hang):** Files over 100KB now skip symbol extraction. Compiled/generated JS (e.g. Dart→JS `drift_worker.js`, 343KB) caused catastrophic regex backtracking in `CodeParser.extract`, blocking the Node.js event loop entirely and preventing file timeouts and heartbeats from firing. Large files are still indexed with description only.
+- **Fix (Generate — file timeout reduced):** `FILE_TIMEOUT_MS` reduced from 15 000ms to 5 000ms. Timed-out files now emit `console.error` and are tracked in the skip summary.
+- **Fix (Generate — readdir timeout):** `fsp.readdir` now races against an 8s timeout. Hung directory reads (broken symlinks, network paths) are caught, logged as errors, and skipped.
+- **UX (Generate — elapsed timestamps):** Every `Scanning:` line now appends `+Xs` elapsed since generation start.
+- **UX (Generate — heartbeat):** A `Still scanning... (+Xs, N files so far)` heartbeat fires every 5s during the walk phase.
+- **UX (Generate — per-file log):** `Processing: <path>` is emitted before each file parse begins, so a hang is immediately attributable to the last visible file.
+- **UX (Generate — skip summary):** After `Done`, any skipped files are listed with reason: `large-no-parse`, `file-timeout`, `readdir-timeout`, `oversized`, `permission`, or `exception`.
+- **Maintenance:** Bumped version to 4.19.0 in `config.js` and `package.json`.
+
 ### v4.18.0 (2026-05-07)
 - **Fix (Generate — build cache ignores):** Added `.gradle/`, `.kotlin/`, `Pods/`, `DerivedData/`, `.swiftpm/`, `xcuserdata/`, `__pycache__/`, `.mypy_cache/`, `.pytest_cache/` to `DEFAULT_IGNORES`. Scanner was crawling Android Gradle caches (`android/.gradle/8.14/kotlin/`, etc.) and processing large generated Kotlin files inside them, causing hangs on Flutter/Android projects.
 - **Fix (Generate — per-file timeout):** Introduced `processFileWithTimeout()` wrapping `processFile()` in a `Promise.race` with a 15s timer. Timed-out files emit `[Code-Graph] Timeout (>15000ms), skipping: <path>` and the scan continues. Handles I/O hangs; CPU-bound regex hangs require a worker thread (future work).
