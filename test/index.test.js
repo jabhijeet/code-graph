@@ -664,8 +664,8 @@ test('ProjectInitializer - rules make all bundled skills mandatory', async () =>
   fs.rmSync(tempDir, { recursive: true });
 });
 
-test('AgentManager - Claude install creates subagent without MCP registration', async () => {
-  const tempDir = path.join(process.cwd(), 'temp_test_mcp_config');
+test('AgentManager - Claude install creates subagent files', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_claude_agent');
   if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
   fs.mkdirSync(tempDir);
 
@@ -676,7 +676,6 @@ test('AgentManager - Claude install creates subagent without MCP registration', 
   assert.ok(fs.existsSync(path.join(tempDir, '.claude/agents/code-graph-locator.md')));
   assert.ok(fs.existsSync(path.join(tempDir, '.claude/agents/code-graph-tracer.md')));
   assert.ok(fs.existsSync(path.join(tempDir, '.claude/agents/code-graph-reviewer.md')));
-  assert.ok(!fs.existsSync(path.join(tempDir, '.mcp.json')));
 
   fs.rmSync(tempDir, { recursive: true });
 });

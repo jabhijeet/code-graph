@@ -1,5 +1,12 @@
 # RELEASE NOTES
 
+### v4.14.0 (2026-05-07)
+- **Fix (MCP removal):** Removed the `mcp` CLI command, `lib/mcp.js` stdio server, and `.mcp.json` project file. The feature was broken and caused unintended MCP installation dialogs in Claude Code and other platforms. References cleaned from `index.js`, `agents.js` uninstall, `TODO.md`, and tests.
+- **Fix (Antigravity path consistency):** `install-skills -g antigravity` now correctly targets `~/.gemini/antigravity/skills/` (the official path per vercel-labs/skills) by adding `antigravity` to `PLATFORM_GLOBAL_PATHS`. Previously the default fallback wrote to `~/.antigravity/skills/`, mismatching both the spec and `install-agent`. Agent install and uninstall already used `~/.gemini/antigravity/skills/`; skills now match. Uninstall also cleans the stale `~/.antigravity/skills/` and `~/.agent/subagents/` legacy paths.
+- **Cleanup:** Removed legacy `~/.agent/subagents` entry from the defensive uninstall folder cleanup list — no current install path writes there.
+- **Docs:** Updated README platform table Antigravity install target, version references, and "New in" section.
+- **Maintenance:** Synchronized runtime version, package metadata, and release notes.
+
 ### v4.13.0 (2026-05-06)
 - **Enforcement (UserPromptSubmit hook):** Claude Code and Codex now install a `UserPromptSubmit` hook that injects a compact mandatory-skills checklist at the start of every agent turn. The agent sees all 8 mandatory skills before thinking, not mid-execution when context is bloated. Owned by `projectmap` so it installs and uninstalls with that skill.
 - **Enforcement (Stop hook):** Claude Code and Codex now install a `Stop` hook that fires before the agent completes any task. It requires the agent to either run `code-graph reflect` for any failure or correction, or explicitly state no new lesson was learned, and to report verification against stated success criteria or the exact blocker. Owned by `reflections`.

@@ -18,7 +18,6 @@ import { ReflectionManager } from './lib/reflections.js';
 import { ProjectInitializer } from './lib/initializer.js';
 import { SkillManager } from './lib/skills/core.js';
 import { AgentManager } from './lib/agents.js';
-import { startMCPServer } from './lib/mcp.js';
 
 const __filename = fileURLToPath(import.meta.url);
 
@@ -128,9 +127,7 @@ async function main() {
       case 'watch':
         startWatcher(cwd);
         break;
-      case 'mcp':
-        startMCPServer(args[0] || cwd);
-        break;
+
       default:
         if (platforms.includes(command?.toLowerCase())) {
           await new SkillManager(cwd).execute(command, args[0], args[1], isGlobal);
