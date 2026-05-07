@@ -1,5 +1,10 @@
 # RELEASE NOTES
 
+### v4.18.0 (2026-05-07)
+- **Fix (Generate — build cache ignores):** Added `.gradle/`, `.kotlin/`, `Pods/`, `DerivedData/`, `.swiftpm/`, `xcuserdata/`, `__pycache__/`, `.mypy_cache/`, `.pytest_cache/` to `DEFAULT_IGNORES`. Scanner was crawling Android Gradle caches (`android/.gradle/8.14/kotlin/`, etc.) and processing large generated Kotlin files inside them, causing hangs on Flutter/Android projects.
+- **Fix (Generate — per-file timeout):** Introduced `processFileWithTimeout()` wrapping `processFile()` in a `Promise.race` with a 15s timer. Timed-out files emit `[Code-Graph] Timeout (>15000ms), skipping: <path>` and the scan continues. Handles I/O hangs; CPU-bound regex hangs require a worker thread (future work).
+- **Maintenance:** Bumped version to 4.18.0 in `config.js` and `package.json`.
+
 ### v4.17.0 (2026-05-07)
 - **Fix (Generate — hang diagnosis):** `generate` now logs subdirectories at depth 2–4 with indentation, making it easy to identify which subtree a slow scan is blocked on. Previously depth >1 was silent.
 - **Fix (Generate — slow-parse warning):** Files taking >2s to parse now emit `[Code-Graph] Slow parse (Xms): <path>`. Surfaces regex-heavy files (e.g. large generated `.g.dart`, `.freezed.dart`) that silently block generation.

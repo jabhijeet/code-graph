@@ -1,14 +1,14 @@
-# CODE-GRAPH (v4.17.0)
+# CODE-GRAPH (v4.18.0)
 
 > Inspired by [Andrej Karpathy skills](https://github.com/forrestchang/andrej-karpathy-skills), [juliusbrussee/caveman](https://github.com/juliusbrussee/caveman), and the community's work building better agent workflows.
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** for LLM agents. Code-Graph gives agents a compact file, symbol, and dependency index, then pairs it with persistent project learnings so agents can avoid repeating mistakes across sessions.
 
-## New in v4.17.0
+## New in v4.18.0
 
-- **Fix (Generate — hang diagnosis):** `generate` now logs subdirectories up to depth 4 (with indentation), making it easy to spot which subtree a slow scan is stuck in.
-- **Fix (Generate — slow-parse warning):** Files that take >2s to parse now emit a `[Code-Graph] Slow parse (Xms): <path>` warning, identifying regex-heavy files (e.g. large generated `.dart` files).
-- **Perf (Generate — extension resolution cache):** `resolveExtension` now caches results, collapsing repeated resolution of the same import path from N×21 disk checks to 1×21. Major speedup for Flutter/Dart projects where many files import the same relative paths.
+- **Fix (Generate — build cache ignores):** Added `.gradle/`, `.kotlin/`, `Pods/`, `DerivedData/`, `.swiftpm/`, `xcuserdata/`, `__pycache__/`, `.mypy_cache/`, `.pytest_cache/` to default ignores. Previously the scanner crawled Android Gradle caches (e.g. `android/.gradle/8.14/kotlin/`) and processed generated Kotlin files inside them.
+- **Fix (Generate — per-file timeout):** Each file now has a 15s processing timeout. If a file hangs (stuck I/O or slow parse), the scanner logs a warning and moves on to the next file instead of blocking forever.
+- **Fix (Generate — depth logging):** Subdirectories at depth 2–4 are now logged with indentation, making it easy to pinpoint which subtree is slow.
 
 See [RELEASE_NOTES.md](RELEASE_NOTES.md) for full history.
 
@@ -45,8 +45,8 @@ code-graph install-skills -g claude
 Every install prints each target it writes:
 
 ```text
-[Code-Graph v4.14.0] Installed/updated: /absolute/path/to/AGENTS.md
-[Code-Graph v4.14.0] Installed/updated: /absolute/path/to/.codex/hooks.json
+[Code-Graph v4.18.0] Installed/updated: /absolute/path/to/AGENTS.md
+[Code-Graph v4.18.0] Installed/updated: /absolute/path/to/.codex/hooks.json
 ```
 
 ## Core Concepts

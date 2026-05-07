@@ -13,6 +13,7 @@
 - [SKILL] Installed Codex skills require YAML frontmatter delimited by ---; a plain Markdown SKILL.md will be skipped as invalid.
 - [VERSION] When bumping package metadata, also update CONFIG.VERSION because CLI banners and MCP serverInfo use the runtime constant rather than package.json.
 - [VERSION] Version bump requires 4 files: `package.json`, `package-lock.json` (run `npm install --package-lock-only`), `lib/config.js` (CONFIG.VERSION), and `RELEASE_NOTES.md`. Missing lock file causes stale version in published artifact.
+- [VERSION] README.md contains version strings in multiple locations: (1) header `# CODE-GRAPH (vX.Y.Z)`, (2) `## New in vX.Y.Z` section, (3) code block examples like `[Code-Graph vX.Y.Z]`. Always grep README for all version refs after bumping — stale inline examples are easy to miss.
 - [ENV] Windows sandbox setup can fail before PowerShell runs; retry required reads with approved escalation instead of assuming command failure.
 - [LOGIC] Shared reflection prompt text must mention llm-agent-rules.md because platform audit expects Cursor reflections rules to retain the rules-file link.
 - [LOGIC] When changing generated skill prompt bodies, add the previous generated section text to upgrade cleanup or reinstall may duplicate prompt blocks.
