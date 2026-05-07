@@ -1,13 +1,14 @@
-# CODE-GRAPH (v4.15.0)
+# CODE-GRAPH (v4.16.0)
 
 > Inspired by [Andrej Karpathy skills](https://github.com/forrestchang/andrej-karpathy-skills), [juliusbrussee/caveman](https://github.com/juliusbrussee/caveman), and the community's work building better agent workflows.
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** for LLM agents. Code-Graph gives agents a compact file, symbol, and dependency index, then pairs it with persistent project learnings so agents can avoid repeating mistakes across sessions.
 
-## New in v4.15.0
+## New in v4.16.0
 
-- **UX (CLI Progress — `generate`):** `code-graph generate` now prints structured progress: root path, per-directory scan lines for top-level dirs, live file counter every 25 files (inline `\r` overwrite), post-scan summary with file + edge counts, phase markers for sorting/formatting and writing, and a final elapsed-time line. No more silent hang on large repos.
-- **UX (CLI Progress — `init`):** `code-graph init` now logs the target directory on start and confirms completion.
+- **UX (Generate — granular timing):** Every `generate` phase now shows elapsed time (`+Xs`): scan complete, sort, format, and write. Pinpoints slow steps on large repos instantly.
+- **UX (Generate — formatOutput visibility):** Node build, edge grouping, and edge sort each emit before/after logs with counts (import sources, inheritance edges, sorted lines). Previously a silent black box.
+- **Fix (Generate — progress interleaving):** File counter switched from `\r` overwrite to `\n`. On Windows/non-TTY, `\r` caused scan lines to overwrite the counter on the same line.
 
 See [RELEASE_NOTES.md](RELEASE_NOTES.md) for full history.
 

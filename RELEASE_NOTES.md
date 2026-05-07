@@ -1,5 +1,11 @@
 # RELEASE NOTES
 
+### v4.16.0 (2026-05-07)
+- **UX (Generate — granular timing logs):** `ProjectMapper.generate()` now emits elapsed-time markers (`+Xs`) on every phase: scan complete, sort complete, format complete, and write. Each phase is independently timed so slow steps are immediately identifiable.
+- **UX (Generate — formatOutput visibility):** `formatOutput()` now logs before and after each sub-phase: node list build, edge grouping (reporting import-source count and inheritance edge count), and edge-line sort (reporting total sorted line count). Previously the entire format phase was a silent black box on large repos.
+- **Fix (Generate — progress interleaving):** File progress counter switched from `\r` (carriage-return overwrite) to `\n` (newline). On Windows and non-TTY outputs, `\r` caused scan-directory log lines to overwrite the progress counter on the same line, producing garbled output like `Processed 75 files...[Code-Graph] Scanning: linux`.
+- **Maintenance:** Bumped version to 4.16.0 in `config.js` and `package.json`.
+
 ### v4.15.0 (2026-05-07)
 - **UX (CLI Progress — `generate`):** `ProjectMapper.generate()` now prints a structured progress log across all phases: start with root path, per-directory scanning for depth 0–1 dirs, live inline file counter every 25 files (`\r` overwrite), post-scan summary (file count + edge count), sorting/formatting phase marker, write-phase marker, and a final timing line (`Done in Xs`). Large projects no longer appear to hang silently.
 - **UX (CLI Progress — `init`):** `ProjectInitializer.init()` now logs the target directory at start and prints `Initialization complete.` when done.
