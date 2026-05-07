@@ -1,14 +1,14 @@
-# CODE-GRAPH (v4.16.0)
+# CODE-GRAPH (v4.17.0)
 
 > Inspired by [Andrej Karpathy skills](https://github.com/forrestchang/andrej-karpathy-skills), [juliusbrussee/caveman](https://github.com/juliusbrussee/caveman), and the community's work building better agent workflows.
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** for LLM agents. Code-Graph gives agents a compact file, symbol, and dependency index, then pairs it with persistent project learnings so agents can avoid repeating mistakes across sessions.
 
-## New in v4.16.0
+## New in v4.17.0
 
-- **UX (Generate — granular timing):** Every `generate` phase now shows elapsed time (`+Xs`): scan complete, sort, format, and write. Pinpoints slow steps on large repos instantly.
-- **UX (Generate — formatOutput visibility):** Node build, edge grouping, and edge sort each emit before/after logs with counts (import sources, inheritance edges, sorted lines). Previously a silent black box.
-- **Fix (Generate — progress interleaving):** File counter switched from `\r` overwrite to `\n`. On Windows/non-TTY, `\r` caused scan lines to overwrite the counter on the same line.
+- **Fix (Generate — hang diagnosis):** `generate` now logs subdirectories up to depth 4 (with indentation), making it easy to spot which subtree a slow scan is stuck in.
+- **Fix (Generate — slow-parse warning):** Files that take >2s to parse now emit a `[Code-Graph] Slow parse (Xms): <path>` warning, identifying regex-heavy files (e.g. large generated `.dart` files).
+- **Perf (Generate — extension resolution cache):** `resolveExtension` now caches results, collapsing repeated resolution of the same import path from N×21 disk checks to 1×21. Major speedup for Flutter/Dart projects where many files import the same relative paths.
 
 See [RELEASE_NOTES.md](RELEASE_NOTES.md) for full history.
 

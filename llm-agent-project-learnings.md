@@ -12,6 +12,7 @@
 - [STYLE] Always include dependency counts (↑N ↓M) in `llm-code-graph.md` to help prioritize architectural understanding.
 - [SKILL] Installed Codex skills require YAML frontmatter delimited by ---; a plain Markdown SKILL.md will be skipped as invalid.
 - [VERSION] When bumping package metadata, also update CONFIG.VERSION because CLI banners and MCP serverInfo use the runtime constant rather than package.json.
+- [VERSION] Version bump requires 4 files: `package.json`, `package-lock.json` (run `npm install --package-lock-only`), `lib/config.js` (CONFIG.VERSION), and `RELEASE_NOTES.md`. Missing lock file causes stale version in published artifact.
 - [ENV] Windows sandbox setup can fail before PowerShell runs; retry required reads with approved escalation instead of assuming command failure.
 - [LOGIC] Shared reflection prompt text must mention llm-agent-rules.md because platform audit expects Cursor reflections rules to retain the rules-file link.
 - [LOGIC] When changing generated skill prompt bodies, add the previous generated section text to upgrade cleanup or reinstall may duplicate prompt blocks.

@@ -1,5 +1,11 @@
 # RELEASE NOTES
 
+### v4.17.0 (2026-05-07)
+- **Fix (Generate — hang diagnosis):** `generate` now logs subdirectories at depth 2–4 with indentation, making it easy to identify which subtree a slow scan is blocked on. Previously depth >1 was silent.
+- **Fix (Generate — slow-parse warning):** Files taking >2s to parse now emit `[Code-Graph] Slow parse (Xms): <path>`. Surfaces regex-heavy files (e.g. large generated `.g.dart`, `.freezed.dart`) that silently block generation.
+- **Perf (Generate — extension resolution cache):** `resolveExtension` now caches resolved paths in `_extCache`. Repeated imports of the same relative path (common in Flutter/Dart) previously triggered 21 `fsp.access` calls per occurrence; now only 1×21 on first resolution, then a map lookup. Eliminates the primary hang cause on Flutter projects.
+- **Maintenance:** Bumped version to 4.17.0 in `config.js` and `package.json`.
+
 ### v4.16.0 (2026-05-07)
 - **UX (Generate — granular timing logs):** `ProjectMapper.generate()` now emits elapsed-time markers (`+Xs`) on every phase: scan complete, sort complete, format complete, and write. Each phase is independently timed so slow steps are immediately identifiable.
 - **UX (Generate — formatOutput visibility):** `formatOutput()` now logs before and after each sub-phase: node list build, edge grouping (reporting import-source count and inheritance edge count), and edge-line sort (reporting total sorted line count). Previously the entire format phase was a silent black box on large repos.
