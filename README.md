@@ -1,14 +1,13 @@
-# CODE-GRAPH (v4.14.0)
+# CODE-GRAPH (v4.15.0)
 
 > Inspired by [Andrej Karpathy skills](https://github.com/forrestchang/andrej-karpathy-skills), [juliusbrussee/caveman](https://github.com/juliusbrussee/caveman), and the community's work building better agent workflows.
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** for LLM agents. Code-Graph gives agents a compact file, symbol, and dependency index, then pairs it with persistent project learnings so agents can avoid repeating mistakes across sessions.
 
-## New in v4.14.0
+## New in v4.15.0
 
-- **Fix (MCP removal):** Removed the `mcp` CLI command and `lib/mcp.js` stdio server. The feature was broken and prompted unintended MCP installation dialogs. The `.mcp.json` project file is also removed.
-- **Fix (Antigravity path consistency):** `install-skills -g antigravity` now correctly targets `~/.gemini/antigravity/skills/` (the official path per vercel-labs/skills). Previously the default fallback wrote to `~/.antigravity/skills/`. Both skills and agent now use the same path.
-- **Cleanup:** Removed legacy `.agent/subagents` entry from the defensive uninstall folder cleanup list — no current install path writes there.
+- **UX (CLI Progress — `generate`):** `code-graph generate` now prints structured progress: root path, per-directory scan lines for top-level dirs, live file counter every 25 files (inline `\r` overwrite), post-scan summary with file + edge counts, phase markers for sorting/formatting and writing, and a final elapsed-time line. No more silent hang on large repos.
+- **UX (CLI Progress — `init`):** `code-graph init` now logs the target directory on start and confirms completion.
 
 See [RELEASE_NOTES.md](RELEASE_NOTES.md) for full history.
 

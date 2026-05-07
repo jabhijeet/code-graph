@@ -1,5 +1,10 @@
 # RELEASE NOTES
 
+### v4.15.0 (2026-05-07)
+- **UX (CLI Progress — `generate`):** `ProjectMapper.generate()` now prints a structured progress log across all phases: start with root path, per-directory scanning for depth 0–1 dirs, live inline file counter every 25 files (`\r` overwrite), post-scan summary (file count + edge count), sorting/formatting phase marker, write-phase marker, and a final timing line (`Done in Xs`). Large projects no longer appear to hang silently.
+- **UX (CLI Progress — `init`):** `ProjectInitializer.init()` now logs the target directory at start and prints `Initialization complete.` when done.
+- **Maintenance:** Bumped version to 4.15.0 in `config.js` and `package.json`.
+
 ### v4.14.0 (2026-05-07)
 - **Fix (MCP removal):** Removed the `mcp` CLI command, `lib/mcp.js` stdio server, and `.mcp.json` project file. The feature was broken and caused unintended MCP installation dialogs in Claude Code and other platforms. References cleaned from `index.js`, `agents.js` uninstall, `TODO.md`, and tests.
 - **Fix (Antigravity path consistency):** `install-skills -g antigravity` now correctly targets `~/.gemini/antigravity/skills/` (the official path per vercel-labs/skills) by adding `antigravity` to `PLATFORM_GLOBAL_PATHS`. Previously the default fallback wrote to `~/.antigravity/skills/`, mismatching both the spec and `install-agent`. Agent install and uninstall already used `~/.gemini/antigravity/skills/`; skills now match. Uninstall also cleans the stale `~/.antigravity/skills/` and `~/.agent/subagents/` legacy paths.
