@@ -20,3 +20,6 @@
 - [BUG] installMCPServer in AgentManager wrote .mcp.json to project root on install-agent, causing Claude Code to prompt MCP installation in every project. Fix: removed all MCP registration methods; agent install now only creates the platform subagent file.
 - [TEST] When adding a default bundled skill, update exhaustive install/uninstall expectations that assert every managed plugin, hook, or artifact.
 - [ENV] If command execution is blocked by Windows sandbox and approvals are disabled, continue with filesystem MCP edits and report verification as blocked.
+
+- [LOGIC] explicit cwd lesson
+- [STYLE] backward compat test

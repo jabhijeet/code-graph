@@ -1,5 +1,13 @@
 # RELEASE NOTES
 
+### v5.0.0 (2026-05-16)
+- **MCP Server (reintroduced):** `lib/mcp-server.js` re-implements the MCP stdio server from scratch. The previous server (removed in v4.14.0) was broken and triggered unintended install dialogs. The new server is a clean, multi-project implementation: all five tools accept `project_path` (absolute path) so one running server can serve multiple projects simultaneously. Tools: `generate_graph`, `get_file_symbols`, `search_graph`, `add_reflection`, `get_reflections`. Launch via `code-graph mcp`.
+- **Fix (Git Hook — idempotent merge):** `installGitHook` now uses `# BEGIN CODE-GRAPH` / `# END CODE-GRAPH` managed-block markers. Running `code-graph init` on a project that already has a custom pre-commit hook no longer clobbers existing content — the Code-Graph block is appended or updated in-place. Reinstalling replaces the block without duplicating it. `installGitHook` is now an exported function to support direct testing.
+- **Fix (ReflectionManager — `cwd` parameter):** `ReflectionManager.add()` now accepts an optional `cwd` argument (defaults to `process.cwd()`). Enables the MCP server to record reflections for any project path, not just the server's working directory.
+- **Fix (SkillManager — corrupt JSON safety):** Inverted `ENOENT` check in `writeJson` caused corrupt or invalid JSON in existing settings files (e.g. `.codex/hooks.json`, `.claude/settings.json`) to be silently overwritten. Fixed: file-not-found initializes an empty object; any other parse error warns `"leaving existing file unchanged"` and returns without writing, preserving the file.
+- **Tests:** New coverage for corrupt-JSON preservation (warns and leaves file unchanged), git hook idempotent merge (custom content preserved, block not duplicated on reinstall), and tightened file-timeout test (exact skip count, non-resolving `processFile` mock).
+- **Maintenance:** Bumped version to 5.0.0 in `config.js` and `package.json`.
+
 ### v4.19.0 (2026-05-07)
 - **Fix (Generate — large file hang):** Files over 100KB now skip symbol extraction. Compiled/generated JS (e.g. Dart→JS `drift_worker.js`, 343KB) caused catastrophic regex backtracking in `CodeParser.extract`, blocking the Node.js event loop entirely and preventing file timeouts and heartbeats from firing. Large files are still indexed with description only.
 - **Fix (Generate — file timeout reduced):** `FILE_TIMEOUT_MS` reduced from 15 000ms to 5 000ms. Timed-out files now emit `console.error` and are tracked in the skip summary.

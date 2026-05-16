@@ -1,0 +1,1239 @@
+
+> code-graph-llm@4.19.0 test
+> node --test test/*.test.js
+
+✔ extractSymbols - JS/TS Docstrings (2.5975ms)
+✔ extractSymbols - Signature Fallback (0.595ms)
+✔ extractSymbols - Flutter/Dart Noise Reduction (0.4827ms)
+✔ extractInheritance - Class relationships (1.1619ms)
+✔ extractEdges - Imports and includes (0.316ms)
+✔ extractEdges - Default imports do not create binding-name dependencies (1.0084ms)
+✔ extractSymbols - Java/Spring Annotations (0.638ms)
+✔ extractSymbols - Handles special regex characters in symbol names (0.26ms)
+✔ findSymbolContext - Safe with regex metacharacters (0.3209ms)
+✔ extractTags - Does not match regex patterns in source code (0.4267ms)
+✔ extractTags - Still captures real TODO comments (0.2331ms)
+[Code-Graph] Building node list (1 files)...
+[Code-Graph] Nodes built ().
+[Code-Graph] Grouping 0 edges...
+[Code-Graph] Edges grouped: 0 import sources, 0 inheritance ().
+[Code-Graph] Sorting edge lines...
+[Code-Graph] Edge lines sorted: 0 total ().
+[Code-Graph] Building node list (0 files)...
+[Code-Graph] Nodes built ().
+[Code-Graph] Grouping 1 edges...
+[Code-Graph] Edges grouped: 0 import sources, 1 inheritance ().
+[Code-Graph] Sorting edge lines...
+[Code-Graph] Edge lines sorted: 1 total ().
+[Code-Graph v4.19.0] Starting map generation...
+[Code-Graph] Root: D:\Projects\code-graph\temp_test_dir
+✔ getIgnores - Default Patterns (11.487ms)
+✔ ProjectMapper - Format Output Header (0.7443ms)
+✔ ProjectMapper - Format Output Includes Inheritance Edges (0.4564ms)
+[Code-Graph] Scanning: . +0.0s
+[Code-Graph] Scanning: subdir +0.0s
+[Code-Graph] Processing: subdir/included.js +0.0s
+[Code-Graph] Scan complete (+0.0s): 1 files, 0 edges found.
+[Code-Graph] Sorting 1 files by importance...
+[Code-Graph] Sort complete (+0.0s).
+[Code-Graph] Formatting nodes...
+[Code-Graph] Building node list (1 files)...
+[Code-Graph] Nodes built (+0.0s).
+[Code-Graph] Grouping 0 edges...
+[Code-Graph] Edges grouped: 0 import sources, 0 inheritance (+0.0s).
+[Code-Graph] Sorting edge lines...
+[Code-Graph] Edge lines sorted: 0 total (+0.0s).
+[Code-Graph] Format complete (+0.0s): 270 chars.
+[Code-Graph] Writing llm-code-graph.md...
+[Code-Graph] Done in 0.0s — llm-code-graph.md updated (1 files, 0 edges).
+✔ Recursive Ignore Simulation (Logic Check) (10.6323ms)
+[Code-Graph] Recorded reflection: Unique test lesson for reflection
+✔ ReflectionManager - Add and Deduplicate (2.0865ms)
+✔ ReflectionManager - Missing lesson shows error (0.1473ms)
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_writejson\test-settings.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_writejson\test-settings.json
+✔ SkillManager - writeJson merges hooks without overwriting (3.4209ms)
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_dedup\test-settings.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_dedup\test-settings.json
+[Code-Graph] Running install-skills (all) for opencode [project]...
+✔ SkillManager - writeJson deduplicates identical hooks (2.5649ms)
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\.opencode\plugins\projectmap.js
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\opencode.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\.opencode\plugins\thinkbeforecoding.js
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\opencode.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\.opencode\plugins\simplicity.js
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\opencode.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\.opencode\plugins\changelimit.js
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\opencode.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\.opencode\plugins\goaldriven.js
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\opencode.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\.opencode\plugins\freshdeps.js
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\opencode.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\.opencode\plugins\contextbudget.js
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\opencode.json
+[Code-Graph] Successfully completed install-skills for opencode [project].
+[Code-Graph] Running install-skills (all) for opencode [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\.opencode\plugins\projectmap.js
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\opencode.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\.opencode\plugins\thinkbeforecoding.js
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\opencode.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\.opencode\plugins\simplicity.js
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\opencode.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\.opencode\plugins\changelimit.js
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\opencode.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\.opencode\plugins\goaldriven.js
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\opencode.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\.opencode\plugins\freshdeps.js
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\opencode.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\.opencode\plugins\contextbudget.js
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_plugins\opencode.json
+[Code-Graph] Successfully completed install-skills for opencode [project].
+[Code-Graph] Running install-skills (all) for opencode [project]...
+✔ SkillManager - opencode install merges plugin registrations (62.7053ms)
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_uninstall\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_uninstall\.opencode\plugins\projectmap.js
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_uninstall\opencode.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_uninstall\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_uninstall\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_uninstall\.opencode\plugins\thinkbeforecoding.js
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_uninstall\opencode.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_uninstall\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_uninstall\.opencode\plugins\simplicity.js
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_uninstall\opencode.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_uninstall\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_uninstall\.opencode\plugins\changelimit.js
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_uninstall\opencode.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_uninstall\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_uninstall\.opencode\plugins\goaldriven.js
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_uninstall\opencode.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_uninstall\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_uninstall\.opencode\plugins\freshdeps.js
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_uninstall\opencode.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_uninstall\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_uninstall\.opencode\plugins\contextbudget.js
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_opencode_uninstall\opencode.json
+[Code-Graph] Successfully completed install-skills for opencode [project].
+[Code-Graph] Running uninstall-skills (simplicity) for opencode [project]...
+[Code-Graph] Successfully completed uninstall-skills for opencode [project].
+[Code-Graph] Running uninstall-skills (all) for opencode [project]...
+[Code-Graph] Successfully completed uninstall-skills for opencode [project].
+[Code-Graph] Running install-skills (all) for codex [project]...
+✔ SkillManager - opencode uninstall removes every managed plugin artifact (51.4002ms)
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_codex_hooks_uninstall\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_codex_hooks_uninstall\.codex\hooks.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_codex_hooks_uninstall\.codex\hooks.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_codex_hooks_uninstall\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_codex_hooks_uninstall\.codex\hooks.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_codex_hooks_uninstall\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_codex_hooks_uninstall\.codex\hooks.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_codex_hooks_uninstall\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_codex_hooks_uninstall\.codex\hooks.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_codex_hooks_uninstall\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_codex_hooks_uninstall\.codex\hooks.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_codex_hooks_uninstall\.codex\hooks.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_codex_hooks_uninstall\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_codex_hooks_uninstall\.codex\hooks.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_codex_hooks_uninstall\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_codex_hooks_uninstall\.codex\hooks.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_codex_hooks_uninstall\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_codex_hooks_uninstall\.codex\hooks.json
+[Code-Graph] Successfully completed install-skills for codex [project].
+[Code-Graph] Running uninstall-skills (simplicity) for codex [project]...
+[Code-Graph] Successfully completed uninstall-skills for codex [project].
+[Code-Graph] Running uninstall-skills (all) for codex [project]...
+[Code-Graph] Successfully completed uninstall-skills for codex [project].
+[Code-Graph] Running install-skills (all) for codex [project]...
+✔ SkillManager - codex uninstall removes every managed hook (53.3695ms)
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_uninstall_preserve\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_uninstall_preserve\.codex\hooks.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_uninstall_preserve\.codex\hooks.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_uninstall_preserve\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_uninstall_preserve\.codex\hooks.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_uninstall_preserve\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_uninstall_preserve\.codex\hooks.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_uninstall_preserve\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_uninstall_preserve\.codex\hooks.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_uninstall_preserve\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_uninstall_preserve\.codex\hooks.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_uninstall_preserve\.codex\hooks.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_uninstall_preserve\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_uninstall_preserve\.codex\hooks.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_uninstall_preserve\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_uninstall_preserve\.codex\hooks.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_uninstall_preserve\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_uninstall_preserve\.codex\hooks.json
+[Code-Graph] Successfully completed install-skills for codex [project].
+[Code-Graph] Running uninstall-skills (all) for codex [project]...
+[Code-Graph] Successfully completed uninstall-skills for codex [project].
+[Code-Graph] Running install-skills (reflections) for codex [project]...
+✔ SkillManager - uninstall preserves user-owned instruction files (50.5063ms)
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_reflections_prompt\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_reflections_prompt\.codex\hooks.json
+[Code-Graph] Successfully completed install-skills for codex [project].
+[Code-Graph] Running install-skills (reflections) for codex [project]...
+✔ SkillManager - reflections prompt forces pre-task memory application (5.1555ms)
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_reflections_upgrade\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_reflections_upgrade\.codex\hooks.json
+[Code-Graph] Successfully completed install-skills for codex [project].
+[Code-Graph] Running install-skills (freshdeps) for codex [project]...
+✔ SkillManager - reinstall replaces old weak reflections prompt (7.2458ms)
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_skill\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_skill\.codex\hooks.json
+[Code-Graph] Successfully completed install-skills for codex [project].
+[Code-Graph] Running uninstall-skills (freshdeps) for codex [project]...
+[Code-Graph] Successfully completed uninstall-skills for codex [project].
+[Code-Graph] Running install-skills (freshdeps) for claude [project]...
+✔ SkillManager - freshdeps skill installs forceful dependency guidance (6.5122ms)
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\claude\CLAUDE.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\claude\.claude\skills\freshdeps\SKILL.md
+[Code-Graph] Successfully completed install-skills for claude [project].
+[Code-Graph] Running install-skills (freshdeps) for cursor [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\cursor\.cursor\rules\freshdeps.mdc
+[Code-Graph] Successfully completed install-skills for cursor [project].
+[Code-Graph] Running install-skills (freshdeps) for gemini [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\gemini\GEMINI.md
+[Code-Graph] Successfully completed install-skills for gemini [project].
+[Code-Graph] Running install-skills (freshdeps) for codex [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\codex\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\codex\.codex\hooks.json
+[Code-Graph] Successfully completed install-skills for codex [project].
+[Code-Graph] Running install-skills (freshdeps) for opencode [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\opencode\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\opencode\.opencode\plugins\freshdeps.js
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\opencode\opencode.json
+[Code-Graph] Successfully completed install-skills for opencode [project].
+[Code-Graph] Running install-skills (freshdeps) for roocode [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\roocode\.clinerules
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\roocode\.roorules
+[Code-Graph] Successfully completed install-skills for roocode [project].
+[Code-Graph] Running install-skills (freshdeps) for kiro [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\kiro\.kiro\steering\freshdeps.md
+[Code-Graph] Successfully completed install-skills for kiro [project].
+[Code-Graph] Running install-skills (freshdeps) for antigravity [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\antigravity\.agent\skills\freshdeps\SKILL.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\antigravity\.agent\rules\freshdeps.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\antigravity\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\antigravity\GEMINI.md
+[Code-Graph] Successfully completed install-skills for antigravity [project].
+[Code-Graph] Running install-skills (freshdeps) for copilot [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\copilot\AGENTS.md
+[Code-Graph] Successfully completed install-skills for copilot [project].
+[Code-Graph] Running install-skills (freshdeps) for vscode [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\vscode\.github\copilot-instructions.md
+[Code-Graph] Successfully completed install-skills for vscode [project].
+[Code-Graph] Running install-skills (freshdeps) for intellij [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\intellij\AGENTS.md
+[Code-Graph] Successfully completed install-skills for intellij [project].
+[Code-Graph] Running install-skills (freshdeps) for aider [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\aider\AGENTS.md
+[Code-Graph] Successfully completed install-skills for aider [project].
+[Code-Graph] Running install-skills (freshdeps) for trae [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\trae\AGENTS.md
+[Code-Graph] Successfully completed install-skills for trae [project].
+[Code-Graph] Running install-skills (freshdeps) for hermes [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\hermes\AGENTS.md
+[Code-Graph] Successfully completed install-skills for hermes [project].
+[Code-Graph] Running install-skills (freshdeps) for generic [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\generic\AGENTS.md
+[Code-Graph] Successfully completed install-skills for generic [project].
+[Code-Graph] Running install-skills (freshdeps) for aider-desk [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\aider-desk\AGENTS.md
+[Code-Graph] Successfully completed install-skills for aider-desk [project].
+[Code-Graph] Running install-skills (freshdeps) for amp [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\amp\AGENTS.md
+[Code-Graph] Successfully completed install-skills for amp [project].
+[Code-Graph] Running install-skills (freshdeps) for augment [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\augment\AGENTS.md
+[Code-Graph] Successfully completed install-skills for augment [project].
+[Code-Graph] Running install-skills (freshdeps) for bob [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\bob\AGENTS.md
+[Code-Graph] Successfully completed install-skills for bob [project].
+[Code-Graph] Running install-skills (freshdeps) for openclaw [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\openclaw\AGENTS.md
+[Code-Graph] Successfully completed install-skills for openclaw [project].
+[Code-Graph] Running install-skills (freshdeps) for cline [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\cline\AGENTS.md
+[Code-Graph] Successfully completed install-skills for cline [project].
+[Code-Graph] Running install-skills (freshdeps) for warp [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\warp\AGENTS.md
+[Code-Graph] Successfully completed install-skills for warp [project].
+[Code-Graph] Running install-skills (freshdeps) for codearts-agent [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\codearts-agent\AGENTS.md
+[Code-Graph] Successfully completed install-skills for codearts-agent [project].
+[Code-Graph] Running install-skills (freshdeps) for codebuddy [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\codebuddy\AGENTS.md
+[Code-Graph] Successfully completed install-skills for codebuddy [project].
+[Code-Graph] Running install-skills (freshdeps) for codemaker [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\codemaker\AGENTS.md
+[Code-Graph] Successfully completed install-skills for codemaker [project].
+[Code-Graph] Running install-skills (freshdeps) for codestudio [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\codestudio\AGENTS.md
+[Code-Graph] Successfully completed install-skills for codestudio [project].
+[Code-Graph] Running install-skills (freshdeps) for command-code [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\command-code\AGENTS.md
+[Code-Graph] Successfully completed install-skills for command-code [project].
+[Code-Graph] Running install-skills (freshdeps) for continue [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\continue\AGENTS.md
+[Code-Graph] Successfully completed install-skills for continue [project].
+[Code-Graph] Running install-skills (freshdeps) for cortex [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\cortex\AGENTS.md
+[Code-Graph] Successfully completed install-skills for cortex [project].
+[Code-Graph] Running install-skills (freshdeps) for crush [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\crush\AGENTS.md
+[Code-Graph] Successfully completed install-skills for crush [project].
+[Code-Graph] Running install-skills (freshdeps) for deepagents [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\deepagents\AGENTS.md
+[Code-Graph] Successfully completed install-skills for deepagents [project].
+[Code-Graph] Running install-skills (freshdeps) for devin [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\devin\AGENTS.md
+[Code-Graph] Successfully completed install-skills for devin [project].
+[Code-Graph] Running install-skills (freshdeps) for droid [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\droid\AGENTS.md
+[Code-Graph] Successfully completed install-skills for droid [project].
+[Code-Graph] Running install-skills (freshdeps) for firebender [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\firebender\AGENTS.md
+[Code-Graph] Successfully completed install-skills for firebender [project].
+[Code-Graph] Running install-skills (freshdeps) for forgecode [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\forgecode\AGENTS.md
+[Code-Graph] Successfully completed install-skills for forgecode [project].
+[Code-Graph] Running install-skills (freshdeps) for gemini-cli [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\gemini-cli\AGENTS.md
+[Code-Graph] Successfully completed install-skills for gemini-cli [project].
+[Code-Graph] Running install-skills (freshdeps) for github-copilot [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\github-copilot\AGENTS.md
+[Code-Graph] Successfully completed install-skills for github-copilot [project].
+[Code-Graph] Running install-skills (freshdeps) for goose [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\goose\AGENTS.md
+[Code-Graph] Successfully completed install-skills for goose [project].
+[Code-Graph] Running install-skills (freshdeps) for junie [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\junie\AGENTS.md
+[Code-Graph] Successfully completed install-skills for junie [project].
+[Code-Graph] Running install-skills (freshdeps) for iflow-cli [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\iflow-cli\AGENTS.md
+[Code-Graph] Successfully completed install-skills for iflow-cli [project].
+[Code-Graph] Running install-skills (freshdeps) for kilo [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\kilo\AGENTS.md
+[Code-Graph] Successfully completed install-skills for kilo [project].
+[Code-Graph] Running install-skills (freshdeps) for kimi-cli [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\kimi-cli\AGENTS.md
+[Code-Graph] Successfully completed install-skills for kimi-cli [project].
+[Code-Graph] Running install-skills (freshdeps) for kiro-cli [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\kiro-cli\AGENTS.md
+[Code-Graph] Successfully completed install-skills for kiro-cli [project].
+[Code-Graph] Running install-skills (freshdeps) for kode [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\kode\AGENTS.md
+[Code-Graph] Successfully completed install-skills for kode [project].
+[Code-Graph] Running install-skills (freshdeps) for mcpjam [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\mcpjam\AGENTS.md
+[Code-Graph] Successfully completed install-skills for mcpjam [project].
+[Code-Graph] Running install-skills (freshdeps) for mistral-vibe [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\mistral-vibe\AGENTS.md
+[Code-Graph] Successfully completed install-skills for mistral-vibe [project].
+[Code-Graph] Running install-skills (freshdeps) for mux [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\mux\AGENTS.md
+[Code-Graph] Successfully completed install-skills for mux [project].
+[Code-Graph] Running install-skills (freshdeps) for openhands [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\openhands\AGENTS.md
+[Code-Graph] Successfully completed install-skills for openhands [project].
+[Code-Graph] Running install-skills (freshdeps) for pi [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\pi\AGENTS.md
+[Code-Graph] Successfully completed install-skills for pi [project].
+[Code-Graph] Running install-skills (freshdeps) for qoder [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\qoder\AGENTS.md
+[Code-Graph] Successfully completed install-skills for qoder [project].
+[Code-Graph] Running install-skills (freshdeps) for qwen-code [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\qwen-code\AGENTS.md
+[Code-Graph] Successfully completed install-skills for qwen-code [project].
+[Code-Graph] Running install-skills (freshdeps) for replit [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\replit\AGENTS.md
+[Code-Graph] Successfully completed install-skills for replit [project].
+[Code-Graph] Running install-skills (freshdeps) for rovodev [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\rovodev\AGENTS.md
+[Code-Graph] Successfully completed install-skills for rovodev [project].
+[Code-Graph] Running install-skills (freshdeps) for roo [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\roo\AGENTS.md
+[Code-Graph] Successfully completed install-skills for roo [project].
+[Code-Graph] Running install-skills (freshdeps) for tabnine-cli [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\tabnine-cli\AGENTS.md
+[Code-Graph] Successfully completed install-skills for tabnine-cli [project].
+[Code-Graph] Running install-skills (freshdeps) for trae-cn [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\trae-cn\AGENTS.md
+[Code-Graph] Successfully completed install-skills for trae-cn [project].
+[Code-Graph] Running install-skills (freshdeps) for universal [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\universal\AGENTS.md
+[Code-Graph] Successfully completed install-skills for universal [project].
+[Code-Graph] Running install-skills (freshdeps) for windsurf [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\windsurf\AGENTS.md
+[Code-Graph] Successfully completed install-skills for windsurf [project].
+[Code-Graph] Running install-skills (freshdeps) for zencoder [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\zencoder\AGENTS.md
+[Code-Graph] Successfully completed install-skills for zencoder [project].
+[Code-Graph] Running install-skills (freshdeps) for neovate [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\neovate\AGENTS.md
+[Code-Graph] Successfully completed install-skills for neovate [project].
+[Code-Graph] Running install-skills (freshdeps) for pochi [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\pochi\AGENTS.md
+[Code-Graph] Successfully completed install-skills for pochi [project].
+[Code-Graph] Running install-skills (freshdeps) for adal [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_freshdeps_platforms\adal\AGENTS.md
+[Code-Graph] Successfully completed install-skills for adal [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for codex [project]...
+✔ SkillManager - freshdeps installs for every supported platform (142.4861ms)
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_skill\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_skill\.codex\hooks.json
+[Code-Graph] Successfully completed install-skills for codex [project].
+[Code-Graph] Running uninstall-skills (thinkbeforecoding) for codex [project]...
+[Code-Graph] Successfully completed uninstall-skills for codex [project].
+[Code-Graph] Running install-skills (goaldriven) for codex [project]...
+✔ SkillManager - thinkbeforecoding skill installs guidance (7.1012ms)
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_skill\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_skill\.codex\hooks.json
+[Code-Graph] Successfully completed install-skills for codex [project].
+[Code-Graph] Running uninstall-skills (goaldriven) for codex [project]...
+[Code-Graph] Successfully completed uninstall-skills for codex [project].
+[Code-Graph] Running install-skills (surgicalchanges) for codex [project]...
+✔ SkillManager - goaldriven skill installs verification guidance (7.4488ms)
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_surgicalchanges_uninstall\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_surgicalchanges_uninstall\.codex\hooks.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_surgicalchanges_uninstall\.codex\hooks.json
+[Code-Graph] Successfully completed install-skills for codex [project].
+[Code-Graph] Running uninstall-skills (surgicalchanges) for codex [project]...
+[Code-Graph] Successfully completed uninstall-skills for codex [project].
+[Code-Graph] Running install-skills (surgicalchanges) for codex [project]...
+✔ SkillManager - surgicalchanges alias uninstalls changelimit artifacts (8.961ms)
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_surgicalchanges_alias\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_surgicalchanges_alias\.codex\hooks.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_surgicalchanges_alias\.codex\hooks.json
+[Code-Graph] Successfully completed install-skills for codex [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for claude [project]...
+✔ SkillManager - surgicalchanges alias installs same changelimit skill (4.3109ms)
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\claude\CLAUDE.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\claude\.claude\skills\thinkbeforecoding\SKILL.md
+[Code-Graph] Successfully completed install-skills for claude [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for cursor [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\cursor\.cursor\rules\thinkbeforecoding.mdc
+[Code-Graph] Successfully completed install-skills for cursor [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for gemini [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\gemini\GEMINI.md
+[Code-Graph] Successfully completed install-skills for gemini [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for codex [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\codex\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\codex\.codex\hooks.json
+[Code-Graph] Successfully completed install-skills for codex [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for opencode [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\opencode\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\opencode\.opencode\plugins\thinkbeforecoding.js
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\opencode\opencode.json
+[Code-Graph] Successfully completed install-skills for opencode [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for roocode [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\roocode\.clinerules
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\roocode\.roorules
+[Code-Graph] Successfully completed install-skills for roocode [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for kiro [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\kiro\.kiro\steering\thinkbeforecoding.md
+[Code-Graph] Successfully completed install-skills for kiro [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for antigravity [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\antigravity\.agent\skills\thinkbeforecoding\SKILL.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\antigravity\.agent\rules\thinkbeforecoding.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\antigravity\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\antigravity\GEMINI.md
+[Code-Graph] Successfully completed install-skills for antigravity [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for copilot [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\copilot\AGENTS.md
+[Code-Graph] Successfully completed install-skills for copilot [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for vscode [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\vscode\.github\copilot-instructions.md
+[Code-Graph] Successfully completed install-skills for vscode [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for intellij [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\intellij\AGENTS.md
+[Code-Graph] Successfully completed install-skills for intellij [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for aider [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\aider\AGENTS.md
+[Code-Graph] Successfully completed install-skills for aider [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for trae [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\trae\AGENTS.md
+[Code-Graph] Successfully completed install-skills for trae [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for hermes [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\hermes\AGENTS.md
+[Code-Graph] Successfully completed install-skills for hermes [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for generic [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\generic\AGENTS.md
+[Code-Graph] Successfully completed install-skills for generic [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for aider-desk [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\aider-desk\AGENTS.md
+[Code-Graph] Successfully completed install-skills for aider-desk [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for amp [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\amp\AGENTS.md
+[Code-Graph] Successfully completed install-skills for amp [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for augment [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\augment\AGENTS.md
+[Code-Graph] Successfully completed install-skills for augment [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for bob [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\bob\AGENTS.md
+[Code-Graph] Successfully completed install-skills for bob [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for openclaw [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\openclaw\AGENTS.md
+[Code-Graph] Successfully completed install-skills for openclaw [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for cline [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\cline\AGENTS.md
+[Code-Graph] Successfully completed install-skills for cline [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for warp [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\warp\AGENTS.md
+[Code-Graph] Successfully completed install-skills for warp [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for codearts-agent [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\codearts-agent\AGENTS.md
+[Code-Graph] Successfully completed install-skills for codearts-agent [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for codebuddy [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\codebuddy\AGENTS.md
+[Code-Graph] Successfully completed install-skills for codebuddy [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for codemaker [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\codemaker\AGENTS.md
+[Code-Graph] Successfully completed install-skills for codemaker [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for codestudio [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\codestudio\AGENTS.md
+[Code-Graph] Successfully completed install-skills for codestudio [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for command-code [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\command-code\AGENTS.md
+[Code-Graph] Successfully completed install-skills for command-code [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for continue [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\continue\AGENTS.md
+[Code-Graph] Successfully completed install-skills for continue [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for cortex [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\cortex\AGENTS.md
+[Code-Graph] Successfully completed install-skills for cortex [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for crush [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\crush\AGENTS.md
+[Code-Graph] Successfully completed install-skills for crush [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for deepagents [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\deepagents\AGENTS.md
+[Code-Graph] Successfully completed install-skills for deepagents [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for devin [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\devin\AGENTS.md
+[Code-Graph] Successfully completed install-skills for devin [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for droid [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\droid\AGENTS.md
+[Code-Graph] Successfully completed install-skills for droid [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for firebender [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\firebender\AGENTS.md
+[Code-Graph] Successfully completed install-skills for firebender [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for forgecode [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\forgecode\AGENTS.md
+[Code-Graph] Successfully completed install-skills for forgecode [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for gemini-cli [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\gemini-cli\AGENTS.md
+[Code-Graph] Successfully completed install-skills for gemini-cli [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for github-copilot [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\github-copilot\AGENTS.md
+[Code-Graph] Successfully completed install-skills for github-copilot [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for goose [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\goose\AGENTS.md
+[Code-Graph] Successfully completed install-skills for goose [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for junie [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\junie\AGENTS.md
+[Code-Graph] Successfully completed install-skills for junie [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for iflow-cli [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\iflow-cli\AGENTS.md
+[Code-Graph] Successfully completed install-skills for iflow-cli [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for kilo [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\kilo\AGENTS.md
+[Code-Graph] Successfully completed install-skills for kilo [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for kimi-cli [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\kimi-cli\AGENTS.md
+[Code-Graph] Successfully completed install-skills for kimi-cli [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for kiro-cli [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\kiro-cli\AGENTS.md
+[Code-Graph] Successfully completed install-skills for kiro-cli [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for kode [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\kode\AGENTS.md
+[Code-Graph] Successfully completed install-skills for kode [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for mcpjam [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\mcpjam\AGENTS.md
+[Code-Graph] Successfully completed install-skills for mcpjam [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for mistral-vibe [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\mistral-vibe\AGENTS.md
+[Code-Graph] Successfully completed install-skills for mistral-vibe [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for mux [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\mux\AGENTS.md
+[Code-Graph] Successfully completed install-skills for mux [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for openhands [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\openhands\AGENTS.md
+[Code-Graph] Successfully completed install-skills for openhands [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for pi [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\pi\AGENTS.md
+[Code-Graph] Successfully completed install-skills for pi [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for qoder [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\qoder\AGENTS.md
+[Code-Graph] Successfully completed install-skills for qoder [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for qwen-code [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\qwen-code\AGENTS.md
+[Code-Graph] Successfully completed install-skills for qwen-code [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for replit [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\replit\AGENTS.md
+[Code-Graph] Successfully completed install-skills for replit [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for rovodev [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\rovodev\AGENTS.md
+[Code-Graph] Successfully completed install-skills for rovodev [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for roo [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\roo\AGENTS.md
+[Code-Graph] Successfully completed install-skills for roo [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for tabnine-cli [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\tabnine-cli\AGENTS.md
+[Code-Graph] Successfully completed install-skills for tabnine-cli [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for trae-cn [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\trae-cn\AGENTS.md
+[Code-Graph] Successfully completed install-skills for trae-cn [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for universal [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\universal\AGENTS.md
+[Code-Graph] Successfully completed install-skills for universal [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for windsurf [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\windsurf\AGENTS.md
+[Code-Graph] Successfully completed install-skills for windsurf [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for zencoder [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\zencoder\AGENTS.md
+[Code-Graph] Successfully completed install-skills for zencoder [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for neovate [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\neovate\AGENTS.md
+[Code-Graph] Successfully completed install-skills for neovate [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for pochi [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\pochi\AGENTS.md
+[Code-Graph] Successfully completed install-skills for pochi [project].
+[Code-Graph] Running install-skills (thinkbeforecoding) for adal [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_thinkbeforecoding_platforms\adal\AGENTS.md
+[Code-Graph] Successfully completed install-skills for adal [project].
+[Code-Graph] Running install-skills (goaldriven) for claude [project]...
+✔ SkillManager - thinkbeforecoding installs for every supported platform (129.0897ms)
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\claude\CLAUDE.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\claude\.claude\skills\goaldriven\SKILL.md
+[Code-Graph] Successfully completed install-skills for claude [project].
+[Code-Graph] Running install-skills (goaldriven) for cursor [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\cursor\.cursor\rules\goaldriven.mdc
+[Code-Graph] Successfully completed install-skills for cursor [project].
+[Code-Graph] Running install-skills (goaldriven) for gemini [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\gemini\GEMINI.md
+[Code-Graph] Successfully completed install-skills for gemini [project].
+[Code-Graph] Running install-skills (goaldriven) for codex [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\codex\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\codex\.codex\hooks.json
+[Code-Graph] Successfully completed install-skills for codex [project].
+[Code-Graph] Running install-skills (goaldriven) for opencode [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\opencode\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\opencode\.opencode\plugins\goaldriven.js
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\opencode\opencode.json
+[Code-Graph] Successfully completed install-skills for opencode [project].
+[Code-Graph] Running install-skills (goaldriven) for roocode [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\roocode\.clinerules
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\roocode\.roorules
+[Code-Graph] Successfully completed install-skills for roocode [project].
+[Code-Graph] Running install-skills (goaldriven) for kiro [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\kiro\.kiro\steering\goaldriven.md
+[Code-Graph] Successfully completed install-skills for kiro [project].
+[Code-Graph] Running install-skills (goaldriven) for antigravity [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\antigravity\.agent\skills\goaldriven\SKILL.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\antigravity\.agent\rules\goaldriven.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\antigravity\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\antigravity\GEMINI.md
+[Code-Graph] Successfully completed install-skills for antigravity [project].
+[Code-Graph] Running install-skills (goaldriven) for copilot [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\copilot\AGENTS.md
+[Code-Graph] Successfully completed install-skills for copilot [project].
+[Code-Graph] Running install-skills (goaldriven) for vscode [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\vscode\.github\copilot-instructions.md
+[Code-Graph] Successfully completed install-skills for vscode [project].
+[Code-Graph] Running install-skills (goaldriven) for intellij [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\intellij\AGENTS.md
+[Code-Graph] Successfully completed install-skills for intellij [project].
+[Code-Graph] Running install-skills (goaldriven) for aider [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\aider\AGENTS.md
+[Code-Graph] Successfully completed install-skills for aider [project].
+[Code-Graph] Running install-skills (goaldriven) for trae [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\trae\AGENTS.md
+[Code-Graph] Successfully completed install-skills for trae [project].
+[Code-Graph] Running install-skills (goaldriven) for hermes [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\hermes\AGENTS.md
+[Code-Graph] Successfully completed install-skills for hermes [project].
+[Code-Graph] Running install-skills (goaldriven) for generic [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\generic\AGENTS.md
+[Code-Graph] Successfully completed install-skills for generic [project].
+[Code-Graph] Running install-skills (goaldriven) for aider-desk [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\aider-desk\AGENTS.md
+[Code-Graph] Successfully completed install-skills for aider-desk [project].
+[Code-Graph] Running install-skills (goaldriven) for amp [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\amp\AGENTS.md
+[Code-Graph] Successfully completed install-skills for amp [project].
+[Code-Graph] Running install-skills (goaldriven) for augment [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\augment\AGENTS.md
+[Code-Graph] Successfully completed install-skills for augment [project].
+[Code-Graph] Running install-skills (goaldriven) for bob [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\bob\AGENTS.md
+[Code-Graph] Successfully completed install-skills for bob [project].
+[Code-Graph] Running install-skills (goaldriven) for openclaw [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\openclaw\AGENTS.md
+[Code-Graph] Successfully completed install-skills for openclaw [project].
+[Code-Graph] Running install-skills (goaldriven) for cline [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\cline\AGENTS.md
+[Code-Graph] Successfully completed install-skills for cline [project].
+[Code-Graph] Running install-skills (goaldriven) for warp [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\warp\AGENTS.md
+[Code-Graph] Successfully completed install-skills for warp [project].
+[Code-Graph] Running install-skills (goaldriven) for codearts-agent [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\codearts-agent\AGENTS.md
+[Code-Graph] Successfully completed install-skills for codearts-agent [project].
+[Code-Graph] Running install-skills (goaldriven) for codebuddy [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\codebuddy\AGENTS.md
+[Code-Graph] Successfully completed install-skills for codebuddy [project].
+[Code-Graph] Running install-skills (goaldriven) for codemaker [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\codemaker\AGENTS.md
+[Code-Graph] Successfully completed install-skills for codemaker [project].
+[Code-Graph] Running install-skills (goaldriven) for codestudio [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\codestudio\AGENTS.md
+[Code-Graph] Successfully completed install-skills for codestudio [project].
+[Code-Graph] Running install-skills (goaldriven) for command-code [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\command-code\AGENTS.md
+[Code-Graph] Successfully completed install-skills for command-code [project].
+[Code-Graph] Running install-skills (goaldriven) for continue [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\continue\AGENTS.md
+[Code-Graph] Successfully completed install-skills for continue [project].
+[Code-Graph] Running install-skills (goaldriven) for cortex [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\cortex\AGENTS.md
+[Code-Graph] Successfully completed install-skills for cortex [project].
+[Code-Graph] Running install-skills (goaldriven) for crush [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\crush\AGENTS.md
+[Code-Graph] Successfully completed install-skills for crush [project].
+[Code-Graph] Running install-skills (goaldriven) for deepagents [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\deepagents\AGENTS.md
+[Code-Graph] Successfully completed install-skills for deepagents [project].
+[Code-Graph] Running install-skills (goaldriven) for devin [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\devin\AGENTS.md
+[Code-Graph] Successfully completed install-skills for devin [project].
+[Code-Graph] Running install-skills (goaldriven) for droid [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\droid\AGENTS.md
+[Code-Graph] Successfully completed install-skills for droid [project].
+[Code-Graph] Running install-skills (goaldriven) for firebender [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\firebender\AGENTS.md
+[Code-Graph] Successfully completed install-skills for firebender [project].
+[Code-Graph] Running install-skills (goaldriven) for forgecode [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\forgecode\AGENTS.md
+[Code-Graph] Successfully completed install-skills for forgecode [project].
+[Code-Graph] Running install-skills (goaldriven) for gemini-cli [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\gemini-cli\AGENTS.md
+[Code-Graph] Successfully completed install-skills for gemini-cli [project].
+[Code-Graph] Running install-skills (goaldriven) for github-copilot [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\github-copilot\AGENTS.md
+[Code-Graph] Successfully completed install-skills for github-copilot [project].
+[Code-Graph] Running install-skills (goaldriven) for goose [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\goose\AGENTS.md
+[Code-Graph] Successfully completed install-skills for goose [project].
+[Code-Graph] Running install-skills (goaldriven) for junie [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\junie\AGENTS.md
+[Code-Graph] Successfully completed install-skills for junie [project].
+[Code-Graph] Running install-skills (goaldriven) for iflow-cli [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\iflow-cli\AGENTS.md
+[Code-Graph] Successfully completed install-skills for iflow-cli [project].
+[Code-Graph] Running install-skills (goaldriven) for kilo [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\kilo\AGENTS.md
+[Code-Graph] Successfully completed install-skills for kilo [project].
+[Code-Graph] Running install-skills (goaldriven) for kimi-cli [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\kimi-cli\AGENTS.md
+[Code-Graph] Successfully completed install-skills for kimi-cli [project].
+[Code-Graph] Running install-skills (goaldriven) for kiro-cli [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\kiro-cli\AGENTS.md
+[Code-Graph] Successfully completed install-skills for kiro-cli [project].
+[Code-Graph] Running install-skills (goaldriven) for kode [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\kode\AGENTS.md
+[Code-Graph] Successfully completed install-skills for kode [project].
+[Code-Graph] Running install-skills (goaldriven) for mcpjam [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\mcpjam\AGENTS.md
+[Code-Graph] Successfully completed install-skills for mcpjam [project].
+[Code-Graph] Running install-skills (goaldriven) for mistral-vibe [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\mistral-vibe\AGENTS.md
+[Code-Graph] Successfully completed install-skills for mistral-vibe [project].
+[Code-Graph] Running install-skills (goaldriven) for mux [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\mux\AGENTS.md
+[Code-Graph] Successfully completed install-skills for mux [project].
+[Code-Graph] Running install-skills (goaldriven) for openhands [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\openhands\AGENTS.md
+[Code-Graph] Successfully completed install-skills for openhands [project].
+[Code-Graph] Running install-skills (goaldriven) for pi [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\pi\AGENTS.md
+[Code-Graph] Successfully completed install-skills for pi [project].
+[Code-Graph] Running install-skills (goaldriven) for qoder [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\qoder\AGENTS.md
+[Code-Graph] Successfully completed install-skills for qoder [project].
+[Code-Graph] Running install-skills (goaldriven) for qwen-code [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\qwen-code\AGENTS.md
+[Code-Graph] Successfully completed install-skills for qwen-code [project].
+[Code-Graph] Running install-skills (goaldriven) for replit [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\replit\AGENTS.md
+[Code-Graph] Successfully completed install-skills for replit [project].
+[Code-Graph] Running install-skills (goaldriven) for rovodev [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\rovodev\AGENTS.md
+[Code-Graph] Successfully completed install-skills for rovodev [project].
+[Code-Graph] Running install-skills (goaldriven) for roo [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\roo\AGENTS.md
+[Code-Graph] Successfully completed install-skills for roo [project].
+[Code-Graph] Running install-skills (goaldriven) for tabnine-cli [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\tabnine-cli\AGENTS.md
+[Code-Graph] Successfully completed install-skills for tabnine-cli [project].
+[Code-Graph] Running install-skills (goaldriven) for trae-cn [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\trae-cn\AGENTS.md
+[Code-Graph] Successfully completed install-skills for trae-cn [project].
+[Code-Graph] Running install-skills (goaldriven) for universal [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\universal\AGENTS.md
+[Code-Graph] Successfully completed install-skills for universal [project].
+[Code-Graph] Running install-skills (goaldriven) for windsurf [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\windsurf\AGENTS.md
+[Code-Graph] Successfully completed install-skills for windsurf [project].
+[Code-Graph] Running install-skills (goaldriven) for zencoder [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\zencoder\AGENTS.md
+[Code-Graph] Successfully completed install-skills for zencoder [project].
+[Code-Graph] Running install-skills (goaldriven) for neovate [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\neovate\AGENTS.md
+[Code-Graph] Successfully completed install-skills for neovate [project].
+[Code-Graph] Running install-skills (goaldriven) for pochi [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\pochi\AGENTS.md
+[Code-Graph] Successfully completed install-skills for pochi [project].
+[Code-Graph] Running install-skills (goaldriven) for adal [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_goaldriven_platforms\adal\AGENTS.md
+[Code-Graph] Successfully completed install-skills for adal [project].
+[Code-Graph] Running install-skills (contextbudget) for claude [project]...
+✔ SkillManager - goaldriven installs for every supported platform (125.3505ms)
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\claude\CLAUDE.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\claude\.claude\skills\contextbudget\SKILL.md
+[Code-Graph] Successfully completed install-skills for claude [project].
+[Code-Graph] Running install-skills (contextbudget) for cursor [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\cursor\.cursor\rules\contextbudget.mdc
+[Code-Graph] Successfully completed install-skills for cursor [project].
+[Code-Graph] Running install-skills (contextbudget) for gemini [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\gemini\GEMINI.md
+[Code-Graph] Successfully completed install-skills for gemini [project].
+[Code-Graph] Running install-skills (contextbudget) for codex [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\codex\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\codex\.codex\hooks.json
+[Code-Graph] Successfully completed install-skills for codex [project].
+[Code-Graph] Running install-skills (contextbudget) for opencode [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\opencode\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\opencode\.opencode\plugins\contextbudget.js
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\opencode\opencode.json
+[Code-Graph] Successfully completed install-skills for opencode [project].
+[Code-Graph] Running install-skills (contextbudget) for roocode [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\roocode\.clinerules
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\roocode\.roorules
+[Code-Graph] Successfully completed install-skills for roocode [project].
+[Code-Graph] Running install-skills (contextbudget) for kiro [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\kiro\.kiro\steering\contextbudget.md
+[Code-Graph] Successfully completed install-skills for kiro [project].
+[Code-Graph] Running install-skills (contextbudget) for antigravity [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\antigravity\.agent\skills\contextbudget\SKILL.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\antigravity\.agent\rules\contextbudget.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\antigravity\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\antigravity\GEMINI.md
+[Code-Graph] Successfully completed install-skills for antigravity [project].
+[Code-Graph] Running install-skills (contextbudget) for copilot [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\copilot\AGENTS.md
+[Code-Graph] Successfully completed install-skills for copilot [project].
+[Code-Graph] Running install-skills (contextbudget) for vscode [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\vscode\.github\copilot-instructions.md
+[Code-Graph] Successfully completed install-skills for vscode [project].
+[Code-Graph] Running install-skills (contextbudget) for intellij [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\intellij\AGENTS.md
+[Code-Graph] Successfully completed install-skills for intellij [project].
+[Code-Graph] Running install-skills (contextbudget) for aider [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\aider\AGENTS.md
+[Code-Graph] Successfully completed install-skills for aider [project].
+[Code-Graph] Running install-skills (contextbudget) for trae [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\trae\AGENTS.md
+[Code-Graph] Successfully completed install-skills for trae [project].
+[Code-Graph] Running install-skills (contextbudget) for hermes [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\hermes\AGENTS.md
+[Code-Graph] Successfully completed install-skills for hermes [project].
+[Code-Graph] Running install-skills (contextbudget) for generic [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\generic\AGENTS.md
+[Code-Graph] Successfully completed install-skills for generic [project].
+[Code-Graph] Running install-skills (contextbudget) for aider-desk [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\aider-desk\AGENTS.md
+[Code-Graph] Successfully completed install-skills for aider-desk [project].
+[Code-Graph] Running install-skills (contextbudget) for amp [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\amp\AGENTS.md
+[Code-Graph] Successfully completed install-skills for amp [project].
+[Code-Graph] Running install-skills (contextbudget) for augment [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\augment\AGENTS.md
+[Code-Graph] Successfully completed install-skills for augment [project].
+[Code-Graph] Running install-skills (contextbudget) for bob [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\bob\AGENTS.md
+[Code-Graph] Successfully completed install-skills for bob [project].
+[Code-Graph] Running install-skills (contextbudget) for openclaw [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\openclaw\AGENTS.md
+[Code-Graph] Successfully completed install-skills for openclaw [project].
+[Code-Graph] Running install-skills (contextbudget) for cline [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\cline\AGENTS.md
+[Code-Graph] Successfully completed install-skills for cline [project].
+[Code-Graph] Running install-skills (contextbudget) for warp [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\warp\AGENTS.md
+[Code-Graph] Successfully completed install-skills for warp [project].
+[Code-Graph] Running install-skills (contextbudget) for codearts-agent [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\codearts-agent\AGENTS.md
+[Code-Graph] Successfully completed install-skills for codearts-agent [project].
+[Code-Graph] Running install-skills (contextbudget) for codebuddy [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\codebuddy\AGENTS.md
+[Code-Graph] Successfully completed install-skills for codebuddy [project].
+[Code-Graph] Running install-skills (contextbudget) for codemaker [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\codemaker\AGENTS.md
+[Code-Graph] Successfully completed install-skills for codemaker [project].
+[Code-Graph] Running install-skills (contextbudget) for codestudio [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\codestudio\AGENTS.md
+[Code-Graph] Successfully completed install-skills for codestudio [project].
+[Code-Graph] Running install-skills (contextbudget) for command-code [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\command-code\AGENTS.md
+[Code-Graph] Successfully completed install-skills for command-code [project].
+[Code-Graph] Running install-skills (contextbudget) for continue [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\continue\AGENTS.md
+[Code-Graph] Successfully completed install-skills for continue [project].
+[Code-Graph] Running install-skills (contextbudget) for cortex [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\cortex\AGENTS.md
+[Code-Graph] Successfully completed install-skills for cortex [project].
+[Code-Graph] Running install-skills (contextbudget) for crush [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\crush\AGENTS.md
+[Code-Graph] Successfully completed install-skills for crush [project].
+[Code-Graph] Running install-skills (contextbudget) for deepagents [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\deepagents\AGENTS.md
+[Code-Graph] Successfully completed install-skills for deepagents [project].
+[Code-Graph] Running install-skills (contextbudget) for devin [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\devin\AGENTS.md
+[Code-Graph] Successfully completed install-skills for devin [project].
+[Code-Graph] Running install-skills (contextbudget) for droid [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\droid\AGENTS.md
+[Code-Graph] Successfully completed install-skills for droid [project].
+[Code-Graph] Running install-skills (contextbudget) for firebender [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\firebender\AGENTS.md
+[Code-Graph] Successfully completed install-skills for firebender [project].
+[Code-Graph] Running install-skills (contextbudget) for forgecode [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\forgecode\AGENTS.md
+[Code-Graph] Successfully completed install-skills for forgecode [project].
+[Code-Graph] Running install-skills (contextbudget) for gemini-cli [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\gemini-cli\AGENTS.md
+[Code-Graph] Successfully completed install-skills for gemini-cli [project].
+[Code-Graph] Running install-skills (contextbudget) for github-copilot [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\github-copilot\AGENTS.md
+[Code-Graph] Successfully completed install-skills for github-copilot [project].
+[Code-Graph] Running install-skills (contextbudget) for goose [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\goose\AGENTS.md
+[Code-Graph] Successfully completed install-skills for goose [project].
+[Code-Graph] Running install-skills (contextbudget) for junie [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\junie\AGENTS.md
+[Code-Graph] Successfully completed install-skills for junie [project].
+[Code-Graph] Running install-skills (contextbudget) for iflow-cli [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\iflow-cli\AGENTS.md
+[Code-Graph] Successfully completed install-skills for iflow-cli [project].
+[Code-Graph] Running install-skills (contextbudget) for kilo [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\kilo\AGENTS.md
+[Code-Graph] Successfully completed install-skills for kilo [project].
+[Code-Graph] Running install-skills (contextbudget) for kimi-cli [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\kimi-cli\AGENTS.md
+[Code-Graph] Successfully completed install-skills for kimi-cli [project].
+[Code-Graph] Running install-skills (contextbudget) for kiro-cli [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\kiro-cli\AGENTS.md
+[Code-Graph] Successfully completed install-skills for kiro-cli [project].
+[Code-Graph] Running install-skills (contextbudget) for kode [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\kode\AGENTS.md
+[Code-Graph] Successfully completed install-skills for kode [project].
+[Code-Graph] Running install-skills (contextbudget) for mcpjam [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\mcpjam\AGENTS.md
+[Code-Graph] Successfully completed install-skills for mcpjam [project].
+[Code-Graph] Running install-skills (contextbudget) for mistral-vibe [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\mistral-vibe\AGENTS.md
+[Code-Graph] Successfully completed install-skills for mistral-vibe [project].
+[Code-Graph] Running install-skills (contextbudget) for mux [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\mux\AGENTS.md
+[Code-Graph] Successfully completed install-skills for mux [project].
+[Code-Graph] Running install-skills (contextbudget) for openhands [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\openhands\AGENTS.md
+[Code-Graph] Successfully completed install-skills for openhands [project].
+[Code-Graph] Running install-skills (contextbudget) for pi [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\pi\AGENTS.md
+[Code-Graph] Successfully completed install-skills for pi [project].
+[Code-Graph] Running install-skills (contextbudget) for qoder [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\qoder\AGENTS.md
+[Code-Graph] Successfully completed install-skills for qoder [project].
+[Code-Graph] Running install-skills (contextbudget) for qwen-code [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\qwen-code\AGENTS.md
+[Code-Graph] Successfully completed install-skills for qwen-code [project].
+[Code-Graph] Running install-skills (contextbudget) for replit [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\replit\AGENTS.md
+[Code-Graph] Successfully completed install-skills for replit [project].
+[Code-Graph] Running install-skills (contextbudget) for rovodev [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\rovodev\AGENTS.md
+[Code-Graph] Successfully completed install-skills for rovodev [project].
+[Code-Graph] Running install-skills (contextbudget) for roo [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\roo\AGENTS.md
+[Code-Graph] Successfully completed install-skills for roo [project].
+[Code-Graph] Running install-skills (contextbudget) for tabnine-cli [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\tabnine-cli\AGENTS.md
+[Code-Graph] Successfully completed install-skills for tabnine-cli [project].
+[Code-Graph] Running install-skills (contextbudget) for trae-cn [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\trae-cn\AGENTS.md
+[Code-Graph] Successfully completed install-skills for trae-cn [project].
+[Code-Graph] Running install-skills (contextbudget) for universal [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\universal\AGENTS.md
+[Code-Graph] Successfully completed install-skills for universal [project].
+[Code-Graph] Running install-skills (contextbudget) for windsurf [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\windsurf\AGENTS.md
+[Code-Graph] Successfully completed install-skills for windsurf [project].
+[Code-Graph] Running install-skills (contextbudget) for zencoder [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\zencoder\AGENTS.md
+[Code-Graph] Successfully completed install-skills for zencoder [project].
+[Code-Graph] Running install-skills (contextbudget) for neovate [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\neovate\AGENTS.md
+[Code-Graph] Successfully completed install-skills for neovate [project].
+[Code-Graph] Running install-skills (contextbudget) for pochi [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\pochi\AGENTS.md
+[Code-Graph] Successfully completed install-skills for pochi [project].
+[Code-Graph] Running install-skills (contextbudget) for adal [project]...
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_platforms\adal\AGENTS.md
+[Code-Graph] Successfully completed install-skills for adal [project].
+[Code-Graph] Initializing project files in: D:\Projects\code-graph\temp_test_mandatory_skills
+✔ SkillManager - contextbudget installs for every supported platform (125.3422ms)
+[Code-Graph] Initialized llm-agent-rules.md
+[Code-Graph] Initialized llm-agent-project-learnings.md
+[Code-Graph] Initialization complete.
+[Code-Graph] Registering code-graph as sub-agent for claude...
+✔ ProjectInitializer - rules make all bundled skills mandatory (2.1696ms)
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_claude_agent\.claude\agents\code-graph.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_claude_agent\.claude\agents\code-graph-locator.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_claude_agent\.claude\agents\code-graph-tracer.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_claude_agent\.claude\agents\code-graph-reviewer.md
+[Code-Graph] Successfully registered sub-agent for claude.
+[Code-Graph] Registering code-graph as sub-agent for generic...
+✔ AgentManager - Claude install creates subagent files (3.4084ms)
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_split_agents\.code-graph-agent.md
+[Code-Graph] Successfully registered sub-agent for generic.
+✔ AgentManager - generic install creates split agent personas (1.206ms)
+[Code-Graph] Running install-skills (contextbudget) for codex [project]...
+✔ AgentManager - install logs created agent paths (2.9598ms)
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_skill\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_contextbudget_skill\.codex\hooks.json
+[Code-Graph] Successfully completed install-skills for codex [project].
+[Code-Graph] Running uninstall-skills (contextbudget) for codex [project]...
+[Code-Graph] Successfully completed uninstall-skills for codex [project].
+[Code-Graph] Running install-skills (projectmap) for codex [project]...
+✔ SkillManager - installs and uninstalls contextbudget skill (5.7742ms)
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_codex_hook_shape\AGENTS.md
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_codex_hook_shape\.codex\hooks.json
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_test_codex_hook_shape\.codex\hooks.json
+[Code-Graph] Successfully completed install-skills for codex [project].
+[Code-Graph] Running uninstall-skills (projectmap) for codex [project]...
+[Code-Graph] Successfully completed uninstall-skills for codex [project].
+✔ SkillManager - codex hooks use enabled nested hook shape (8.5345ms)
+[Code-Graph v4.19.0] Starting map generation...
+[Code-Graph] Root: D:\Projects\code-graph\temp_test_generated_ignores
+✔ SkillManager - install logs local skill target paths (5.3336ms)
+[Code-Graph] Scanning: . +0.0s
+[Code-Graph] Processing: src.js +0.0s
+[Code-Graph] Scan complete (+0.0s): 1 files, 0 edges found.
+[Code-Graph] Sorting 1 files by importance...
+[Code-Graph] Sort complete (+0.0s).
+[Code-Graph] Formatting nodes...
+[Code-Graph] Building node list (1 files)...
+[Code-Graph] Nodes built (+0.0s).
+[Code-Graph] Grouping 0 edges...
+[Code-Graph] Edges grouped: 0 import sources, 0 inheritance (+0.0s).
+[Code-Graph] Sorting edge lines...
+[Code-Graph] Edge lines sorted: 0 total (+0.0s).
+[Code-Graph] Format complete (+0.0s): 256 chars.
+[Code-Graph] Writing llm-code-graph.md...
+[Code-Graph] Done in 0.0s — llm-code-graph.md updated (1 files, 0 edges).
+[Code-Graph] Building node list (1 files)...
+[Code-Graph] Nodes built ().
+[Code-Graph] Grouping 0 edges...
+[Code-Graph] Edges grouped: 0 import sources, 0 inheritance ().
+[Code-Graph] Sorting edge lines...
+[Code-Graph] Edge lines sorted: 0 total ().
+✔ ProjectMapper - skips generated agent artifacts by default (5.6782ms)
+✔ ProjectMapper - caps per-file symbols and tags to limit map bloat (0.317ms)
+✔ Package metadata version matches runtime version (0.639ms)
+✔ CLI --version prints version (317.7643ms)
+✔ CLI -v prints version (232.9915ms)
+✔ CLI --help prints usage (233.8059ms)
+✔ CLI unknown command prints usage (341.5696ms)
+✔ isValidPlatform accepts whitelisted platforms (0.4319ms)
+✔ isValidPlatform rejects path traversal attempts (0.116ms)
+✔ SkillManager rejects invalid platform without writing files (0.6058ms)
+✔ AgentManager rejects invalid platform (0.4412ms)
+✔ stripDangerousKeys removes prototype pollution vectors (0.0847ms)
+[Code-Graph v4.19.0] Installed/updated: D:\Projects\code-graph\temp_sec_proto\evil.json
+✔ writeJson does not pollute prototype from malicious existing file (4.1338ms)
+[Code-Graph] Recorded reflection: line1 line2 sanitize-test-1778904328220 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+[Code-Graph] Recorded reflection: another lesson sanitize-test-1778904328220-2
+[Code-Graph v4.19.0] Starting map generation...
+[Code-Graph] Root: D:\Projects\code-graph\temp_sec_size
+✔ ReflectionManager sanitizes newlines and long input (2.7181ms)
+[Code-Graph] Scanning: . +0.0s
+[Code-Graph] Processing: huge.js +0.0s
+[Code-Graph] Processing: small.js +0.0s
+[Code-Graph] Scan complete (+0.0s): 1 files, 0 edges found.
+[Code-Graph] Sorting 1 files by importance...
+[Code-Graph] Sort complete (+0.0s).
+[Code-Graph] Formatting nodes...
+[Code-Graph] Building node list (1 files)...
+[Code-Graph] Nodes built (+0.0s).
+[Code-Graph] Grouping 0 edges...
+[Code-Graph] Edges grouped: 0 import sources, 0 inheritance (+0.0s).
+[Code-Graph] Sorting edge lines...
+[Code-Graph] Edge lines sorted: 0 total (+0.0s).
+[Code-Graph] Format complete (+0.0s): 254 chars.
+[Code-Graph] Writing llm-code-graph.md...
+[Code-Graph] Done in 0.0s — llm-code-graph.md updated (1 files, 0 edges).
+[Code-Graph v4.19.0] Starting map generation...
+[Code-Graph] Root: D:\Projects\code-graph\temp_sec_sym
+✔ ProjectMapper skips files exceeding MAX_FILE_BYTES (10.5943ms)
+[Code-Graph] Scanning: . +0.0s
+[Code-Graph] Processing: real.js +0.0s
+[Code-Graph] Scan complete (+0.0s): 1 files, 0 edges found.
+[Code-Graph] Sorting 1 files by importance...
+[Code-Graph] Sort complete (+0.0s).
+[Code-Graph] Formatting nodes...
+[Code-Graph] Building node list (1 files)...
+[Code-Graph] Nodes built (+0.0s).
+[Code-Graph] Grouping 0 edges...
+[Code-Graph] Edges grouped: 0 import sources, 0 inheritance (+0.0s).
+[Code-Graph] Sorting edge lines...
+[Code-Graph] Edge lines sorted: 0 total (+0.0s).
+[Code-Graph] Format complete (+0.0s): 255 chars.
+[Code-Graph] Writing llm-code-graph.md...
+[Code-Graph] Done in 0.0s — llm-code-graph.md updated (1 files, 0 edges).
+[Code-Graph v4.19.0] Starting map generation...
+[Code-Graph] Root: D:\Projects\code-graph\temp_test_large_no_parse
+✔ ProjectMapper skips symbolic links during walk (4.566ms)
+[Code-Graph] Scanning: . +0.0s
+[Code-Graph] Processing: big.js +0.0s
+[Code-Graph] Processing: small.js +0.0s
+[Code-Graph] Scan complete (+0.0s): 2 files, 0 edges found.
+[Code-Graph] Sorting 2 files by importance...
+[Code-Graph] Sort complete (+0.0s).
+[Code-Graph] Formatting nodes...
+[Code-Graph] Building node list (2 files)...
+[Code-Graph] Nodes built (+0.0s).
+[Code-Graph] Grouping 0 edges...
+[Code-Graph] Edges grouped: 0 import sources, 0 inheritance (+0.0s).
+[Code-Graph] Sorting edge lines...
+[Code-Graph] Edge lines sorted: 0 total (+0.0s).
+[Code-Graph] Format complete (+0.0s): 300 chars.
+[Code-Graph] Writing llm-code-graph.md...
+[Code-Graph] Done in 0.0s — llm-code-graph.md updated (2 files, 0 edges).
+[Code-Graph v4.19.0] Starting map generation...
+[Code-Graph] Root: D:\Projects\code-graph\temp_test_skip_summary
+✔ ProjectMapper - skips parse on large file (>100KB) but still indexes it (7.9085ms)
+[Code-Graph] Scanning: . +0.0s
+[Code-Graph] Processing: big.js +0.0s
+[Code-Graph] Scan complete (+0.0s): 1 files, 0 edges found.
+[Code-Graph] Sorting 1 files by importance...
+[Code-Graph] Sort complete (+0.0s).
+[Code-Graph] Formatting nodes...
+[Code-Graph] Building node list (1 files)...
+[Code-Graph] Nodes built (+0.0s).
+[Code-Graph] Grouping 0 edges...
+[Code-Graph] Edges grouped: 0 import sources, 0 inheritance (+0.0s).
+[Code-Graph] Sorting edge lines...
+[Code-Graph] Edge lines sorted: 0 total (+0.0s).
+[Code-Graph] Format complete (+0.0s): 226 chars.
+[Code-Graph] Writing llm-code-graph.md...
+[Code-Graph] Done in 0.0s — llm-code-graph.md updated (1 files, 0 edges).
+[Code-Graph v4.19.0] Starting map generation...
+[Code-Graph] Root: D:\Projects\code-graph\temp_test_skipped_reset
+✔ ProjectMapper - skip summary lists skipped files after generate (4.1381ms)
+[Code-Graph] Scanning: . +0.0s
+[Code-Graph] Processing: small.js +0.0s
+[Code-Graph] Scan complete (+0.0s): 1 files, 0 edges found.
+[Code-Graph] Sorting 1 files by importance...
+[Code-Graph] Sort complete (+0.0s).
+[Code-Graph] Formatting nodes...
+[Code-Graph] Building node list (1 files)...
+[Code-Graph] Nodes built (+0.0s).
+[Code-Graph] Grouping 0 edges...
+[Code-Graph] Edges grouped: 0 import sources, 0 inheritance (+0.0s).
+[Code-Graph] Sorting edge lines...
+[Code-Graph] Edge lines sorted: 0 total (+0.0s).
+[Code-Graph] Format complete (+0.0s): 253 chars.
+[Code-Graph] Writing llm-code-graph.md...
+[Code-Graph] Done in 0.0s — llm-code-graph.md updated (1 files, 0 edges).
+[Code-Graph v4.19.0] Starting map generation...
+[Code-Graph] Root: D:\Projects\code-graph\temp_test_elapsed_timer
+✔ ProjectMapper - _skipped tracking resets per instance (2.9886ms)
+[Code-Graph] Scanning: . +0.0s
+[Code-Graph] Processing: a.js +0.0s
+[Code-Graph] Scan complete (+0.0s): 1 files, 0 edges found.
+[Code-Graph] Sorting 1 files by importance...
+[Code-Graph] Sort complete (+0.0s).
+[Code-Graph] Formatting nodes...
+[Code-Graph] Building node list (1 files)...
+[Code-Graph] Nodes built (+0.0s).
+[Code-Graph] Grouping 0 edges...
+[Code-Graph] Edges grouped: 0 import sources, 0 inheritance (+0.0s).
+[Code-Graph] Sorting edge lines...
+[Code-Graph] Edge lines sorted: 0 total (+0.0s).
+[Code-Graph] Format complete (+0.0s): 249 chars.
+[Code-Graph] Writing llm-code-graph.md...
+[Code-Graph] Done in 0.0s — llm-code-graph.md updated (1 files, 0 edges).
+✔ ProjectMapper - elapsed timer active during generate (3.9359ms)
+[Code-Graph v4.19.0] Starting map generation...
+[Code-Graph] Root: D:\Projects\code-graph\temp_test_file_timeout
+✔ ProjectMapper - Processing log emitted before each file (3.6738ms)
+[Code-Graph] Scanning: . +0.0s
+[Code-Graph] Processing: normal.js +0.0s
+[Code-Graph] Scan complete (+0.0s): 1 files, 0 edges found.
+[Code-Graph] Sorting 1 files by importance...
+[Code-Graph] Sort complete (+0.0s).
+[Code-Graph] Formatting nodes...
+[Code-Graph] Building node list (1 files)...
+[Code-Graph] Nodes built (+0.0s).
+[Code-Graph] Grouping 0 edges...
+[Code-Graph] Edges grouped: 0 import sources, 0 inheritance (+0.0s).
+[Code-Graph] Sorting edge lines...
+[Code-Graph] Edge lines sorted: 0 total (+0.0s).
+[Code-Graph] Format complete (+0.0s): 255 chars.
+[Code-Graph] Writing llm-code-graph.md...
+[Code-Graph] Done in 0.0s — llm-code-graph.md updated (1 files, 0 edges).
+✖ ProjectMapper - file timeout emits error and tracks in _skipped (2.8427ms)
+[Code-Graph] Recorded reflection: explicit cwd lesson
+✔ ReflectionManager.add writes to explicit cwd (7.1431ms)
+[Code-Graph] Reflection already exists.
+✔ ReflectionManager.add still works without cwd (backward compat) (1.444ms)
+ℹ tests 65
+ℹ suites 0
+ℹ pass 64
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 10147.0113
+
+✖ failing tests:
+
+test at test\index.test.js:1119:1
+✖ ProjectMapper - file timeout emits error and tracks in _skipped (2.8427ms)
+  AssertionError [ERR_ASSERTION]: timed-out file must appear in _skipped
+      at TestContext.<anonymous> (file:///D:/Projects/code-graph/test/index.test.js:1137:10)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

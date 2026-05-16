@@ -33,6 +33,7 @@ Commands:
   init                                  Scaffold rule and reflection files
   reflect <category> <lesson>           Record a project lesson
   watch                                 Watch for changes and auto-regenerate
+  mcp                                   Start MCP stdio server (for Claude Code integration)
 
   install [-g] <platform>                    Install skills + agent for a platform
   uninstall [-g] <platform>                  Remove skills + agent for a platform
@@ -127,6 +128,11 @@ async function main() {
       case 'watch':
         startWatcher(cwd);
         break;
+      case 'mcp': {
+        const { startMcpServer } = await import('./lib/mcp-server.js');
+        await startMcpServer();
+        break;
+      }
 
       default:
         if (platforms.includes(command?.toLowerCase())) {
@@ -141,7 +147,7 @@ async function main() {
   }
 }
 
-async function installGitHook(cwd) {
+export async function installGitHook(cwd) {
   const hookPath = path.join(cwd, '.git', 'hooks', 'pre-commit');
   try {
     await fsp.access(path.dirname(hookPath));
@@ -149,7 +155,9 @@ async function installGitHook(cwd) {
     return console.error('[Code-Graph] No .git directory found.');
   }
 
-  const content = `#!/bin/sh
+  const blockStart = '# BEGIN CODE-GRAPH';
+  const blockEnd = '# END CODE-GRAPH';
+  const managedBlock = `${blockStart}
 # Code-Graph Advisory: Map Sync & Reflection Reminder
 echo "[Code-Graph] Validating commit..."
 
@@ -170,7 +178,28 @@ if [ ! -z "$CODE_CHANGES" ] && [ -z "$REFLECT_CHANGES" ]; then
   echo "run 'code-graph reflect LOGIC <lesson>' before committing."
   echo "--------------------------------------------------------"
 fi
+${blockEnd}
 `;
+
+  let content = '#!/bin/sh\n';
+  try {
+    const existing = await fsp.readFile(hookPath, 'utf8');
+    if (existing.includes(blockStart) && existing.includes(blockEnd)) {
+      content = existing.replace(
+        new RegExp(`${escapeRegex(blockStart)}[\\s\\S]*?${escapeRegex(blockEnd)}\\n?`),
+        `${managedBlock}\n`
+      );
+    } else if (existing.trim()) {
+      const normalized = existing.endsWith('\n') ? existing : `${existing}\n`;
+      content = `${normalized}\n${managedBlock}`;
+    } else {
+      content = `#!/bin/sh\n\n${managedBlock}`;
+    }
+  } catch (e) {
+    if (e.code !== 'ENOENT') throw e;
+    content = `#!/bin/sh\n\n${managedBlock}`;
+  }
+
   await fsp.writeFile(hookPath, content, { mode: 0o755 });
   console.log('[Code-Graph] Pre-commit Advisory installed (Soft Enforcement).');
 }

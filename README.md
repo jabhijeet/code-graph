@@ -1,18 +1,15 @@
-# CODE-GRAPH (v4.19.0)
+# CODE-GRAPH (v5.0.0)
 
 > Inspired by [Andrej Karpathy skills](https://github.com/forrestchang/andrej-karpathy-skills), [juliusbrussee/caveman](https://github.com/juliusbrussee/caveman), and the community's work building better agent workflows.
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** for LLM agents. Code-Graph gives agents a compact file, symbol, and dependency index, then pairs it with persistent project learnings so agents can avoid repeating mistakes across sessions.
 
-## New in v4.19.0
+## New in v5.0.0
 
-- **Fix (Generate — large file hang):** Files over 100KB now skip symbol extraction instead of running the regex parser. Compiled/generated files like `drift_worker.js` (343KB Dart→JS) caused catastrophic regex backtracking that blocked the Node.js event loop entirely, preventing timeouts and heartbeats from firing. Large files are still indexed in the graph with their description; only symbol extraction is skipped.
-- **Fix (Generate — file timeout reduced):** Per-file timeout reduced from 15s to 5s. Timed-out files are now logged as errors (`console.error`) instead of warnings.
-- **Fix (Generate — readdir timeout):** Directory reads (`readdir`) now have an 8s timeout. If a directory hangs (e.g. broken symlink, network path), the scanner logs an error and skips it instead of blocking forever.
-- **UX (Generate — elapsed timestamps):** Every `Scanning:` log line now shows elapsed time since generation started (e.g. `+0.3s`), making it easy to spot which directory is slow.
-- **UX (Generate — heartbeat):** A `Still scanning...` heartbeat fires every 5s during the walk phase, confirming the process is alive on large repos.
-- **UX (Generate — per-file processing log):** Each file logs `Processing: <path>` before parse begins, so if the process hangs the last visible line identifies the culprit file.
-- **UX (Generate — skip summary):** End-of-run summary lists every skipped file with reason (`large-no-parse`, `file-timeout`, `readdir-timeout`, `oversized`, `permission`, `exception`).
+- **MCP Server (reintroduced):** `code-graph mcp` starts a proper MCP stdio server. All five tools (`generate_graph`, `get_file_symbols`, `search_graph`, `add_reflection`, `get_reflections`) accept `project_path` so one running server handles multiple projects. The previous server (removed in v4.14.0) was replaced with a clean, multi-project implementation.
+- **Fix (Git Hook — idempotent merge):** `code-graph init` no longer clobbers existing pre-commit hooks. The Code-Graph advisory block is wrapped in `# BEGIN CODE-GRAPH` / `# END CODE-GRAPH` markers and merged or updated in-place on reinstall.
+- **Fix (SkillManager — corrupt JSON safety):** Inverted `ENOENT` check caused invalid JSON in existing settings files to be silently overwritten. Now: missing file → empty init; parse error → warn and leave file unchanged.
+- **Fix (ReflectionManager — multi-project):** `ReflectionManager.add()` accepts an optional `cwd` argument so the MCP server can record reflections for any project path.
 
 See [RELEASE_NOTES.md](RELEASE_NOTES.md) for full history.
 
@@ -49,8 +46,8 @@ code-graph install-skills -g claude
 Every install prints each target it writes:
 
 ```text
-[Code-Graph v4.19.0] Installed/updated: /absolute/path/to/AGENTS.md
-[Code-Graph v4.19.0] Installed/updated: /absolute/path/to/.codex/hooks.json
+[Code-Graph v5.0.0] Installed/updated: /absolute/path/to/AGENTS.md
+[Code-Graph v5.0.0] Installed/updated: /absolute/path/to/.codex/hooks.json
 ```
 
 ## Core Concepts
@@ -272,6 +269,48 @@ Register `code-graph` as an active sub-agent to enable explicit delegation.
 | **Kiro IDE/CLI** | `code-graph install-agent kiro` | Registers agent in `~/.kiro/agents/`. |
 | **Generic Agent** | `code-graph install-agent generic` | Generates `.code-graph-agent.md` persona prompt. |
 
+## MCP Server (Claude Code integration)
+
+Any Claude Code project can connect to code-graph as an MCP tool server.
+
+Add to your project's `.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "code-graph": {
+      "command": "code-graph",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+Or if using a local dev install:
+
+```json
+{
+  "mcpServers": {
+    "code-graph": {
+      "command": "node",
+      "args": ["/absolute/path/to/code-graph/index.js", "mcp"]
+    }
+  }
+}
+```
+
+### Available tools
+
+| Tool | Description |
+|------|-------------|
+| `generate_graph` | Build/refresh `llm-code-graph.md` for any project path |
+| `get_file_symbols` | Return symbols for a specific file from the graph |
+| `search_graph` | Search file paths, symbols, and descriptions |
+| `add_reflection` | Append a lesson to `llm-agent-project-learnings.md` |
+| `get_reflections` | Return all lessons, optionally filtered by category |
+
+All tools accept `project_path` (absolute path) so one running server can serve multiple projects.
+
 ## Implementation Details
 
 ### Project Structure
@@ -285,10 +324,12 @@ lib/
   reflections.js      ReflectionManager: lesson persistence
   initializer.js      ProjectInitializer: rule and reflection scaffolding
   install-log.js      Shared versioned install target logging
+  mcp-server.js       MCP stdio server: 5 tools, multi-project via project_path
   skills.js           SkillManager: platform skill installation
   agents.js           AgentManager: sub-agent registration
 test/
   index.test.js       Unit tests for parser, mapper, skills, and CLI behavior
+  mcp-server.test.js  Unit tests for MCP server tool handlers
   platform-audit.js   Integration checks across supported platforms
 ```
 

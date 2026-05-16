@@ -1,6 +1,6 @@
 {
   "name": "code-graph-llm",
-  "version": "4.19.0",
+  "version": "5.0.0",
   "description": "Compact, language-agnostic codebase mapper for LLM token efficiency.",
   "main": "index.js",
   "bin": {
@@ -21,6 +21,7 @@
     "url": "https://github.com/jabhijeet/code-graph.git"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "chokidar": "^5.0.0",
     "ignore": "^7.0.5"
   },

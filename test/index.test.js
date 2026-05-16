@@ -10,6 +10,7 @@ import {
   ProjectInitializer,
   SkillManager,
   AgentManager,
+  installGitHook,
   SUPPORTED_EXTENSIONS,
   SUPPORTED_PLATFORMS,
   CONFIG,
@@ -279,6 +280,56 @@ test('SkillManager - writeJson deduplicates identical hooks', async () => {
 
   const result = JSON.parse(fs.readFileSync(path.join(tempDir, 'test-settings.json'), 'utf8'));
   assert.strictEqual(result.hooks.preToolUse.length, 1);
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
+test('SkillManager - writeJson preserves invalid existing JSON and warns', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_invalid_json_preserve');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+
+  const sm = new SkillManager(tempDir);
+  const target = path.join(tempDir, '.codex', 'hooks.json');
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.writeFileSync(target, '{"hooks": invalid json');
+
+  const warns = [];
+  const originalWarn = console.warn;
+  console.warn = (msg) => warns.push(msg);
+
+  await sm.writeJson('.codex/hooks.json', {
+    codex_hooks: true,
+    hooks: { PreToolUse: [{ matcher: 'Bash', hooks: [{ type: 'command', command: 'echo hi' }] }] }
+  });
+
+  console.warn = originalWarn;
+
+  assert.strictEqual(fs.readFileSync(target, 'utf8'), '{"hooks": invalid json');
+  assert.ok(warns.some(m => m.includes('leaving existing file unchanged')));
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
+test('installGitHook preserves existing pre-commit content', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_git_hook_merge');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(path.join(tempDir, '.git', 'hooks'), { recursive: true });
+
+  const hookPath = path.join(tempDir, '.git', 'hooks', 'pre-commit');
+  const existingHook = '#!/bin/sh\n\necho "custom hook"\n';
+  fs.writeFileSync(hookPath, existingHook);
+
+  await installGitHook(tempDir);
+
+  const content = fs.readFileSync(hookPath, 'utf8');
+  assert.ok(content.includes('echo "custom hook"'));
+  assert.ok(content.includes('# BEGIN CODE-GRAPH'));
+  assert.ok(content.includes('# END CODE-GRAPH'));
+
+  await installGitHook(tempDir);
+  const reinstalled = fs.readFileSync(hookPath, 'utf8');
+  assert.strictEqual((reinstalled.match(/# BEGIN CODE-GRAPH/g) || []).length, 1);
 
   fs.rmSync(tempDir, { recursive: true });
 });
@@ -1124,7 +1175,8 @@ test('ProjectMapper - file timeout emits error and tracks in _skipped', async ()
   fs.writeFileSync(path.join(tempDir, 'normal.js'), 'function ok() {}');
 
   const mapper = new ProjectMapper(tempDir);
-  mapper.FILE_TIMEOUT_MS = 1;
+  mapper.FILE_TIMEOUT_MS = 50;
+  mapper.processFile = () => new Promise(() => {}); // never resolves — guarantees timeout fires
 
   const errs = [];
   const origErr = console.error;
@@ -1134,7 +1186,8 @@ test('ProjectMapper - file timeout emits error and tracks in _skipped', async ()
 
   console.error = origErr;
 
-  assert.ok(mapper._skipped.some(s => s.reason === 'file-timeout'), 'timed-out file must appear in _skipped');
+  assert.strictEqual(mapper._skipped.length, 1, 'exactly one file must be skipped');
+  assert.ok(mapper._skipped[0].reason === 'file-timeout', 'skipped file must have file-timeout reason');
   assert.ok(errs.some(e => e.includes('ERROR') && e.includes('timeout')));
 
   fs.rmSync(tempDir, { recursive: true });
