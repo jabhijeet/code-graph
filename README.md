@@ -1,15 +1,19 @@
-# CODE-GRAPH (v5.0.0)
+# CODE-GRAPH (v5.1.0)
 
 > Inspired by [Andrej Karpathy skills](https://github.com/forrestchang/andrej-karpathy-skills), [juliusbrussee/caveman](https://github.com/juliusbrussee/caveman), and the community's work building better agent workflows.
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** for LLM agents. Code-Graph gives agents a compact file, symbol, and dependency index, then pairs it with persistent project learnings so agents can avoid repeating mistakes across sessions.
 
-## New in v5.0.0
+## New in v5.1.0
 
-- **MCP Server (reintroduced):** `code-graph mcp` starts a proper MCP stdio server. All five tools (`generate_graph`, `get_file_symbols`, `search_graph`, `add_reflection`, `get_reflections`) accept `project_path` so one running server handles multiple projects. The previous server (removed in v4.14.0) was replaced with a clean, multi-project implementation.
-- **Fix (Git Hook — idempotent merge):** `code-graph init` no longer clobbers existing pre-commit hooks. The Code-Graph advisory block is wrapped in `# BEGIN CODE-GRAPH` / `# END CODE-GRAPH` markers and merged or updated in-place on reinstall.
-- **Fix (SkillManager — corrupt JSON safety):** Inverted `ENOENT` check caused invalid JSON in existing settings files to be silently overwritten. Now: missing file → empty init; parse error → warn and leave file unchanged.
-- **Fix (ReflectionManager — multi-project):** `ReflectionManager.add()` accepts an optional `cwd` argument so the MCP server can record reflections for any project path.
+- **MCP Tools (3 new):** Added `get_project_graph` (reads full `llm-code-graph.md` — use instead of Read), `search_symbols` (symbol search across all files — use instead of Grep), and `trace_dependencies` (upstream/downstream blast radius for a file — use instead of manual EDGES parsing). Server now exposes 8 tools total.
+- **MCP Structured Errors:** All tool handlers return `{ isError: true, content: [{ type: "text", text: JSON.stringify({ error_type, message, retryable, suggested_action }) }] }`. Error types: `GRAPH_NOT_FOUND`, `FILE_NOT_IN_GRAPH`, `INVALID_PATH`, `INVALID_INPUT`, `TOOL_TIMEOUT`, `UNKNOWN_TOOL`, `INTERNAL_ERROR`. Agents can branch on `error_type` and use `suggested_action` to self-correct.
+- **MCP Timeouts:** All tool calls are wrapped in `Promise.race` with a timeout. Default: 30s. `generate_graph`: 300s (5 min). Timeout returns `TOOL_TIMEOUT` with `retryable: true`.
+- **Agent Descriptions (WHEN/INSTEAD):** All sub-agent descriptions for Claude Code, Gemini, Kiro, Antigravity, and generic platforms now follow the WHEN/INSTEAD pattern — describing trigger conditions and what they replace (Read, Grep, manual EDGES parsing) rather than abstract capability labels.
+- **Skills (MCP awareness):** `ProjectMap` and `Reflections` skills now include conditional MCP tool guidance for all 40+ supported platforms: `get_project_graph` instead of Read, `search_symbols` instead of Grep, `add_reflection`/`get_reflections` instead of CLI and direct file reads.
+- **Generated rules (MCP section):** `llm-agent-rules.md` scaffolded by `code-graph init` now includes a full MCP tools section listing all 8 tools with INSTEAD guidance.
+- **Gitignore (generated platform files):** Added all generated platform output files to `.gitignore` (`GEMINI.md`, `AGENTS.md`, `.clinerules`, `.roorules`, `.kiro/`, `.opencode/`, `.roo/`, `.cursor/rules/`, `llm-agent-rules.md`, `llm-agent-project-learnings.md`, and others) to prevent machine-specific paths from being committed.
+- **Tests:** Fixed 2 broken error tests (new structured error format), added 13 new tests for `handleGetProjectGraph`, `handleSearchSymbols`, `handleTraceDependencies`, `INVALID_PATH` validation, and `GRAPH_NOT_FOUND` with `suggested_action`. 24 tests total in `mcp-server.test.js`.
 
 See [RELEASE_NOTES.md](RELEASE_NOTES.md) for full history.
 
@@ -127,10 +131,10 @@ code-graph uninstall-agent <platform>
 
 Claude Code receives focused sub-agents when available:
 
-- `code-graph`: General project-map and reflection specialist.
-- `code-graph-locator`: Finds the smallest relevant file and symbol set before raw source reads.
-- `code-graph-tracer`: Traces dependency and inheritance paths from `## EDGES`.
-- `code-graph-reviewer`: Checks map freshness, reflection coverage, scope creep, and dependency freshness.
+- `code-graph`: Use INSTEAD of reading source files for architectural overviews, refreshing the map, or persisting lessons after failures.
+- `code-graph-locator`: Use INSTEAD of Read/Grep when finding relevant files before exploring source. Trigger: "which files relate to X", "where is Y defined".
+- `code-graph-tracer`: Use INSTEAD of manual import tracing when assessing change impact. Trigger: "what depends on X", "what breaks if I change Y".
+- `code-graph-reviewer`: Use AFTER making changes to verify Code-Graph protocol compliance. Trigger: "check code-graph protocol", "is the map stale".
 
 ## Supported Platforms
 
@@ -301,15 +305,20 @@ Or if using a local dev install:
 
 ### Available tools
 
-| Tool | Description |
-|------|-------------|
-| `generate_graph` | Build/refresh `llm-code-graph.md` for any project path |
-| `get_file_symbols` | Return symbols for a specific file from the graph |
-| `search_graph` | Search file paths, symbols, and descriptions |
-| `add_reflection` | Append a lesson to `llm-agent-project-learnings.md` |
-| `get_reflections` | Return all lessons, optionally filtered by category |
+| Tool | When to use | Description |
+|------|-------------|-------------|
+| `get_project_graph` | INSTEAD of Read on the graph file | Read full `llm-code-graph.md` — fastest way to get project structure |
+| `search_symbols` | INSTEAD of Grep for symbol lookup | Search symbol names across all files (case-insensitive) |
+| `trace_dependencies` | INSTEAD of manual EDGES parsing | Outgoing + incoming deps for a file, plus `blast_radius` count |
+| `generate_graph` | When map is stale or missing | Build/refresh `llm-code-graph.md` for any project path |
+| `get_file_symbols` | Targeted file lookup | Return symbols for one specific file from the graph |
+| `search_graph` | Broad search | Search file paths, symbols, and descriptions together with scoring |
+| `add_reflection` | INSTEAD of `code-graph reflect` CLI | Append a lesson to `llm-agent-project-learnings.md` |
+| `get_reflections` | INSTEAD of reading the reflections file | Return all lessons, optionally filtered by category |
 
-All tools accept `project_path` (absolute path) so one running server can serve multiple projects.
+All tools require `project_path` (absolute path) — one running server handles multiple projects.
+
+**Error format:** All tools return structured errors with `isError: true` and JSON content: `{ error_type, message, retryable, suggested_action? }`. Agents can branch on `error_type` (e.g. `GRAPH_NOT_FOUND` → call `generate_graph` first).
 
 ## Implementation Details
 
@@ -324,7 +333,7 @@ lib/
   reflections.js      ReflectionManager: lesson persistence
   initializer.js      ProjectInitializer: rule and reflection scaffolding
   install-log.js      Shared versioned install target logging
-  mcp-server.js       MCP stdio server: 5 tools, multi-project via project_path
+  mcp-server.js       MCP stdio server: 8 tools, structured errors, per-tool timeouts
   skills.js           SkillManager: platform skill installation
   agents.js           AgentManager: sub-agent registration
 test/

@@ -9,8 +9,18 @@ import {
   handleGetFileSymbols,
   handleSearchGraph,
   handleAddReflection,
-  handleGetReflections
+  handleGetReflections,
+  handleGetProjectGraph,
+  handleSearchSymbols,
+  handleTraceDependencies,
 } from '../lib/mcp-server.js';
+
+// Helper: assert result is a structured MCP error with the given error_type
+function assertMcpError(result, error_type) {
+  assert.ok(result._mcpError, `expected _mcpError sentinel, got: ${JSON.stringify(result)}`);
+  assert.strictEqual(result.error_type, error_type);
+  assert.ok(typeof result.message === 'string' && result.message.length > 0);
+}
 
 const REFLECTIONS_FILE = 'llm-agent-project-learnings.md';
 
@@ -75,9 +85,9 @@ test('handleGenerateGraph returns success with file count', async () => {
   }
 });
 
-test('handleGenerateGraph returns error for nonexistent path', async () => {
+test('handleGenerateGraph returns structured error for nonexistent path', async () => {
   const result = await handleGenerateGraph({ project_path: join(tmpdir(), 'cg-nonexistent-' + Date.now()) });
-  assert.ok(result.error, 'expected error field');
+  assertMcpError(result, 'INTERNAL_ERROR');
 });
 
 // get_file_symbols — uses synthetic graph fixture, no live project dependency
@@ -94,12 +104,13 @@ test('handleGetFileSymbols returns symbols for lib/reflections.js', async () => 
   }
 });
 
-test('handleGetFileSymbols returns error for unknown file', async () => {
+test('handleGetFileSymbols returns structured error for unknown file', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'cg-mcp-sym-'));
   try {
     await writeFile(join(dir, 'llm-code-graph.md'), FIXTURE_GRAPH);
     const result = await handleGetFileSymbols({ file_path: 'lib/does-not-exist.js', project_path: dir });
-    assert.ok(result.error, 'expected error field');
+    assertMcpError(result, 'FILE_NOT_IN_GRAPH');
+    assert.strictEqual(result.retryable, true);
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
@@ -178,6 +189,159 @@ test('handleGetReflections returns empty for missing file', async () => {
     const result = await handleGetReflections({ project_path: dir });
     assert.strictEqual(result.total, 0);
     assert.deepStrictEqual(result.lessons, []);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+// ── INVALID_PATH errors (shared across all handlers) ────────────────────────
+
+test('handlers return INVALID_PATH for relative project_path', async () => {
+  const result = await handleGetProjectGraph({ project_path: 'relative/path' });
+  assertMcpError(result, 'INVALID_PATH');
+});
+
+test('handlers return INVALID_PATH for null project_path', async () => {
+  const result = await handleSearchSymbols({ query: 'foo', project_path: null });
+  assertMcpError(result, 'INVALID_PATH');
+});
+
+// ── Fixture with edges for dependency tracing ────────────────────────────────
+
+const FIXTURE_GRAPH_EDGES = `# CODE_GRAPH
+> Legend: * core, (↑out ↓in deps), s: symbols, d: desc
+
+- *lib/reflections.js (3↑ 1↓) | d: Manages project reflections and lessons learned.
+  - s: [ReflectionManager, add [(category)]]
+- lib/parser.js (1↑ 2↓) | d: Handles extraction of symbols and metadata.
+  - s: [CodeParser, extract [(content)]]
+- lib/config.js (0↑ 3↓) | d: Constants and config.
+  - s: [CONFIG]
+
+## EDGES
+[lib/parser.js] -> [lib/config.js, lib/reflections.js]
+[lib/reflections.js] -> [lib/config.js]
+`;
+
+// ── handleGetProjectGraph ────────────────────────────────────────────────────
+
+test('handleGetProjectGraph returns raw graph content', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'cg-mcp-gpg-'));
+  try {
+    await writeFile(join(dir, 'llm-code-graph.md'), FIXTURE_GRAPH_EDGES);
+    const result = await handleGetProjectGraph({ project_path: dir });
+    assert.strictEqual(typeof result, 'string', 'expected raw string');
+    assert.ok(result.includes('CODE_GRAPH'));
+    assert.ok(result.includes('EDGES'));
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('handleGetProjectGraph returns GRAPH_NOT_FOUND when file missing', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'cg-mcp-gpg-'));
+  try {
+    const result = await handleGetProjectGraph({ project_path: dir });
+    assertMcpError(result, 'GRAPH_NOT_FOUND');
+    assert.strictEqual(result.retryable, false);
+    assert.ok(result.suggested_action);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('handleGetProjectGraph returns INVALID_PATH for null project_path', async () => {
+  const result = await handleGetProjectGraph({ project_path: null });
+  assertMcpError(result, 'INVALID_PATH');
+});
+
+// ── handleSearchSymbols ──────────────────────────────────────────────────────
+
+test('handleSearchSymbols finds matching symbols', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'cg-mcp-ss-'));
+  try {
+    await writeFile(join(dir, 'llm-code-graph.md'), FIXTURE_GRAPH_EDGES);
+    const result = await handleSearchSymbols({ query: 'reflection', project_path: dir });
+    assert.ok(Array.isArray(result.results), JSON.stringify(result));
+    assert.ok(result.results.length > 0);
+    assert.ok(result.results[0].file);
+    assert.ok(Array.isArray(result.results[0].symbols));
+    assert.strictEqual(result.total, result.results.length);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('handleSearchSymbols returns empty results for no match', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'cg-mcp-ss-'));
+  try {
+    await writeFile(join(dir, 'llm-code-graph.md'), FIXTURE_GRAPH_EDGES);
+    const result = await handleSearchSymbols({ query: 'xyzzy_nomatch_99999', project_path: dir });
+    assert.ok(Array.isArray(result.results));
+    assert.strictEqual(result.total, 0);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('handleSearchSymbols returns GRAPH_NOT_FOUND when graph missing', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'cg-mcp-ss-'));
+  try {
+    const result = await handleSearchSymbols({ query: 'anything', project_path: dir });
+    assertMcpError(result, 'GRAPH_NOT_FOUND');
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+// ── handleTraceDependencies ──────────────────────────────────────────────────
+
+test('handleTraceDependencies returns outgoing and incoming deps', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'cg-mcp-td-'));
+  try {
+    await writeFile(join(dir, 'llm-code-graph.md'), FIXTURE_GRAPH_EDGES);
+    // lib/reflections.js imports config.js (outgoing) and is imported by parser.js (incoming)
+    const result = await handleTraceDependencies({ file_path: 'lib/reflections.js', project_path: dir });
+    assert.ok(Array.isArray(result.outgoing), JSON.stringify(result));
+    assert.ok(Array.isArray(result.incoming));
+    assert.ok(result.outgoing.some(d => d.file === 'lib/config.js'));
+    assert.ok(result.incoming.some(d => d.file === 'lib/parser.js'));
+    assert.strictEqual(result.blast_radius, result.incoming.length);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('handleTraceDependencies returns empty arrays for file with no edges', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'cg-mcp-td-'));
+  try {
+    await writeFile(join(dir, 'llm-code-graph.md'), FIXTURE_GRAPH_EDGES);
+    const result = await handleTraceDependencies({ file_path: 'lib/unknown-file.js', project_path: dir });
+    assert.deepStrictEqual(result.outgoing, []);
+    assert.deepStrictEqual(result.incoming, []);
+    assert.strictEqual(result.blast_radius, 0);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('handleTraceDependencies returns GRAPH_NOT_FOUND when graph missing', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'cg-mcp-td-'));
+  try {
+    const result = await handleTraceDependencies({ file_path: 'lib/any.js', project_path: dir });
+    assertMcpError(result, 'GRAPH_NOT_FOUND');
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('handleTraceDependencies normalizes Windows backslash paths', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'cg-mcp-td-'));
+  try {
+    await writeFile(join(dir, 'llm-code-graph.md'), FIXTURE_GRAPH_EDGES);
+    // Pass backslash path — should normalize to forward slash and still match
+    const result = await handleTraceDependencies({ file_path: 'lib\\reflections.js', project_path: dir });
+    assert.ok(result.outgoing.some(d => d.file === 'lib/config.js'), JSON.stringify(result));
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
