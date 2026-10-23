@@ -2,6 +2,7 @@ import assert from 'node:assert';
 import test from 'node:test';
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import { fileURLToPath } from 'url';
 import {
   CodeParser,
@@ -140,6 +141,185 @@ test('extractTags - Still captures real TODO comments', () => {
   assert.ok(tags.some(t => t.includes('TODO') && t.includes('Fix this later')));
 });
 
+test('extract - "//" inside a string does not hide following code', () => {
+  const code = "const url = 'https://x.com';\nfunction afterUrl() {}";
+  const { symbols } = CodeParser.extract(code);
+  assert.ok(symbols.some(s => s.startsWith('afterUrl')), JSON.stringify(symbols));
+});
+
+test('extract - mixed quote types do not swallow code', () => {
+  const code = 'const s = "it\'s";\nfunction afterApostrophe() {}\nconst t = `don\'t`;\nfunction afterTemplate() {}';
+  const { symbols } = CodeParser.extract(code);
+  assert.ok(symbols.some(s => s.startsWith('afterApostrophe')), JSON.stringify(symbols));
+  assert.ok(symbols.some(s => s.startsWith('afterTemplate')), JSON.stringify(symbols));
+});
+
+test('extract - quotes inside regex literals do not start strings; division is not a regex', () => {
+  const code = "const R = /'\"`[/]/g;\nfunction afterRegex() {}\nconst x = a / b;\nfunction afterDivision() {}\nconst y = c / d;\nfunction last() { return /x'/.test(s); }\nfunction afterReturn() {}";
+  const { symbols } = CodeParser.extract(code);
+  for (const name of ['afterRegex', 'afterDivision', 'last', 'afterReturn']) {
+    assert.ok(symbols.some(s => s.startsWith(name)), `${name} missing: ${JSON.stringify(symbols)}`);
+  }
+});
+
+test('extract - export async function yields the function name, not "function"', () => {
+  const { symbols } = CodeParser.extract('export async function handleX() {}');
+  assert.ok(symbols.some(s => s.startsWith('handleX')));
+  assert.ok(!symbols.some(s => s.startsWith('function')), JSON.stringify(symbols));
+});
+
+test('extractTags - prose and string contents are not tags', () => {
+  const code = 'const body = `Deprecated: packages are bad. BUG: in text`;\n// Deprecated: lowercase prose\n// FIXME: real one';
+  const { tags } = CodeParser.extract(code);
+  assert.deepStrictEqual(tags, ['FIXME: real one']);
+});
+
+test('splitSymbol - separates name from bracketed context', () => {
+  assert.deepStrictEqual(CodeParser.splitSymbol('execute [(platform, action)]'), { name: 'execute', context: '(platform, action)' });
+  assert.deepStrictEqual(CodeParser.splitSymbol('CONFIG'), { name: 'CONFIG', context: '' });
+});
+
+// --- Mapper features: JSON sidecar, cache, check, budget, resolution ---
+
+function makeTempProject(name, files) {
+  const dir = path.join(process.cwd(), name);
+  if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true });
+  for (const [rel, content] of Object.entries(files)) {
+    fs.mkdirSync(path.dirname(path.join(dir, rel)), { recursive: true });
+    fs.writeFileSync(path.join(dir, rel), content);
+  }
+  return dir;
+}
+
+async function quiet(fn) {
+  const origLog = console.log;
+  const origErr = console.error;
+  console.log = () => {};
+  console.error = () => {};
+  try {
+    return await fn();
+  } finally {
+    console.log = origLog;
+    console.error = origErr;
+  }
+}
+
+test('ProjectMapper - only index.<ext> is core, not index.test.js', async () => {
+  const dir = makeTempProject('temp_test_core', { 'index.js': 'function a() {}', 'test/index.test.js': 'function b() {}' });
+  try {
+    await quiet(() => new ProjectMapper(dir).generate());
+    const json = JSON.parse(fs.readFileSync(path.join(dir, CONFIG.MAP_JSON_FILE), 'utf8'));
+    assert.strictEqual(json.files.find(f => f.path === 'index.js').core, true);
+    assert.strictEqual(json.files.find(f => f.path === 'test/index.test.js').core, false);
+  } finally {
+    fs.rmSync(dir, { recursive: true });
+  }
+});
+
+test('ProjectMapper - JSON sidecar keeps every symbol beyond the markdown cap', async () => {
+  const many = Array.from({ length: CONFIG.MAX_SYMBOLS_PER_FILE + 4 }, (_, i) => `function fn${i}() {}`).join('\n');
+  const dir = makeTempProject('temp_test_json_full', { 'dense.js': many });
+  try {
+    await quiet(() => new ProjectMapper(dir).generate());
+    const json = JSON.parse(fs.readFileSync(path.join(dir, CONFIG.MAP_JSON_FILE), 'utf8'));
+    assert.strictEqual(json.files[0].symbols.length, CONFIG.MAX_SYMBOLS_PER_FILE + 4);
+    assert.ok(fs.readFileSync(path.join(dir, CONFIG.MAP_FILE), 'utf8').includes('... +4 more'));
+  } finally {
+    fs.rmSync(dir, { recursive: true });
+  }
+});
+
+test('ProjectMapper - incremental cache skips unchanged files and re-parses changed ones', async () => {
+  const dir = makeTempProject('temp_test_cache', { 'a.js': 'function a() {}', 'b.js': 'function b() {}' });
+  try {
+    await quiet(() => new ProjectMapper(dir).generate());
+    assert.ok(fs.existsSync(path.join(dir, CONFIG.CACHE_FILE)));
+
+    fs.writeFileSync(path.join(dir, 'b.js'), 'function bChanged() {}');
+    const future = new Date(Date.now() + 5000);
+    fs.utimesSync(path.join(dir, 'b.js'), future, future);
+
+    const mapper = new ProjectMapper(dir);
+    const parsed = [];
+    const original = mapper.parseContent.bind(mapper);
+    mapper.parseContent = (content, rel) => { parsed.push(rel); return original(content, rel); };
+    await quiet(() => mapper.generate());
+
+    assert.deepStrictEqual(parsed, ['b.js'], 'only the changed file is re-parsed');
+    assert.ok(fs.readFileSync(path.join(dir, CONFIG.MAP_FILE), 'utf8').includes('bChanged'));
+  } finally {
+    fs.rmSync(dir, { recursive: true });
+  }
+});
+
+test('ProjectMapper - check reports up to date, then stale after a change', async () => {
+  const dir = makeTempProject('temp_test_check', { 'a.js': 'function a() {}' });
+  try {
+    await quiet(() => new ProjectMapper(dir).generate());
+    assert.deepStrictEqual(await quiet(() => new ProjectMapper(dir).check()), { upToDate: true, stale: [] });
+
+    // CRLF from git autocrlf is not staleness
+    const mdPath = path.join(dir, CONFIG.MAP_FILE);
+    fs.writeFileSync(mdPath, fs.readFileSync(mdPath, 'utf8').replace(/\n/g, '\r\n'));
+    assert.strictEqual((await quiet(() => new ProjectMapper(dir).check())).upToDate, true);
+
+    fs.writeFileSync(path.join(dir, 'b.js'), 'function b() {}');
+    const result = await quiet(() => new ProjectMapper(dir).check());
+    assert.strictEqual(result.upToDate, false);
+    assert.deepStrictEqual(result.stale, [CONFIG.MAP_FILE, CONFIG.MAP_JSON_FILE]);
+  } finally {
+    fs.rmSync(dir, { recursive: true });
+  }
+});
+
+test('ProjectMapper - output is independent of file discovery order', async () => {
+  const dir = makeTempProject('temp_test_stable', { 'b.js': 'function b() {}', 'a.js': 'function a() {}', 'c.js': 'function c() {}' });
+  try {
+    await quiet(() => new ProjectMapper(dir).generate());
+    const map = fs.readFileSync(path.join(dir, CONFIG.MAP_FILE), 'utf8');
+    assert.ok(map.indexOf('- a.js') < map.indexOf('- b.js') && map.indexOf('- b.js') < map.indexOf('- c.js'));
+  } finally {
+    fs.rmSync(dir, { recursive: true });
+  }
+});
+
+test('ProjectMapper - maxTokens trims lowest-ranked files and reports the token estimate', async () => {
+  const files = { 'lib/shared.js': 'export function shared() {}' };
+  for (let i = 0; i < 40; i++) files[`src/file${i}.js`] = `import { shared } from '../lib/shared.js';\nexport function f${i}(alpha, beta, gamma) {}`;
+  const dir = makeTempProject('temp_test_budget', files);
+  try {
+    await quiet(() => new ProjectMapper(dir, { maxTokens: 300 }).generate());
+    const map = fs.readFileSync(path.join(dir, CONFIG.MAP_FILE), 'utf8');
+    const tokens = Number(map.match(/^TOKENS: ~(\d+) \(est\.\)$/m)[1]);
+    assert.ok(tokens <= 300, `estimate ${tokens} must respect the budget`);
+    assert.ok(map.includes('> OMITTED:'), 'omission note required');
+    assert.ok(map.includes('lib/shared.js'), 'most-imported file is kept');
+    const json = JSON.parse(fs.readFileSync(path.join(dir, CONFIG.MAP_JSON_FILE), 'utf8'));
+    assert.strictEqual(json.files.length, 41, 'JSON sidecar is never trimmed');
+  } finally {
+    fs.rmSync(dir, { recursive: true });
+  }
+});
+
+test('ProjectMapper - resolves index files, .js->.ts specifiers, and tsconfig paths', async () => {
+  const dir = makeTempProject('temp_test_resolve', {
+    'tsconfig.json': '{\n  // comment\n  "compilerOptions": { "baseUrl": ".", "paths": { "@/*": ["src/*"] }, },\n}',
+    'src/util/index.ts': 'export function util() {}',
+    'src/helper.ts': 'export function helper() {}',
+    'src/alias.ts': 'export function alias() {}',
+    'src/main.ts': "import { util } from './util';\nimport { helper } from './helper.js';\nimport { alias } from '@/alias';\nimport x from 'external-pkg';",
+    'src/Upper.MJS': 'export function upper() {}'
+  });
+  try {
+    await quiet(() => new ProjectMapper(dir).generate());
+    const json = JSON.parse(fs.readFileSync(path.join(dir, CONFIG.MAP_JSON_FILE), 'utf8'));
+    assert.deepStrictEqual(json.imports['src/main.ts'].sort(), ['external-pkg', 'src/alias.ts', 'src/helper.ts', 'src/util/index.ts']);
+    assert.ok(json.files.some(f => f.path === 'src/Upper.MJS'), 'extension matching is case-insensitive');
+  } finally {
+    fs.rmSync(dir, { recursive: true });
+  }
+});
+
 // --- ProjectMapper Tests ---
 
 test('getIgnores - Default Patterns', async () => {
@@ -195,11 +375,24 @@ test('Recursive Ignore Simulation (Logic Check)', async () => {
 
 // --- ReflectionManager Tests ---
 
-test('ReflectionManager - Add and Deduplicate', async () => {
+// Reflection tests run inside a temp cwd: test files execute in parallel processes, and
+// backing up / restoring the repo's real learnings file races and leaks test entries into it.
+function withTempCwd(fn) {
+  return async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cg-reflect-'));
+    const originalCwd = process.cwd();
+    process.chdir(dir);
+    try {
+      await fn(dir);
+    } finally {
+      process.chdir(originalCwd);
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  };
+}
+
+test('ReflectionManager - Add and Deduplicate', withTempCwd(async () => {
   const tempReflectFile = path.join(process.cwd(), CONFIG.REFLECTIONS_FILE);
-  const backupExists = fs.existsSync(tempReflectFile);
-  let backupContent = '';
-  if (backupExists) backupContent = fs.readFileSync(tempReflectFile, 'utf8');
 
   const lesson = "Unique test lesson for reflection";
   await ReflectionManager.add('TEST', lesson);
@@ -215,11 +408,21 @@ test('ReflectionManager - Add and Deduplicate', async () => {
 
   console.log = originalLog;
   assert.ok(logSpy.includes('[Code-Graph] Reflection already exists.'));
+}));
 
-  // Restore
-  if (backupExists) fs.writeFileSync(tempReflectFile, backupContent);
-  else fs.unlinkSync(tempReflectFile);
-});
+test('ReflectionManager - substring of an existing lesson is not a duplicate', withTempCwd(async (dir) => {
+  const origLog = console.log;
+  console.log = () => {};
+  try {
+    assert.strictEqual((await ReflectionManager.add('LOGIC', 'watcher must debounce rapid saves', dir)).status, 'added');
+    assert.strictEqual((await ReflectionManager.add('LOGIC', 'debounce', dir)).status, 'added');
+    assert.strictEqual((await ReflectionManager.add('ENV', 'DEBOUNCE', dir)).status, 'duplicate');
+  } finally {
+    console.log = origLog;
+  }
+  const content = fs.readFileSync(path.join(dir, CONFIG.REFLECTIONS_FILE), 'utf8');
+  assert.ok(content.startsWith(CONFIG.REFLECTIONS_HEADER), 'new file uses the shared header');
+}));
 
 test('ReflectionManager - Missing lesson shows error', async () => {
   const errSpy = [];
@@ -259,6 +462,30 @@ test('SkillManager - writeJson merges hooks without overwriting', async () => {
   assert.strictEqual(result.hooks.preToolUse.length, 2);
   assert.ok(result.hooks.preToolUse.some(h => h.message === 'Existing hook message'));
   assert.ok(result.hooks.preToolUse.some(h => h.message === 'New hook message'));
+
+  fs.rmSync(tempDir, { recursive: true });
+});
+
+test('SkillManager - reinstall replaces the v5.x ProjectMap section instead of duplicating it', async () => {
+  const tempDir = path.join(process.cwd(), 'temp_test_projectmap_upgrade');
+  if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true });
+  fs.mkdirSync(tempDir);
+  const oldSection = `\n## 🗺️ Skill: ProjectMap\nMANDATORY: Read \`${CONFIG.MAP_FILE}\` BEFORE calling Read, Grep, Glob, or any file tool. It is the canonical index of all files, symbols, and dependency edges. Use it to identify exactly which files to open. Do not inspect raw files without consulting it first. Refresh with \`code-graph generate\` if stale. If MCP server configured: prefer \`get_project_graph\` (INSTEAD of Read), \`search_symbols\` (INSTEAD of Grep), \`trace_dependencies\` (INSTEAD of manual EDGES parsing). Skipping = task failure.\n`;
+  fs.writeFileSync(path.join(tempDir, 'CLAUDE.md'), `# Project\n${oldSection}`);
+
+  const origLog = console.log;
+  console.log = () => {};
+  try {
+    await new SkillManager(tempDir).execute('claude', 'install-skills', 'projectmap');
+  } finally {
+    console.log = origLog;
+  }
+
+  const claudeMd = fs.readFileSync(path.join(tempDir, 'CLAUDE.md'), 'utf8');
+  assert.ok(!claudeMd.includes(oldSection), 'v5.x section must be removed');
+  assert.strictEqual((claudeMd.match(/## 🗺️ Skill: ProjectMap/g) || []).length, 1);
+  assert.ok(claudeMd.includes('get_dependents'));
+  assert.ok(claudeMd.startsWith('# Project\n'), 'user content is preserved');
 
   fs.rmSync(tempDir, { recursive: true });
 });
@@ -326,6 +553,9 @@ test('installGitHook preserves existing pre-commit content', async () => {
   assert.ok(content.includes('echo "custom hook"'));
   assert.ok(content.includes('# BEGIN CODE-GRAPH'));
   assert.ok(content.includes('# END CODE-GRAPH'));
+  assert.ok(content.includes('if [ "$CG_STATUS" = ok ]; then\n  git add'), 'map is staged only after a successful generate');
+  assert.ok(content.includes('command -v code-graph'), 'falls back to PATH when the install-time CLI path is gone');
+  assert.ok(!/[A-Za-z]:\\/.test(content), 'hook paths must use forward slashes for sh');
 
   await installGitHook(tempDir);
   const reinstalled = fs.readFileSync(hookPath, 'utf8');
@@ -982,9 +1212,8 @@ test('writeJson does not pollute prototype from malicious existing file', async 
   fs.rmSync(tempDir, { recursive: true });
 });
 
-test('ReflectionManager sanitizes newlines and long input', async () => {
+test('ReflectionManager sanitizes newlines and long input', withTempCwd(async () => {
   const tempFile = path.join(process.cwd(), CONFIG.REFLECTIONS_FILE);
-  const backup = fs.existsSync(tempFile) ? fs.readFileSync(tempFile, 'utf8') : null;
   fs.writeFileSync(tempFile, '# LLM_LEARNINGS\n');
 
   const uniq = 'sanitize-test-' + Date.now();
@@ -1001,10 +1230,7 @@ test('ReflectionManager sanitizes newlines and long input', async () => {
   content = fs.readFileSync(tempFile, 'utf8');
   assert.ok(!content.split('\n').some(l => l.startsWith('- [INJECTED]')),
     'newline in category must not inject new bracketed entries');
-
-  if (backup) fs.writeFileSync(tempFile, backup);
-  else fs.unlinkSync(tempFile);
-});
+}));
 
 test('ProjectMapper skips files exceeding MAX_FILE_BYTES', async () => {
   const tempDir = path.join(process.cwd(), 'temp_sec_size');

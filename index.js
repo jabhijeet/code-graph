@@ -6,10 +6,11 @@
  * Compact, language-agnostic codebase mapper for LLM token efficiency.
  */
 
-import { promises as fsp, realpathSync } from 'fs';
+import { promises as fsp, readFileSync, realpathSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import chokidar from 'chokidar';
+import ignore from 'ignore';
 
 import { CONFIG, SUPPORTED_EXTENSIONS, SUPPORTED_PLATFORMS, escapeRegex, isValidPlatform } from './lib/config.js';
 import { CodeParser } from './lib/parser.js';
@@ -20,6 +21,7 @@ import { SkillManager } from './lib/skills/core.js';
 import { AgentManager } from './lib/agents.js';
 
 const __filename = fileURLToPath(import.meta.url);
+const PACKAGE_NAME = 'code-graph-llm';
 
 // --- CLI ---
 
@@ -29,7 +31,8 @@ function printHelp() {
 Usage: code-graph <command> [options]
 
 Commands:
-  generate                              Build the project map (default)
+  generate [--max-tokens N]             Build the project map (default)
+  check [--max-tokens N]                Exit 1 if the map is stale (for CI)
   init                                  Scaffold rule and reflection files
   reflect <category> <lesson>           Record a project lesson
   watch                                 Watch for changes and auto-regenerate
@@ -48,6 +51,9 @@ Commands:
 Flags:
   -g, --global                          Install to user home dir (all projects)
                                         Default installs to current project only
+  --max-tokens N                        Trim lowest-ranked files from the markdown map
+                                        to fit ~N tokens (JSON map stays complete)
+  --no-cache                            Re-parse every file (ignore ${CONFIG.CACHE_FILE})
   --version, -v                         Print version
   --help, -h                            Print this help
 
@@ -67,12 +73,22 @@ Platforms (extended — 53 agents total):
 async function main() {
   const rawArgs = process.argv.slice(2);
   const isGlobal = rawArgs.includes('-g') || rawArgs.includes('--global');
-  const filteredArgs = rawArgs.filter(a => a !== '-g' && a !== '--global');
+  const useCache = !rawArgs.includes('--no-cache');
+  const maxTokensIdx = rawArgs.indexOf('--max-tokens');
+  const maxTokensArg = maxTokensIdx === -1 ? null : rawArgs[maxTokensIdx + 1];
+  const filteredArgs = rawArgs.filter((a, i) =>
+    a !== '-g' && a !== '--global' && a !== '--no-cache'
+    && !(maxTokensIdx !== -1 && (i === maxTokensIdx || i === maxTokensIdx + 1)));
   const [command, ...args] = filteredArgs;
   const cwd = process.cwd();
 
   try {
     const platforms = SUPPORTED_PLATFORMS;
+    const maxTokens = maxTokensArg === null ? 0 : Number.parseInt(maxTokensArg, 10);
+    if (maxTokensArg !== null && !(maxTokens > 0)) {
+      throw new Error(`--max-tokens expects a positive integer, got "${maxTokensArg ?? ''}"`);
+    }
+    const mapperOptions = { maxTokens, useCache };
 
     switch (command || 'generate') {
       case '--help':
@@ -86,8 +102,18 @@ async function main() {
         break;
       case 'generate':
         await ProjectInitializer.init(cwd);
-        await new ProjectMapper(cwd).generate();
+        await new ProjectMapper(cwd, mapperOptions).generate();
         break;
+      case 'check': {
+        const { upToDate, stale } = await new ProjectMapper(cwd, mapperOptions).check();
+        if (upToDate) {
+          console.log('[Code-Graph] Map is up to date.');
+        } else {
+          console.error(`[Code-Graph] Map is stale: ${stale.join(', ')}. Run 'code-graph generate'.`);
+          process.exitCode = 1;
+        }
+        break;
+      }
       case 'init':
         await ProjectInitializer.init(cwd);
         break;
@@ -126,7 +152,7 @@ async function main() {
         }
         break;
       case 'watch':
-        startWatcher(cwd);
+        startWatcher(cwd, mapperOptions);
         break;
       case 'mcp': {
         const { startMcpServer } = await import('./lib/mcp-server.js');
@@ -157,18 +183,35 @@ export async function installGitHook(cwd) {
 
   const blockStart = '# BEGIN CODE-GRAPH';
   const blockEnd = '# END CODE-GRAPH';
+  // Forward slashes: the hook runs under sh (Git Bash on Windows).
+  const cliPath = __filename.replace(/\\/g, '/');
   const managedBlock = `${blockStart}
 # Code-Graph Advisory: Map Sync & Reflection Reminder
 echo "[Code-Graph] Validating commit..."
 
-# 1. Regenerate Map
-node "${__filename}" generate
-git add "${CONFIG.MAP_FILE}"
+# 1. Regenerate Map (the install-time path may vanish, e.g. a cleared npx cache)
+CG_STATUS=failed
+if [ -f "${cliPath}" ]; then
+  node "${cliPath}" generate >/dev/null && CG_STATUS=ok
+elif command -v code-graph >/dev/null 2>&1; then
+  code-graph generate >/dev/null && CG_STATUS=ok
+elif command -v npx >/dev/null 2>&1; then
+  npx --yes ${PACKAGE_NAME}@latest generate >/dev/null && CG_STATUS=ok
+else
+  CG_STATUS=missing
+fi
+if [ "$CG_STATUS" = ok ]; then
+  git add "${CONFIG.MAP_FILE}" "${CONFIG.MAP_JSON_FILE}"
+elif [ "$CG_STATUS" = missing ]; then
+  echo "[Code-Graph] code-graph not found; skipping map regeneration."
+else
+  echo "[Code-Graph] Map generation failed; map not staged."
+fi
 
 # 2. Reflection Advisory
 # Notify if code changed but reflections didn't (Soft Nudge)
 CODE_CHANGES=$(git diff --cached --name-only | grep -E "\\.(${CONFIG.SUPPORTED_EXTENSIONS.map(e => e.slice(1)).join('|')})$")
-REFLECT_CHANGES=$(git diff --cached --name-only | grep "${CONFIG.REFLECTIONS_FILE}")
+REFLECT_CHANGES=$(git diff --cached --name-only | grep -F "${CONFIG.REFLECTIONS_FILE}")
 
 if [ ! -z "$CODE_CHANGES" ] && [ -z "$REFLECT_CHANGES" ]; then
   echo "--------------------------------------------------------"
@@ -206,13 +249,49 @@ ${blockEnd}
 
 let activeWatcher = null;
 
-export function startWatcher(cwd) {
+export function startWatcher(cwd, mapperOptions = {}) {
   console.log(`[Code-Graph] Watching ${cwd}...`);
+  const ig = ignore().add(CONFIG.DEFAULT_IGNORES);
+  try {
+    ig.add(readFileSync(path.join(cwd, CONFIG.IGNORE_FILE), 'utf8'));
+  } catch (e) {
+    if (e.code !== 'ENOENT') console.warn(`[Code-Graph] Warning: unreadable ${CONFIG.IGNORE_FILE}: ${e.message}`);
+  }
+  const isIgnored = (p, stats) => {
+    const rel = path.relative(cwd, p).replace(/\\/g, '/');
+    if (!rel || rel.startsWith('..')) return false;
+    return ig.ignores(stats?.isDirectory() ? `${rel}/` : rel);
+  };
+
   let timer;
-  const watcher = chokidar.watch(cwd, { ignoreInitial: true, ignored: [/node_modules/, /\.git/, new RegExp(CONFIG.MAP_FILE)] })
-    .on('all', () => {
+  let running = false;
+  let pending = false;
+  const regenerate = async () => {
+    // Serialize runs: a change during a long scan triggers exactly one follow-up run.
+    if (running) {
+      pending = true;
+      return;
+    }
+    running = true;
+    try {
+      await new ProjectMapper(cwd, mapperOptions).generate();
+    } catch (err) {
+      console.error(`[Code-Graph] Regeneration failed: ${err.message}`);
+    } finally {
+      running = false;
+      if (pending) {
+        pending = false;
+        regenerate();
+      }
+    }
+  };
+
+  const watcher = chokidar.watch(cwd, { ignoreInitial: true, ignored: isIgnored })
+    .on('all', (event, filePath) => {
+      const ext = path.extname(filePath).toLowerCase();
+      if (!event.endsWith('Dir') && !CONFIG.SUPPORTED_EXTENSIONS.includes(ext)) return;
       clearTimeout(timer);
-      timer = setTimeout(() => new ProjectMapper(cwd).generate(), 1000);
+      timer = setTimeout(regenerate, 1000);
     })
     .on('error', (err) => {
       console.error(`[Code-Graph] Watcher error: ${err.message}`);
@@ -236,6 +315,7 @@ if (process.argv[1] && realpathSync(path.resolve(process.argv[1])) === realpathS
 // Re-export all public APIs for library consumers
 export { CONFIG, SUPPORTED_EXTENSIONS, SUPPORTED_PLATFORMS, escapeRegex, isValidPlatform, stripDangerousKeys } from './lib/config.js';
 export { CodeParser } from './lib/parser.js';
+export { TreeSitterParser, GRAMMAR_BY_EXTENSION } from './lib/treesitter.js';
 export { ProjectMapper } from './lib/mapper.js';
 export { ReflectionManager } from './lib/reflections.js';
 export { ProjectInitializer } from './lib/initializer.js';

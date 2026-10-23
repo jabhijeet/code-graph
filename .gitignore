@@ -54,6 +54,7 @@ node_modules/
 node_modules
 
 # Debug logs
+test-output.txt
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -68,6 +69,8 @@ build/
 
 # Generated files — output of `code-graph generate` and `code-graph init`
 llm-code-graph.md
+llm-code-graph.json
+.code-graph-cache.json
 llm-agent-rules.md
 llm-agent-project-learnings.md
 

@@ -3,7 +3,7 @@
  * Tests install-skills + install-agent for every platform,
  * then validates files, content, and structure.
  */
-import { SkillManager } from '../lib/skills.js';
+import { SkillManager } from '../lib/skills/core.js';
 import { AgentManager } from '../lib/agents.js';
 import { CONFIG } from '../lib/config.js';
 import fs from 'fs';
@@ -90,7 +90,7 @@ const expectations = {
       { file: '.cursor/rules/freshdeps.mdc', contains: ['alwaysApply: true', 'FreshDeps'] },
       { file: '.cursor/rules/contextbudget.mdc', contains: ['alwaysApply: true', 'ContextBudget'] }
     ],
-    agentCheck: { file: '.code-graph-agent.md', contains: ['Code-Graph Specialist'] }
+    agentCheck: { file: '.code-graph-agent.md', contains: ['Code-Graph Personas'] }
   },
   gemini: {
     localFiles: ['GEMINI.md'],
@@ -111,7 +111,7 @@ const expectations = {
       { file: 'AGENTS.md', absent: ['RepoContext'] },
       { file: '.codex/hooks.json', json: true, check: (d) => d.codex_hooks === true && d.hooks?.PreToolUse?.length > 0 }
     ],
-    agentCheck: { file: '.code-graph-agent.md', contains: ['Code-Graph Specialist'] }
+    agentCheck: { file: '.code-graph-agent.md', contains: ['Code-Graph Personas'] }
   },
   opencode: {
     localFiles: ['AGENTS.md', '.opencode/plugins/projectmap.js', '.opencode/plugins/thinkbeforecoding.js', '.opencode/plugins/goaldriven.js', '.opencode/plugins/contextbudget.js', 'opencode.json'],
@@ -125,7 +125,7 @@ const expectations = {
       { file: '.opencode/plugins/contextbudget.js', contains: ['contextbudget'] },
       { file: 'opencode.json', json: true, check: (d) => Array.isArray(d.plugins) }
     ],
-    agentCheck: { file: '.code-graph-agent.md', contains: ['Code-Graph Specialist'] }
+    agentCheck: { file: '.code-graph-agent.md', contains: ['Code-Graph Personas'] }
   },
   antigravity: {
     localFiles: [
@@ -156,7 +156,7 @@ const expectations = {
       { file: '.agent/skills/simplicity/SKILL.md', contains: ['name: simplicity', 'Simplicity'] },
       { file: '.agent/skills/changelimit/SKILL.md', contains: ['name: changelimit', 'SurgicalChanges'] },
       { file: '.agent/skills/goaldriven/SKILL.md', contains: ['name: goaldriven', 'verifiable terms'] },
-      { file: '.agent/skills/freshdeps/SKILL.md', contains: ['name: freshdeps', 'latest stable compatible dependencies'] },
+      { file: '.agent/skills/freshdeps/SKILL.md', contains: ['name: freshdeps', 'latest stable release that is compatible'] },
       { file: '.agent/skills/contextbudget/SKILL.md', contains: ['name: contextbudget', 'description:', 'compact rolling summary'] },
       { file: '.agent/rules/projectmap.md', contains: [CONFIG.MAP_FILE] },
       { file: '.agent/rules/thinkbeforecoding.md', contains: ['ThinkBeforeCoding'] },
@@ -207,7 +207,7 @@ const expectations = {
       { file: 'AGENTS.md', contains: ['ProjectMap', 'Reflections', 'ThinkBeforeCoding', 'GoalDriven', 'ContextBudget'] },
       { file: 'AGENTS.md', absent: ['RepoContext'] }
     ],
-    agentCheck: { file: '.code-graph-agent.md', contains: ['Code-Graph Specialist'] }
+    agentCheck: { file: '.code-graph-agent.md', contains: ['Code-Graph Personas'] }
   },
   copilot: {
     localFiles: ['AGENTS.md'],
@@ -216,7 +216,7 @@ const expectations = {
       { file: 'AGENTS.md', contains: ['ProjectMap', 'Reflections', 'ThinkBeforeCoding', 'Simplicity', 'SurgicalChanges', 'GoalDriven', 'FreshDeps', 'ContextBudget'] },
       { file: 'AGENTS.md', absent: ['RepoContext'] }
     ],
-    agentCheck: { file: '.code-graph-agent.md', contains: ['Code-Graph Specialist'] }
+    agentCheck: { file: '.code-graph-agent.md', contains: ['Code-Graph Personas'] }
   },
   vscode: {
     localFiles: ['.github/copilot-instructions.md'],
@@ -225,7 +225,7 @@ const expectations = {
       { file: '.github/copilot-instructions.md', contains: ['ProjectMap', 'Reflections', 'ThinkBeforeCoding', 'GoalDriven', 'ContextBudget'] },
       { file: '.github/copilot-instructions.md', absent: ['RepoContext'] }
     ],
-    agentCheck: { file: '.code-graph-agent.md', contains: ['Code-Graph Specialist'] }
+    agentCheck: { file: '.code-graph-agent.md', contains: ['Code-Graph Personas'] }
   },
   roocode: {
     localFiles: ['.clinerules', '.roorules'],
@@ -236,7 +236,7 @@ const expectations = {
       { file: '.roorules', contains: ['ProjectMap', 'Reflections', 'ThinkBeforeCoding', 'GoalDriven', 'ContextBudget'] },
       { file: '.roorules', absent: ['RepoContext'] }
     ],
-    agentCheck: { file: '.code-graph-agent.md', contains: ['Code-Graph Specialist'] }
+    agentCheck: { file: '.code-graph-agent.md', contains: ['Code-Graph Personas'] }
   },
   aider: {
     localFiles: ['AGENTS.md'],
@@ -245,7 +245,7 @@ const expectations = {
       { file: 'AGENTS.md', contains: ['ProjectMap', 'Reflections', 'ThinkBeforeCoding', 'Simplicity', 'SurgicalChanges', 'GoalDriven', 'FreshDeps', 'ContextBudget'] },
       { file: 'AGENTS.md', absent: ['RepoContext'] }
     ],
-    agentCheck: { file: '.code-graph-agent.md', contains: ['Code-Graph Specialist'] }
+    agentCheck: { file: '.code-graph-agent.md', contains: ['Code-Graph Personas'] }
   }
 };
 

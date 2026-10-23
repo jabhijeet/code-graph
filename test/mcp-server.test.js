@@ -13,6 +13,7 @@ import {
   handleGetProjectGraph,
   handleSearchSymbols,
   handleTraceDependencies,
+  handleGetDependents,
 } from '../lib/mcp-server.js';
 
 // Helper: assert result is a structured MCP error with the given error_type
@@ -36,23 +37,18 @@ test('ReflectionManager.add writes to explicit cwd', async () => {
 });
 
 test('ReflectionManager.add defaults cwd to process.cwd() (backward compat)', async () => {
-  const filePath = join(process.cwd(), REFLECTIONS_FILE);
-  let backup = null;
-  try {
-    backup = await readFile(filePath, 'utf8');
-  } catch (e) {
-    if (e.code !== 'ENOENT') throw e;
-  }
+  // chdir into a temp dir: test files run in parallel processes, so touching the repo's
+  // real learnings file races with other tests and leaks entries into it.
+  const dir = await mkdtemp(join(tmpdir(), 'cg-mcp-cwd-'));
+  const originalCwd = process.cwd();
+  process.chdir(dir);
   try {
     await ReflectionManager.add('STYLE', 'backward compat test');
-    const content = await readFile(filePath, 'utf8');
+    const content = await readFile(join(dir, REFLECTIONS_FILE), 'utf8');
     assert.ok(content.includes('[STYLE] backward compat test'), 'lesson not written to process.cwd()');
   } finally {
-    if (backup !== null) {
-      await writeFile(filePath, backup);
-    } else {
-      await unlink(filePath).catch(() => {});
-    }
+    process.chdir(originalCwd);
+    await rm(dir, { recursive: true, force: true });
   }
 });
 
@@ -85,9 +81,9 @@ test('handleGenerateGraph returns success with file count', async () => {
   }
 });
 
-test('handleGenerateGraph returns structured error for nonexistent path', async () => {
+test('handleGenerateGraph returns INVALID_PATH for nonexistent path', async () => {
   const result = await handleGenerateGraph({ project_path: join(tmpdir(), 'cg-nonexistent-' + Date.now()) });
-  assertMcpError(result, 'INTERNAL_ERROR');
+  assertMcpError(result, 'INVALID_PATH');
 });
 
 // get_file_symbols — uses synthetic graph fixture, no live project dependency
@@ -343,6 +339,155 @@ test('handleTraceDependencies normalizes Windows backslash paths', async () => {
     const result = await handleTraceDependencies({ file_path: 'lib\\reflections.js', project_path: dir });
     assert.ok(result.outgoing.some(d => d.file === 'lib/config.js'), JSON.stringify(result));
   } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+// ── Regression: symbol lists whose contexts contain brackets and commas ─────
+
+const FIXTURE_GRAPH_RICH = `# CODE_GRAPH
+TOKENS: ~100 (est.)
+
+> Legend: * core, (↑out ↓in deps), s: symbols, d: desc
+
+- *index.js (2↑ 0↓) | d: CLI entry.
+  - s: [installGitHook [(cwd)], main [()], execute [(platform, action)], printHelp [--- CLI ---], ... +3 more]
+
+## EDGES
+[index.js] -> [lib/a.js]
+`;
+
+test('markdown fallback parses every symbol even when contexts contain [] and commas', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'cg-mcp-rich-'));
+  try {
+    await writeFile(join(dir, 'llm-code-graph.md'), FIXTURE_GRAPH_RICH);
+    const result = await handleGetFileSymbols({ file_path: 'index.js', project_path: dir });
+    assert.deepEqual(result.symbols, ['installGitHook', 'main', 'execute', 'printHelp']);
+    const search = await handleSearchSymbols({ query: 'print', project_path: dir });
+    assert.deepEqual(search.results[0].symbols, ['printHelp']);
+    const noise = await handleSearchSymbols({ query: 'action)', project_path: dir });
+    assert.equal(noise.total, 0, 'context fragments must not appear as symbols');
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('handlers prefer llm-code-graph.json over markdown', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'cg-mcp-json-'));
+  try {
+    await writeFile(join(dir, 'llm-code-graph.md'), FIXTURE_GRAPH_RICH);
+    await writeFile(join(dir, 'llm-code-graph.json'), JSON.stringify({
+      version: 'x',
+      files: [{ path: 'only/in/json.js', core: false, out: 0, in: 0, desc: '', symbols: [{ name: 'jsonOnly', context: '' }], tags: [] }],
+      imports: {},
+      inheritance: []
+    }));
+    const result = await handleSearchSymbols({ query: 'jsonOnly', project_path: dir });
+    assert.equal(result.total, 1);
+    assert.equal(result.results[0].file, 'only/in/json.js');
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('generated JSON map round-trips through MCP handlers', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'cg-mcp-rt-'));
+  try {
+    await mkdir(join(dir, 'lib'));
+    await writeFile(join(dir, 'lib', 'config.js'), 'export const CONFIG = {};\nexport function helper(a, b) {}');
+    await writeFile(join(dir, 'lib', 'parser.js'), "import { CONFIG } from './config.js';\nexport class Parser {}");
+    await writeFile(join(dir, 'index.js'), "import { Parser } from './lib/parser.js';\nexport async function main() {}");
+    const gen = await handleGenerateGraph({ project_path: dir });
+    assert.equal(gen.success, true, JSON.stringify(gen));
+    assert.equal(gen.files_scanned, 3);
+
+    const syms = await handleGetFileSymbols({ file_path: 'lib/config.js', project_path: dir });
+    assert.deepEqual(syms.symbols.sort(), ['CONFIG', 'helper']);
+    const mainSyms = await handleGetFileSymbols({ file_path: 'index.js', project_path: dir });
+    assert.ok(!mainSyms.symbols.includes('function'), 'export async function must not yield a "function" symbol');
+
+    const deps = await handleGetDependents({ file_path: 'lib/config.js', project_path: dir });
+    assert.deepEqual(deps.dependents, [
+      { file: 'lib/parser.js', distance: 1 },
+      { file: 'index.js', distance: 2 }
+    ]);
+    const shallow = await handleGetDependents({ file_path: 'lib/config.js', project_path: dir, depth: 1 });
+    assert.deepEqual(shallow.dependents.map(d => d.file), ['lib/parser.js']);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('handleGetDependents handles import cycles', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'cg-mcp-cyc-'));
+  try {
+    await writeFile(join(dir, 'llm-code-graph.md'), `# CODE_GRAPH\n\n- a.js (1↑ 1↓) | d: \n  - s: []\n- b.js (1↑ 1↓) | d: \n  - s: []\n\n## EDGES\n[a.js] -> [b.js]\n[b.js] -> [a.js]\n`);
+    const result = await handleGetDependents({ file_path: 'a.js', project_path: dir, depth: 10 });
+    assert.deepEqual(result.dependents, [{ file: 'b.js', distance: 1 }]);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('handlers return INVALID_PATH when project_path is a file', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'cg-mcp-file-'));
+  try {
+    const filePath = join(dir, 'not-a-dir.txt');
+    await writeFile(filePath, 'x');
+    assertMcpError(await handleGenerateGraph({ project_path: filePath }), 'INVALID_PATH');
+    assertMcpError(await handleSearchGraph({ query: 'x', project_path: filePath }), 'INVALID_PATH');
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('handleAddReflection reports duplicates and rejects empty lessons', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'cg-mcp-dup-'));
+  try {
+    const first = await handleAddReflection({ category: 'LOGIC', lesson: 'same lesson', project_path: dir });
+    assert.equal(first.duplicate, false);
+    const second = await handleAddReflection({ category: 'LOGIC', lesson: 'same lesson', project_path: dir });
+    assert.equal(second.success, true);
+    assert.equal(second.duplicate, true);
+    assertMcpError(await handleAddReflection({ category: 'LOGIC', lesson: '   ', project_path: dir }), 'INVALID_INPUT');
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+// ── Regression: stdout must carry only JSON-RPC frames ───────────────────────
+
+test('MCP stdio server keeps generate_graph logs off stdout', async () => {
+  const { spawn } = await import('node:child_process');
+  const dir = await mkdtemp(join(tmpdir(), 'cg-mcp-stdio-'));
+  await writeFile(join(dir, 'a.js'), 'function a() {}');
+  const child = spawn(process.execPath, [join(process.cwd(), 'index.js'), 'mcp'], { stdio: ['pipe', 'pipe', 'pipe'] });
+  try {
+    let stdout = '';
+    const response = new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error(`no response; stdout so far: ${stdout}`)), 20000);
+      child.stdout.on('data', (chunk) => {
+        stdout += chunk;
+        if (stdout.includes('"id":2') && stdout.endsWith('\n')) {
+          clearTimeout(timer);
+          resolve();
+        }
+      });
+    });
+    const send = (msg) => child.stdin.write(JSON.stringify(msg) + '\n');
+    send({ jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'test', version: '0' } } });
+    send({ jsonrpc: '2.0', method: 'notifications/initialized' });
+    send({ jsonrpc: '2.0', id: 2, method: 'tools/call', params: { name: 'generate_graph', arguments: { project_path: dir } } });
+    await response;
+
+    const lines = stdout.split('\n').filter(Boolean);
+    for (const line of lines) {
+      assert.doesNotThrow(() => JSON.parse(line), `non-JSON line on stdout: ${line}`);
+    }
+    const reply = lines.map(l => JSON.parse(l)).find(m => m.id === 2);
+    assert.ok(!reply.result.isError, JSON.stringify(reply));
+  } finally {
+    child.kill();
     await rm(dir, { recursive: true, force: true });
   }
 });

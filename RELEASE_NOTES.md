@@ -1,5 +1,45 @@
 # RELEASE NOTES
 
+### v6.0.0 (2026-10-23)
+
+**Breaking changes**
+- **Parser engine:** JavaScript, TypeScript, TSX, Python, Go, Rust, Java, C#, C/C++, PHP, Ruby, and Bash are now parsed with tree-sitter. Symbol lists, edges, and inheritance for these languages change — they are more complete and no longer contain false matches from strings or comments. Regenerate maps after upgrading; a `check` against a 5.x map reports stale.
+- **Map format:** The markdown header gains a `TOKENS: ~N (est.)` line. Files with equal rank are now ordered by path. Only `index|main|app|server|cli` plus a single extension counts as core (`index.test.js` no longer does).
+- **New generated files:** `generate` also writes `llm-code-graph.json` and `.code-graph-cache.json`. The pre-commit hook stages `llm-code-graph.json` with the markdown map. Add `.code-graph-cache.json` to `.gitignore`.
+- **Tags:** `TODO|FIXME|BUG|DEPRECATED` are matched case-sensitively; prose such as "Deprecated:" is no longer a tag.
+- **MCP:** `project_path` must be an existing directory — a missing path now returns `INVALID_PATH` (was `INTERNAL_ERROR`). `generate_graph` refuses a filesystem root. `add_reflection` returns `duplicate: true|false`.
+- **Library API:** `ReflectionManager.add()` returns `{ status: 'added' | 'duplicate' | 'invalid' | 'error', entry?, message? }` (was `undefined`) and treats only an identical lesson (case-insensitive) as a duplicate. `ProjectMapper.parseContent()` is async. `ProjectMapper` takes `{ maxTokens, useCache }` options and exposes `build()` and `check()`.
+- **Node.js:** `engines.node` is now `>=20.19.0` (required by chokidar 5).
+- **Published files:** The package ships only `index.js`, `lib/`, `README.md`, `RELEASE_NOTES.md`, `EXAMPLES.md`, and `LICENSE`. Tests, `docs/`, and stray local files are no longer published.
+- **Dependencies:** Adds `@vscode/tree-sitter-wasm@^0.3.1` (prebuilt WASM, ~22MB installed, no native build). Raises `@modelcontextprotocol/sdk` to `^1.32.1`, which fixes the advisories reported by `npm audit` for ≤1.31.0.
+
+**Features**
+- **Tree-sitter parsing (`lib/treesitter.js`):** Walks the syntax tree with per-language rules for definitions, imports, and inheritance; tags come from comment nodes only. Java keeps the annotation prefix (`@RestController X`). Python relative imports (`from ..pkg.mod import x`) become resolvable paths. Languages without a bundled grammar, or any grammar that fails to load, fall back to the regex parser. The scan prints `Parsers: N tree-sitter, M regex, K unparsed.` and the JSON graph records `parser` per file.
+- **JSON graph:** `llm-code-graph.json` contains every file, symbol (`{ name, context }`), tag, import, and inheritance edge with no caps. MCP tools read it first and fall back to the markdown map.
+- **Incremental cache:** Files with unchanged mtime and size reuse their cached parse. The cache resets on version change; `--no-cache` forces a full parse.
+- **`code-graph check`:** Rebuilds in memory and exits 1 if `llm-code-graph.md` or `llm-code-graph.json` differ from disk. CRLF line endings are ignored.
+- **`--max-tokens N`:** Keeps files in rank order until the estimated budget is reached and records the omission count in the map. The JSON graph is never trimmed.
+- **Import resolution:** `./dir` → `dir/index.<ext>`, `.js/.jsx/.mjs/.cjs` specifiers that point at TypeScript sources, and `compilerOptions.paths` + `baseUrl` from a root `tsconfig.json` or `jsconfig.json` (comments and trailing commas allowed).
+- **MCP `get_dependents`:** Breadth-first walk over reverse imports, `depth` 1–10 (default 3), returns each dependent with its hop distance; cycles are handled.
+- **More extensions:** `.mjs .cjs .mts .cts .vue .svelte .lua .sh`; extension matching is case-insensitive.
+- **npx support:** README documents `npx code-graph-llm@latest <command>` and an npx-based `.mcp.json`. The pre-commit hook falls back to `npx --yes code-graph-llm@latest generate` when neither the install-time CLI path nor `code-graph` on `PATH` exists.
+- **Skills and agents:** The ProjectMap skill and the tracer persona mention `get_dependents`. Reinstalling removes the v5.x ProjectMap section from `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, and the other shared files, so upgrades do not duplicate it.
+- **LICENSE:** Added the MIT license file that `package.json` already declared.
+
+**Fixes**
+- **MCP stdio corruption:** Progress logs from `generate_graph` and `add_reflection` were written to stdout and corrupted the JSON-RPC stream. All console output in the MCP process now goes to stderr.
+- **MCP symbol parsing:** Symbol lists were cut at the first `]` and split on commas inside contexts, so tools saw only the first symbol per file and fake symbols such as `action)]`.
+- **Regex parser:** Strings, comments, and regex literals are stripped in one pass, so `'https://…'`, `"it's"`, and quotes inside regex literals no longer hide code. `export async function x` no longer yields a symbol named `function`. Symbol context no longer treats C `#include` lines as comments or borrows the next line as a signature.
+- **Reflections:** Duplicate detection compared substrings (a lesson "test" was rejected if any lesson contained "test"). New files used a different header than `init`; both now share `CONFIG.REFLECTIONS_HEADER`.
+- **Watcher:** Respects `.gitignore` and default ignores, reacts only to source files, serializes regenerations (one follow-up run if changes arrive mid-scan), and logs errors instead of crashing.
+- **Pre-commit hook:** Uses the install-time CLI path only if it still exists, otherwise `code-graph` on `PATH`; stages the maps only after a successful generate; uses forward-slash paths for `sh`; matches the reflections file literally.
+- **Mapper:** A file that times out can no longer add its result after being skipped. The MCP tool timeout timer is cleared after each call.
+- **Tests:** Tests no longer back up and restore the repository's real learnings file (parallel test processes raced and leaked entries into it); they run in temp directories. `platform-audit.js` imported a removed `lib/skills.js`, and its persona and FreshDeps expectations predated the v5.1.0 wording.
+
+**Tests:** 120 tests (`index.test.js`, `mcp-server.test.js`, new `treesitter.test.js`), including an end-to-end MCP stdio test that asserts every stdout line is JSON.
+
+**Maintenance:** Bumped version to 6.0.0 in `config.js`, `package.json`, `package-lock.json`, `README.md`, and `RELEASE_NOTES.md`.
+
 ### v5.1.0 (2026-05-20)
 - **MCP Tools (3 new):** Added `get_project_graph` (reads full `llm-code-graph.md` — use INSTEAD of Read), `search_symbols` (symbol search — use INSTEAD of Grep), and `trace_dependencies` (upstream/downstream blast radius — use INSTEAD of manual EDGES parsing). Server now exposes 8 tools total (`generate_graph`, `get_file_symbols`, `search_graph`, `add_reflection`, `get_reflections` unchanged).
 - **MCP Structured Errors:** All tool handlers now return `{ isError: true, content: [{ type: "text", text: JSON.stringify({...}) }] }` with a typed `error_type` field (`GRAPH_NOT_FOUND`, `FILE_NOT_IN_GRAPH`, `INVALID_PATH`, `INVALID_INPUT`, `TOOL_TIMEOUT`, `UNKNOWN_TOOL`, `INTERNAL_ERROR`), a `retryable` boolean, and an optional `suggested_action` string. Agents can branch on `error_type` instead of parsing human-readable messages.

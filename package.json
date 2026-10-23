@@ -1,6 +1,6 @@
 {
   "name": "code-graph-llm",
-  "version": "5.1.0",
+  "version": "6.0.0",
   "description": "Compact, language-agnostic codebase mapper for LLM token efficiency.",
   "main": "index.js",
   "bin": {
@@ -12,7 +12,9 @@
     "token-efficiency",
     "codebase-map",
     "ai-agent",
-    "documentation"
+    "documentation",
+    "tree-sitter",
+    "mcp"
   ],
   "author": "Code-Graph Contributors",
   "license": "MIT",
@@ -21,11 +23,21 @@
     "url": "https://github.com/jabhijeet/code-graph.git"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "@vscode/tree-sitter-wasm": "^0.3.1",
     "chokidar": "^5.0.0",
     "ignore": "^7.0.5"
   },
   "type": "module",
+  "files": [
+    "index.js",
+    "lib/",
+    "EXAMPLES.md",
+    "RELEASE_NOTES.md"
+  ],
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "scripts": {
     "test": "node --test test/*.test.js",
     "preuninstall": "node index.js uninstall-all"

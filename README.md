@@ -1,31 +1,38 @@
-# CODE-GRAPH (v5.1.0)
+# CODE-GRAPH (v6.0.0)
 
 > Inspired by [Andrej Karpathy skills](https://github.com/forrestchang/andrej-karpathy-skills), [juliusbrussee/caveman](https://github.com/juliusbrussee/caveman), and the community's work building better agent workflows.
 
 A language-agnostic, ultra-compact codebase mapper and **agent memory system** for LLM agents. Code-Graph gives agents a compact file, symbol, and dependency index, then pairs it with persistent project learnings so agents can avoid repeating mistakes across sessions.
 
-## New in v5.1.0
+## New in v6.0.0
 
-- **MCP Tools (3 new):** Added `get_project_graph` (reads full `llm-code-graph.md` — use instead of Read), `search_symbols` (symbol search across all files — use instead of Grep), and `trace_dependencies` (upstream/downstream blast radius for a file — use instead of manual EDGES parsing). Server now exposes 8 tools total.
-- **MCP Structured Errors:** All tool handlers return `{ isError: true, content: [{ type: "text", text: JSON.stringify({ error_type, message, retryable, suggested_action }) }] }`. Error types: `GRAPH_NOT_FOUND`, `FILE_NOT_IN_GRAPH`, `INVALID_PATH`, `INVALID_INPUT`, `TOOL_TIMEOUT`, `UNKNOWN_TOOL`, `INTERNAL_ERROR`. Agents can branch on `error_type` and use `suggested_action` to self-correct.
-- **MCP Timeouts:** All tool calls are wrapped in `Promise.race` with a timeout. Default: 30s. `generate_graph`: 300s (5 min). Timeout returns `TOOL_TIMEOUT` with `retryable: true`.
-- **Agent Descriptions (WHEN/INSTEAD):** All sub-agent descriptions for Claude Code, Gemini, Kiro, Antigravity, and generic platforms now follow the WHEN/INSTEAD pattern — describing trigger conditions and what they replace (Read, Grep, manual EDGES parsing) rather than abstract capability labels.
-- **Skills (MCP awareness):** `ProjectMap` and `Reflections` skills now include conditional MCP tool guidance for all 40+ supported platforms: `get_project_graph` instead of Read, `search_symbols` instead of Grep, `add_reflection`/`get_reflections` instead of CLI and direct file reads.
-- **Generated rules (MCP section):** `llm-agent-rules.md` scaffolded by `code-graph init` now includes a full MCP tools section listing all 8 tools with INSTEAD guidance.
-- **Gitignore (generated platform files):** Added all generated platform output files to `.gitignore` (`GEMINI.md`, `AGENTS.md`, `.clinerules`, `.roorules`, `.kiro/`, `.opencode/`, `.roo/`, `.cursor/rules/`, `llm-agent-rules.md`, `llm-agent-project-learnings.md`, and others) to prevent machine-specific paths from being committed.
-- **Tests:** Fixed 2 broken error tests (new structured error format), added 13 new tests for `handleGetProjectGraph`, `handleSearchSymbols`, `handleTraceDependencies`, `INVALID_PATH` validation, and `GRAPH_NOT_FOUND` with `suggested_action`. 24 tests total in `mcp-server.test.js`.
+- **Tree-sitter parsing:** Symbols, imports, inheritance, and comment tags are now read from a real syntax tree for JavaScript, TypeScript, TSX, Python, Go, Rust, Java, C#, C/C++, PHP, Ruby, and Bash. Other languages keep the regex parser. See [Parsing](#parsing).
+- **JSON graph (`llm-code-graph.json`):** Complete, uncapped, machine-readable graph written next to the markdown map. MCP tools read it first.
+- **Incremental scans:** Unchanged files (same mtime and size) reuse cached parse results from `.code-graph-cache.json`. Use `--no-cache` to re-parse everything.
+- **`code-graph check`:** Exits 1 when the committed map is stale. Intended for CI.
+- **`--max-tokens N`:** Trims the lowest-ranked files from the markdown map to fit a token budget. The header now shows `TOKENS: ~N (est.)`.
+- **Better import resolution:** `./dir` → `dir/index.*`, `.js` specifiers that point at `.ts` sources, `compilerOptions.paths` aliases, and Python relative imports.
+- **MCP `get_dependents`:** Transitive importers of a file with hop distance (9 tools total).
+- **Fixes:** MCP stdio stream no longer corrupted by progress logs; symbol lists with `[]`/`,` in their context parse completely; strings containing `//` or mixed quotes no longer hide code; `export async function` no longer yields a `function` symbol; prose such as "Deprecated:" is no longer a tag; watcher respects `.gitignore` and never overlaps runs; pre-commit hook survives a cleared npx cache and stages the map only after a successful generate.
+
+**Upgrading from 5.x** — see the breaking changes in [RELEASE_NOTES.md](RELEASE_NOTES.md#v600-2026-10-23). Regenerate the map once after upgrading, and add `.code-graph-cache.json` to your `.gitignore`.
 
 See [RELEASE_NOTES.md](RELEASE_NOTES.md) for full history.
 
 ## Installation
 
 ```bash
-# Global installation (recommended for CLI usage)
-npm install -g code-graph-llm
+# Zero-install: always runs the latest published version
+npx code-graph-llm@latest generate
+
+# Global installation (or upgrade an existing one to the latest version)
+npm install -g code-graph-llm@latest
 
 # Project-level installation
-npm install --save-dev code-graph-llm
+npm install --save-dev code-graph-llm@latest
 ```
+
+Every command below works through npx by replacing `code-graph` with `npx code-graph-llm@latest`, for example `npx code-graph-llm@latest install claude`. `@latest` makes npx check the registry instead of reusing an older cached copy. Requires Node.js 20.19 or newer.
 
 ## Quick Start
 
@@ -37,8 +44,14 @@ code-graph --help
 # 1. Initialize rules and memory
 code-graph init
 
-# 2. Build the graph
+# 2. Build the graph (writes llm-code-graph.md + llm-code-graph.json)
 code-graph generate
+
+# 2a. Cap the markdown map at ~4000 tokens (lowest-ranked files are omitted; JSON stays complete)
+code-graph generate --max-tokens 4000
+
+# 2b. CI: exit 1 when the committed map is stale
+code-graph check
 
 # 3. Install all bundled skills for one agent
 code-graph install-skills claude
@@ -50,8 +63,8 @@ code-graph install-skills -g claude
 Every install prints each target it writes:
 
 ```text
-[Code-Graph v5.0.0] Installed/updated: /absolute/path/to/AGENTS.md
-[Code-Graph v5.0.0] Installed/updated: /absolute/path/to/.codex/hooks.json
+[Code-Graph v6.0.0] Installed/updated: /absolute/path/to/AGENTS.md
+[Code-Graph v6.0.0] Installed/updated: /absolute/path/to/.codex/hooks.json
 ```
 
 ## Core Concepts
@@ -230,7 +243,7 @@ Instruct your agent to follow the strict protocol in `llm-agent-rules.md`:
 5. Define success criteria and report verification results or blockers.
 6. Use latest stable compatible dependencies and current APIs; avoid deprecated packages, methods, functions, flags, and patterns.
 7. Update reflections after failures, corrections, repeated mistakes, or non-obvious project behavior.
-8. Regenerate `llm-code-graph.md` after structural code changes.
+8. Regenerate `llm-code-graph.md` after structural code changes (or run `code-graph watch`).
 
 Recommended generic prompt:
 
@@ -242,24 +255,80 @@ Before acting, read llm-code-graph.md and follow llm-agent-rules.md. Treat all b
 
 `llm-code-graph.md` is a compact index generated from the project. Each file entry is designed to help an agent decide which files matter before opening raw source:
 
-- `*` marks a core entry point or high-importance file.
+- `TOKENS: ~N (est.)` in the header is the estimated size of the map (characters / 4).
+- `*` marks a core entry point (`index`, `main`, `app`, `server`, or `cli` plus one extension).
 - `(↑out ↓in)` shows dependency counts. Outgoing dependencies are files or packages this file references; incoming dependencies are files that reference it.
 - `d:` is a short description extracted from file comments or nearby context.
-- `s:` lists important symbols found in the file, such as classes, functions, types, and exported values.
-- The `## EDGES` section lists dependency relationships in the form `[source] -> [targets]`.
+- `s:` lists important symbols found in the file, such as classes, functions, types, and exported values. Each symbol carries its doc comment or signature in brackets. The list is capped per file; the JSON graph keeps every symbol.
+- Files are ordered by core status, then incoming references, then path, so output is stable across machines.
+- The `## EDGES` section lists imports as `[source] -> [targets]` and inheritance as `[child] -> [inherits] -> [parent]`.
 
 For example:
 
 ```markdown
-- *src/auth.js (3↑ 5↓) [TODO:Add JWT rotation] | d: Handles user authentication.
-  - s: [login [(username, password)], validateToken [(token: string)]]
+# CODE_GRAPH
+MISSION: COMPACT PROJECT MAP FOR LLM AGENTS.
+PROTOCOL: Follow llm-agent-rules.md
+MEMORY: See llm-agent-project-learnings.md
+TOKENS: ~412 (est.)
+
+> Legend: * core, (↑out ↓in deps), s: symbols, d: desc
+
+- *src/auth.js (3↑ 5↓) [TODO: Add JWT rotation] | d: Handles user authentication.
+  - s: [AdminUser [extends BaseUser], login [(username, password)], validateToken [(token: string)]]
 
 ## EDGES
-[src/auth.js] -> [jwt-lib, db-connector]
-[AdminUser] -> [BaseUser]
+[AdminUser] -> [inherits] -> [BaseUser]
+[src/auth.js] -> [jwt-lib, src/db.js, src/user.js]
 ```
 
-This means `src/auth.js` is a core file with 3 outgoing dependencies and 5 incoming references. It contains the `login` and `validateToken` symbols, has a TODO about JWT rotation, depends on `jwt-lib` and `db-connector`, and includes an inheritance relationship where `AdminUser` extends or implements `BaseUser`.
+This means `src/auth.js` is a core file with 3 outgoing dependencies and 5 incoming references. It contains the `login` and `validateToken` symbols, has a TODO about JWT rotation, depends on the `jwt-lib` package and two project files, and `AdminUser` extends `BaseUser`.
+
+When a budget is set with `--max-tokens`, a line `> OMITTED: N lower-ranked file(s) ...` records how many files were dropped from the markdown map.
+
+### JSON Graph
+
+`llm-code-graph.json` holds the same data uncapped, for tools and scripts:
+
+```json
+{
+  "version": "6.0.0",
+  "files": [
+    {
+      "path": "src/auth.js", "core": true, "out": 3, "in": 5,
+      "desc": "Handles user authentication.", "parser": "tree-sitter",
+      "symbols": [{ "name": "login", "context": "(username, password)" }],
+      "tags": ["TODO: Add JWT rotation"]
+    }
+  ],
+  "imports": { "src/auth.js": ["jwt-lib", "src/db.js", "src/user.js"] },
+  "inheritance": [{ "child": "AdminUser", "parent": "BaseUser" }]
+}
+```
+
+`parser` is `tree-sitter`, `regex`, or `none` (files over 100KB are indexed by description only).
+
+## Parsing
+
+Code-Graph uses [tree-sitter](https://tree-sitter.github.io/) grammars compiled to WebAssembly (via `@vscode/tree-sitter-wasm`). No native build step or compiler is needed, so it installs the same way on Windows, macOS, and Linux.
+
+| Grammar | Extensions | Symbols | Imports | Inheritance |
+|---------|------------|---------|---------|-------------|
+| JavaScript | `.js .jsx .mjs .cjs` | functions, classes, methods, function-valued and exported variables | `import`, `export … from`, `require()`, `import()` | `extends` |
+| TypeScript / TSX | `.ts .mts .cts` / `.tsx` | + interfaces, type aliases, enums | as JavaScript | `extends`, `implements` |
+| Python | `.py` | functions, classes | `import`, `from … import` (relative imports become paths) | base classes |
+| Go | `.go` | functions, methods, types | `import` | — |
+| Rust | `.rs` | functions, structs, enums, traits, types, modules, macros | `use` | `impl Trait for Type`, trait bounds |
+| Java | `.java` | classes, interfaces, enums, records, methods (with first annotation) | `import` | `extends`, `implements` |
+| C# | `.cs` | classes, interfaces, structs, enums, records, methods, namespaces | `using` | base list |
+| C / C++ | `.c .h .cpp .hpp .cc` | functions, prototypes, classes, structs, unions, enums, namespaces | `#include` | base classes |
+| PHP | `.php` | functions, classes, interfaces, traits, enums, methods | `use`, `include`/`require` | `extends`, `implements` |
+| Ruby | `.rb` | methods, classes, modules | `require`, `require_relative`, `load` | superclass |
+| Bash | `.sh` | functions | `source`, `.` | — |
+
+Tags (`TODO`, `FIXME`, `BUG`, `DEPRECATED`) are read only from comment nodes, so string contents never produce tags.
+
+**Regex fallback.** Kotlin, Swift, Dart, Scala, Objective-C, Lua, Vue, and Svelte use the built-in regex parser. If the WASM runtime or a grammar fails to load, Code-Graph prints one warning and uses the regex parser for those files. The scan summary line `Parsers: N tree-sitter, M regex, K unparsed.` shows which engine handled how many files.
 
 ## Sub-Agent Registration
 
@@ -277,18 +346,22 @@ Register `code-graph` as an active sub-agent to enable explicit delegation.
 
 Any Claude Code project can connect to code-graph as an MCP tool server.
 
-Add to your project's `.mcp.json`:
+Add to your project's `.mcp.json` (npx starts the latest published version, no install needed):
 
 ```json
 {
   "mcpServers": {
     "code-graph": {
-      "command": "code-graph",
-      "args": ["mcp"]
+      "command": "npx",
+      "args": ["-y", "code-graph-llm@latest", "mcp"]
     }
   }
 }
 ```
+
+On Windows, if your client cannot start `npx` directly, use `"command": "cmd"` with `"args": ["/c", "npx", "-y", "code-graph-llm@latest", "mcp"]`.
+
+With a global install (`npm install -g code-graph-llm@latest`), use `"command": "code-graph"` and `"args": ["mcp"]`.
 
 Or if using a local dev install:
 
@@ -310,13 +383,16 @@ Or if using a local dev install:
 | `get_project_graph` | INSTEAD of Read on the graph file | Read full `llm-code-graph.md` — fastest way to get project structure |
 | `search_symbols` | INSTEAD of Grep for symbol lookup | Search symbol names across all files (case-insensitive) |
 | `trace_dependencies` | INSTEAD of manual EDGES parsing | Outgoing + incoming deps for a file, plus `blast_radius` count |
-| `generate_graph` | When map is stale or missing | Build/refresh `llm-code-graph.md` for any project path |
+| `get_dependents` | Before risky edits | Transitive importers of a file with hop distance (`depth` 1–10, default 3) |
+| `generate_graph` | When map is stale or missing | Build/refresh `llm-code-graph.md` and `llm-code-graph.json` for a project directory |
 | `get_file_symbols` | Targeted file lookup | Return symbols for one specific file from the graph |
 | `search_graph` | Broad search | Search file paths, symbols, and descriptions together with scoring |
 | `add_reflection` | INSTEAD of `code-graph reflect` CLI | Append a lesson to `llm-agent-project-learnings.md` |
 | `get_reflections` | INSTEAD of reading the reflections file | Return all lessons, optionally filtered by category |
 
-All tools require `project_path` (absolute path) — one running server handles multiple projects.
+All tools require `project_path` (absolute path to an existing directory) — one running server handles multiple projects. Lookups read `llm-code-graph.json` when present and fall back to parsing `llm-code-graph.md`.
+
+**Generated files:** `llm-code-graph.json` (complete machine-readable graph) and `.code-graph-cache.json` (per-file parse cache keyed by mtime + size; safe to delete, add it to `.gitignore`). Import resolution covers relative paths, `dir/index.*`, `.js` specifiers that point at `.ts` sources, and `compilerOptions.paths` from a root `tsconfig.json`/`jsconfig.json`.
 
 **Error format:** All tools return structured errors with `isError: true` and JSON content: `{ error_type, message, retryable, suggested_action? }`. Agents can branch on `error_type` (e.g. `GRAPH_NOT_FOUND` → call `generate_graph` first).
 
@@ -325,28 +401,31 @@ All tools require `project_path` (absolute path) — one running server handles 
 ### Project Structure
 
 ```text
-index.js              CLI entry point and public re-exports
+index.js              CLI entry point, watcher, git hook, public re-exports
 lib/
   config.js           Constants, regex patterns, shared utilities
-  parser.js           CodeParser: symbol, edge, and tag extraction
-  mapper.js           ProjectMapper: file walking and graph generation
+  treesitter.js       TreeSitterParser: syntax-tree extraction for 12 grammars
+  parser.js           CodeParser: regex fallback extraction, symbol context helpers
+  mapper.js           ProjectMapper: walking, cache, import resolution, markdown/JSON output, check
   reflections.js      ReflectionManager: lesson persistence
   initializer.js      ProjectInitializer: rule and reflection scaffolding
   install-log.js      Shared versioned install target logging
-  mcp-server.js       MCP stdio server: 8 tools, structured errors, per-tool timeouts
-  skills.js           SkillManager: platform skill installation
+  mcp-server.js       MCP stdio server: 9 tools, structured errors, per-tool timeouts
+  skills/             SkillManager: platform skill installation (core, platforms, specs)
   agents.js           AgentManager: sub-agent registration
 test/
   index.test.js       Unit tests for parser, mapper, skills, and CLI behavior
-  mcp-server.test.js  Unit tests for MCP server tool handlers
+  treesitter.test.js  Unit tests for tree-sitter extraction and engine selection
+  mcp-server.test.js  Unit tests for MCP server tool handlers and the stdio stream
   platform-audit.js   Integration checks across supported platforms
 ```
 
 ### Pipeline
 
 1. **File Scanning:** Recursively walks the directory while respecting nested `.gitignore` patterns.
-2. **Context Extraction:** Scans for classes, functions, variables, and comments while stripping literals to reduce false matches.
-3. **Graph Extraction:** Identifies imports, requires, extends, and implements edges.
-4. **Tag Extraction:** Captures `TODO`, `FIXME`, `BUG`, and `DEPRECATED` tags from comments.
-5. **Reflection Management:** Deduplicates and persists agent learnings into a standardized Markdown file.
-6. **Compilation:** Writes a compact `llm-code-graph.md` file with capped descriptions, symbols, tags, and a dedicated `## EDGES` section.
+2. **Cache Lookup:** Reuses the previous parse of any file whose mtime and size are unchanged.
+3. **Parsing:** Tree-sitter extracts symbols, imports, inheritance, and comment tags where a grammar exists; the regex parser handles the rest. Each symbol gets its doc comment or signature as context.
+4. **Import Resolution:** Relative imports, index files, `.js`→`.ts`, and tsconfig/jsconfig `paths` aliases resolve to project files; anything else is kept as an external package name.
+5. **Ranking:** Files are ordered by core status, incoming references, then path.
+6. **Compilation:** Writes `llm-code-graph.md` (capped, optional token budget) and `llm-code-graph.json` (complete), then saves the cache.
+7. **Reflection Management:** Deduplicates and persists agent learnings into a standardized Markdown file.
